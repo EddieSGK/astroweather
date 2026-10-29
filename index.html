@@ -218,6 +218,70 @@
           </div>
         </div>
 
+        <!-- Róża Wiatrów / Kierunki Świata -->
+        <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+          <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-3">
+            <i data-lucide="compass" class="text-emerald-400"></i> Róża Wiatrów (Kierunki)
+          </h2>
+          
+          <div class="flex flex-col items-center justify-center p-2">
+            <!-- Kompas graficzny SVG -->
+            <div class="relative w-64 h-64 flex items-center justify-center">
+              <svg viewBox="0 0 200 200" class="w-full h-full text-slate-400">
+                <!-- Zewnętrzny okrąg kompasu -->
+                <circle cx="100" cy="100" r="85" fill="none" stroke="currentColor" stroke-width="1" class="text-slate-800"/>
+                <circle cx="100" cy="100" r="70" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2" class="text-slate-800"/>
+                <circle cx="100" cy="100" r="30" fill="none" stroke="currentColor" stroke-width="1" class="text-emerald-500/20"/>
+                
+                <!-- Oznaczenie Zenitu w centrum -->
+                <circle cx="100" cy="100" r="3" fill="currentColor" class="text-emerald-400"/>
+                <text x="100" y="112" text-anchor="middle" font-size="8" font-weight="bold" fill="currentColor" class="text-emerald-400">Zenit (&gt;65°)</text>
+
+                <!-- Linie pomocnicze (Główne i pośrednie) -->
+                <line x1="100" y1="20" x2="100" y2="180" stroke="currentColor" stroke-width="1" class="text-slate-800"/>
+                <line x1="20" y1="100" x2="180" y2="100" stroke="currentColor" stroke-width="1" class="text-slate-800"/>
+                <line x1="43.4" y1="43.4" x2="156.6" y2="156.6" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2" class="text-slate-800/60"/>
+                <line x1="156.6" y1="43.4" x2="43.4" y2="156.6" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2" class="text-slate-800/60"/>
+
+                <!-- Etykiety 16 kierunków świata -->
+                <!-- Kardynalne -->
+                <text x="100" y="14" text-anchor="middle" font-size="11" font-weight="900" class="fill-indigo-400">N</text>
+                <text x="188" y="103" text-anchor="middle" font-size="11" font-weight="900" class="fill-indigo-400">E</text>
+                <text x="100" y="195" text-anchor="middle" font-size="11" font-weight="900" class="fill-indigo-400">S</text>
+                <text x="12" y="103" text-anchor="middle" font-size="11" font-weight="900" class="fill-indigo-400">W</text>
+
+                <!-- Półkardynalne -->
+                <text x="155" y="45" text-anchor="middle" font-size="9" font-weight="bold" class="fill-emerald-400">NE</text>
+                <text x="155" y="160" text-anchor="middle" font-size="9" font-weight="bold" class="fill-emerald-400">SE</text>
+                <text x="45" y="160" text-anchor="middle" font-size="9" font-weight="bold" class="fill-slate-500">SW</text>
+                <text x="45" y="45" text-anchor="middle" font-size="9" font-weight="bold" class="fill-slate-500">NW</text>
+
+                <!-- Trzeciorzędne (Interkompasowe) -->
+                <text x="130" y="27" text-anchor="middle" font-size="7" font-weight="semibold" class="fill-emerald-300">NNE</text>
+                <text x="175" y="70" text-anchor="middle" font-size="7" font-weight="semibold" class="fill-emerald-300">ENE</text>
+                <text x="175" y="133" text-anchor="middle" font-size="7" font-weight="semibold" class="fill-emerald-300">ESE</text>
+                <text x="130" y="178" text-anchor="middle" font-size="7" font-weight="semibold" class="fill-emerald-300">SSE</text>
+                <text x="70" y="178" text-anchor="middle" font-size="7" font-weight="semibold" class="fill-slate-600">SSW</text>
+                <text x="25" y="133" text-anchor="middle" font-size="7" font-weight="semibold" class="fill-slate-600">WSW</text>
+                <text x="25" y="70" text-anchor="middle" font-size="7" font-weight="semibold" class="fill-slate-600">WNW</text>
+                <text x="70" y="27" text-anchor="middle" font-size="7" font-weight="semibold" class="fill-slate-600">NNW</text>
+              </svg>
+            </div>
+
+            <!-- Legendka stref pod różą -->
+            <div class="mt-3 grid grid-cols-2 gap-2 text-[11px] w-full pt-2 border-t border-slate-800">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span>
+                <span class="text-slate-300 font-medium">Sektory otwarte (NNE-NE, SE-S)</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded bg-slate-600 shrink-0"></span>
+                <span class="text-slate-400">Sektory zasłonięte</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- Right Column: Chart & Suggested Targets -->
