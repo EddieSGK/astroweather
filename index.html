@@ -245,7 +245,7 @@
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-4">
             <div>
               <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2">
-                <i data-lucide="target" class="text-emerald-400"></i> Sugerowane Obiekty (Messier M1-M110 & Planety)
+                <i data-lucide="target" class="text-emerald-400"></i> Widoczne Dziś Obiekty (Messier M1-M110 & Planety)
               </h2>
               <p id="horizonSubtext" class="text-xs text-slate-400 mt-0.5">Dopasowane do Twoich horyzontów (N-NE & SE-S > 30°, E > 50°)</p>
             </div>
@@ -278,38 +278,118 @@
     let cachedAstroEnd = null;
     let cachedMoonFraction = 0;
 
+    // PEŁNA LISTA 110 OBIEKTÓW MESSIERA (M1-M110) Z OCENĄ DLA SEESTARA S30 PRO
     const MESSIER_CATALOG = [
-      { id:'M1', name:'M1 (Mgławica Krab)', type:'Supernova Remnant', mag:8.4, ra:5.575, dec:22.01, cat:'nebula' },
-      { id:'M2', name:'M2', type:'Globular Cluster', mag:6.5, ra:21.558, dec:-0.82, cat:'globular' },
-      { id:'M3', name:'M3', type:'Globular Cluster', mag:6.2, ra:13.703, dec:28.38, cat:'globular' },
-      { id:'M4', name:'M4', type:'Globular Cluster', mag:5.6, ra:16.393, dec:-26.53, cat:'globular' },
-      { id:'M5', name:'M5', type:'Globular Cluster', mag:5.6, ra:15.309, dec:2.08, cat:'globular' },
-      { id:'M6', name:'M6 (Motyl)', type:'Open Cluster', mag:4.2, ra:17.668, dec:-32.22, cat:'open_cluster' },
-      { id:'M7', name:'M7 (Gromada Ptolemeusza)', type:'Open Cluster', mag:3.3, ra:17.898, dec:-34.82, cat:'open_cluster' },
-      { id:'M8', name:'M8 (Mgławica Laguna)', type:'Emission Nebula', mag:6.0, ra:18.063, dec:-24.38, cat:'nebula' },
-      { id:'M9', name:'M9', type:'Globular Cluster', mag:7.7, ra:17.319, dec:-18.52, cat:'globular' },
-      { id:'M10', name:'M10', type:'Globular Cluster', mag:6.4, ra:16.952, dec:-4.1, cat:'globular' },
-      { id:'M11', name:'M11 (Dzika Kaczka)', type:'Open Cluster', mag:6.3, ra:18.851, dec:-6.27, cat:'open_cluster' },
-      { id:'M12', name:'M12', type:'Globular Cluster', mag:6.7, ra:16.787, dec:-1.94, cat:'globular' },
-      { id:'M13', name:'M13 (Gromada Herkulesa)', type:'Globular Cluster', mag:5.8, ra:16.695, dec:36.46, cat:'globular' },
-      { id:'M14', name:'M14', type:'Globular Cluster', mag:7.6, ra:17.627, dec:-3.25, cat:'globular' },
-      { id:'M15', name:'M15', type:'Globular Cluster', mag:6.2, ra:21.5, dec:12.17, cat:'globular' },
-      { id:'M16', name:'M16 (Mgławica Orzeł)', type:'Emission Nebula', mag:6.0, ra:18.314, dec:-13.79, cat:'nebula' },
-      { id:'M17', name:'M17 (Mgławica Omega)', type:'Emission Nebula', mag:6.0, ra:18.347, dec:-16.18, cat:'nebula' },
-      { id:'M18', name:'M18', type:'Open Cluster', mag:7.5, ra:18.332, dec:-17.15, cat:'open_cluster' },
-      { id:'M19', name:'M19', type:'Globular Cluster', mag:6.8, ra:17.043, dec:-26.27, cat:'globular' },
-      { id:'M20', name:'M20 (Mgławica Trójlistna)', type:'Emission/Reflection Nebula', mag:6.3, ra:18.043, dec:-23.03, cat:'nebula' },
-      { id:'M27', name:'M27 (Mgławica Hantle)', type:'Planetary Nebula', mag:7.4, ra:19.993, dec:22.72, cat:'nebula' },
-      { id:'M31', name:'M31 (Galaktyka Andromedy)', type:'Galaxy', mag:3.4, ra:0.712, dec:41.27, cat:'galaxy' },
-      { id:'M33', name:'M33 (Galaktyka Trójkąta)', type:'Galaxy', mag:5.7, ra:1.564, dec:30.66, cat:'galaxy' },
-      { id:'M42', name:'M42 (Mgławica Oriona)', type:'Emission Nebula', mag:4.0, ra:5.588, dec:-5.39, cat:'nebula' },
-      { id:'M45', name:'M45 (Plejady)', type:'Open Cluster', mag:1.6, ra:3.79, dec:24.11, cat:'reflection_nebula' },
-      { id:'M51', name:'M51 (Galaktyka Wir)', type:'Galaxy', mag:8.4, ra:13.498, dec:47.2, cat:'galaxy' },
-      { id:'M57', name:'M57 (Mgławica Pierścień)', type:'Planetary Nebula', mag:8.8, ra:18.893, dec:33.03, cat:'nebula' },
-      { id:'M81', name:'M81 (Galaktyka Bode\'go)', type:'Galaxy', mag:6.9, ra:9.926, dec:69.07, cat:'galaxy' },
-      { id:'M82', name:'M82 (Galaktyka Cygaro)', type:'Galaxy', mag:8.4, ra:9.932, dec:69.68, cat:'galaxy' },
-      { id:'M101', name:'M101 (Galaktyka Wiatraczek)', type:'Galaxy', mag:7.9, ra:14.053, dec:54.35, cat:'galaxy' },
-      { id:'M104', name:'M104 (Galaktyka Sombrero)', type:'Galaxy', mag:8.0, ra:12.666, dec:-11.62, cat:'galaxy' }
+      { id:'M1', name:'M1 (Mgławica Krab)', type:'Supernova Remnant', mag:8.4, ra:5.575, dec:22.01, cat:'nebula', suit:'Dobry' },
+      { id:'M2', name:'M2', type:'Globular Cluster', mag:6.5, ra:21.558, dec:-0.82, cat:'globular', suit:'Idealny' },
+      { id:'M3', name:'M3', type:'Globular Cluster', mag:6.2, ra:13.703, dec:28.38, cat:'globular', suit:'Idealny' },
+      { id:'M4', name:'M4', type:'Globular Cluster', mag:5.6, ra:16.393, dec:-26.53, cat:'globular', suit:'Dobry' },
+      { id:'M5', name:'M5', type:'Globular Cluster', mag:5.6, ra:15.309, dec:2.08, cat:'globular', suit:'Idealny' },
+      { id:'M6', name:'M6 (Gromada Motyl)', type:'Open Cluster', mag:4.2, ra:17.668, dec:-32.22, cat:'open_cluster', suit:'Dobry' },
+      { id:'M7', name:'M7 (Gromada Ptolemeusza)', type:'Open Cluster', mag:3.3, ra:17.898, dec:-34.82, cat:'open_cluster', suit:'Umiarkowany' },
+      { id:'M8', name:'M8 (Mgławica Laguna)', type:'Emission Nebula', mag:6.0, ra:18.063, dec:-24.38, cat:'nebula', suit:'Idealny' },
+      { id:'M9', name:'M9', type:'Globular Cluster', mag:7.7, ra:17.319, dec:-18.52, cat:'globular', suit:'Dobry' },
+      { id:'M10', name:'M10', type:'Globular Cluster', mag:6.4, ra:16.952, dec:-4.1, cat:'globular', suit:'Idealny' },
+      { id:'M11', name:'M11 (Dzika Kaczka)', type:'Open Cluster', mag:6.3, ra:18.851, dec:-6.27, cat:'open_cluster', suit:'Idealny' },
+      { id:'M12', name:'M12', type:'Globular Cluster', mag:6.7, ra:16.787, dec:-1.94, cat:'globular', suit:'Idealny' },
+      { id:'M13', name:'M13 (Gromada Herkulesa)', type:'Globular Cluster', mag:5.8, ra:16.695, dec:36.46, cat:'globular', suit:'Idealny' },
+      { id:'M14', name:'M14', type:'Globular Cluster', mag:7.6, ra:17.627, dec:-3.25, cat:'globular', suit:'Dobry' },
+      { id:'M15', name:'M15', type:'Globular Cluster', mag:6.2, ra:21.5, dec:12.17, cat:'globular', suit:'Idealny' },
+      { id:'M16', name:'M16 (Mgławica Orzeł)', type:'Emission Nebula', mag:6.0, ra:18.314, dec:-13.79, cat:'nebula', suit:'Idealny' },
+      { id:'M17', name:'M17 (Mgławica Omega)', type:'Emission Nebula', mag:6.0, ra:18.347, dec:-16.18, cat:'nebula', suit:'Idealny' },
+      { id:'M18', name:'M18', type:'Open Cluster', mag:7.5, ra:18.332, dec:-17.15, cat:'open_cluster', suit:'Dobry' },
+      { id:'M19', name:'M19', type:'Globular Cluster', mag:6.8, ra:17.043, dec:-26.27, cat:'globular', suit:'Dobry' },
+      { id:'M20', name:'M20 (Mgławica Trójlistna)', type:'Emission Nebula', mag:6.3, ra:18.043, dec:-23.03, cat:'nebula', suit:'Idealny' },
+      { id:'M21', name:'M21', type:'Open Cluster', mag:6.5, ra:18.077, dec:-22.5, cat:'open_cluster', suit:'Dobry' },
+      { id:'M22', name:'M22', type:'Globular Cluster', mag:5.1, ra:18.606, dec:-23.9, cat:'globular', suit:'Idealny' },
+      { id:'M23', name:'M23', type:'Open Cluster', mag:5.5, ra:17.947, dec:-19.02, cat:'open_cluster', suit:'Dobry' },
+      { id:'M24', name:'M24 (Chmura Gwiazd Strzelca)', type:'Star Cloud', mag:4.6, ra:18.28, dec:-18.55, cat:'open_cluster', suit:'Umiarkowany' },
+      { id:'M25', name:'M25', type:'Open Cluster', mag:4.6, ra:18.527, dec:-19.12, cat:'open_cluster', suit:'Dobry' },
+      { id:'M26', name:'M26', type:'Open Cluster', mag:8.0, ra:18.753, dec:-9.39, cat:'open_cluster', suit:'Dobry' },
+      { id:'M27', name:'M27 (Mgławica Hantle)', type:'Planetary Nebula', mag:7.4, ra:19.993, dec:22.72, cat:'nebula', suit:'Idealny' },
+      { id:'M28', name:'M28', type:'Globular Cluster', mag:6.8, ra:18.41, dec:-24.87, cat:'globular', suit:'Dobry' },
+      { id:'M29', name:'M29', type:'Open Cluster', mag:7.1, ra:20.398, dec:38.52, cat:'open_cluster', suit:'Dobry' },
+      { id:'M30', name:'M30', type:'Globular Cluster', mag:7.2, ra:21.679, dec:-23.18, cat:'globular', suit:'Dobry' },
+      { id:'M31', name:'M31 (Galaktyka Andromedy)', type:'Galaxy', mag:3.4, ra:0.712, dec:41.27, cat:'galaxy', suit:'Idealny' },
+      { id:'M32', name:'M32', type:'Galaxy', mag:8.1, ra:0.712, dec:40.87, cat:'galaxy', suit:'Dobry' },
+      { id:'M33', name:'M33 (Galaktyka Trójkąta)', type:'Galaxy', mag:5.7, ra:1.564, dec:30.66, cat:'galaxy', suit:'Idealny' },
+      { id:'M34', name:'M34', type:'Open Cluster', mag:5.5, ra:2.7, dec:42.78, cat:'open_cluster', suit:'Idealny' },
+      { id:'M35', name:'M35', type:'Open Cluster', mag:5.3, ra:6.148, dec:24.33, cat:'open_cluster', suit:'Idealny' },
+      { id:'M36', name:'M36', type:'Open Cluster', mag:6.3, ra:5.602, dec:34.14, cat:'open_cluster', suit:'Idealny' },
+      { id:'M37', name:'M37', type:'Open Cluster', mag:6.2, ra:5.873, dec:32.55, cat:'open_cluster', suit:'Idealny' },
+      { id:'M38', name:'M38', type:'Open Cluster', mag:7.4, ra:5.478, dec:35.85, cat:'open_cluster', suit:'Idealny' },
+      { id:'M39', name:'M39', type:'Open Cluster', mag:4.6, ra:21.537, dec:48.43, cat:'open_cluster', suit:'Dobry' },
+      { id:'M40', name:'M40 (Gwiazda Podwójna Winnecke 4)', type:'Double Star', mag:8.4, ra:12.373, dec:58.08, cat:'open_cluster', suit:'Trudny' },
+      { id:'M41', name:'M41', type:'Open Cluster', mag:4.5, ra:6.783, dec:-20.74, cat:'open_cluster', suit:'Dobry' },
+      { id:'M42', name:'M42 (Mgławica Oriona)', type:'Emission Nebula', mag:4.0, ra:5.588, dec:-5.39, cat:'nebula', suit:'Idealny' },
+      { id:'M43', name:'M43 (Mgławica De Mairana)', type:'Emission Nebula', mag:9.0, ra:5.592, dec:-5.27, cat:'nebula', suit:'Dobry' },
+      { id:'M44', name:'M44 (Żłóbek / Praesepe)', type:'Open Cluster', mag:3.7, ra:8.667, dec:19.67, cat:'open_cluster', suit:'Umiarkowany' },
+      { id:'M45', name:'M45 (Plejady)', type:'Open Cluster', mag:1.6, ra:3.79, dec:24.11, cat:'reflection_nebula', suit:'Idealny' },
+      { id:'M46', name:'M46', type:'Open Cluster', mag:6.0, ra:7.697, dec:-14.82, cat:'open_cluster', suit:'Idealny' },
+      { id:'M47', name:'M47', type:'Open Cluster', mag:4.2, ra:7.61, dec:-14.5, cat:'open_cluster', suit:'Idealny' },
+      { id:'M48', name:'M48', type:'Open Cluster', mag:5.5, ra:8.23, dec:-5.75, cat:'open_cluster', suit:'Dobry' },
+      { id:'M49', name:'M49', type:'Galaxy', mag:8.4, ra:12.497, dec:8.0, cat:'galaxy', suit:'Dobry' },
+      { id:'M50', name:'M50', type:'Open Cluster', mag:5.9, ra:7.053, dec:-8.35, cat:'open_cluster', suit:'Idealny' },
+      { id:'M51', name:'M51 (Galaktyka Wir)', type:'Galaxy', mag:8.4, ra:13.498, dec:47.2, cat:'galaxy', suit:'Idealny' },
+      { id:'M52', name:'M52', type:'Open Cluster', mag:7.3, ra:23.403, dec:61.59, cat:'open_cluster', suit:'Idealny' },
+      { id:'M53', name:'M53', type:'Globular Cluster', mag:7.6, ra:13.216, dec:18.17, cat:'globular', suit:'Dobry' },
+      { id:'M54', name:'M54', type:'Globular Cluster', mag:7.6, ra:18.92, dec:-30.48, cat:'globular', suit:'Umiarkowany' },
+      { id:'M55', name:'M55', type:'Globular Cluster', mag:6.3, ra:19.667, dec:-30.96, cat:'globular', suit:'Umiarkowany' },
+      { id:'M56', name:'M56', type:'Globular Cluster', mag:8.3, ra:19.277, dec:30.18, cat:'globular', suit:'Dobry' },
+      { id:'M57', name:'M57 (Mgławica Pierścień)', type:'Planetary Nebula', mag:8.8, ra:18.893, dec:33.03, cat:'nebula', suit:'Idealny' },
+      { id:'M58', name:'M58', type:'Galaxy', mag:9.7, ra:12.628, dec:11.82, cat:'galaxy', suit:'Umiarkowany' },
+      { id:'M59', name:'M59', type:'Galaxy', mag:9.6, ra:12.703, dec:11.65, cat:'galaxy', suit:'Umiarkowany' },
+      { id:'M60', name:'M60', type:'Galaxy', mag:8.8, ra:12.728, dec:11.55, cat:'galaxy', suit:'Dobry' },
+      { id:'M61', name:'M61', type:'Galaxy', mag:9.7, ra:12.366, dec:4.47, cat:'galaxy', suit:'Umiarkowany' },
+      { id:'M62', name:'M62', type:'Globular Cluster', mag:6.5, ra:17.02, dec:-30.11, cat:'globular', suit:'Umiarkowany' },
+      { id:'M63', name:'M63 (Galaktyka Słonecznik)', type:'Galaxy', mag:8.6, ra:13.264, dec:42.03, cat:'galaxy', suit:'Idealny' },
+      { id:'M64', name:'M64 (Galaktyka Czarna Łza)', type:'Galaxy', mag:8.5, ra:12.945, dec:21.68, cat:'galaxy', suit:'Idealny' },
+      { id:'M65', name:'M65 (Trio Lwa)', type:'Galaxy', mag:9.3, ra:11.315, dec:13.09, cat:'galaxy', suit:'Dobry' },
+      { id:'M66', name:'M66 (Trio Lwa)', type:'Galaxy', mag:8.9, ra:11.337, dec:12.99, cat:'galaxy', suit:'Idealny' },
+      { id:'M67', name:'M67', type:'Open Cluster', mag:6.1, ra:8.857, dec:11.82, cat:'open_cluster', suit:'Idealny' },
+      { id:'M68', name:'M68', type:'Globular Cluster', mag:7.8, ra:12.655, dec:-26.75, cat:'globular', suit:'Umiarkowany' },
+      { id:'M69', name:'M69', type:'Globular Cluster', mag:7.6, ra:18.523, dec:-32.35, cat:'globular', suit:'Umiarkowany' },
+      { id:'M70', name:'M70', type:'Globular Cluster', mag:7.9, ra:18.72, dec:-32.29, cat:'globular', suit:'Umiarkowany' },
+      { id:'M71', name:'M71', type:'Globular Cluster', mag:8.2, ra:19.897, dec:18.78, cat:'globular', suit:'Dobry' },
+      { id:'M72', name:'M72', type:'Globular Cluster', mag:9.3, ra:20.892, dec:-12.54, cat:'globular', suit:'Umiarkowany' },
+      { id:'M73', name:'M73', type:'Asterism', mag:9.0, ra:20.983, dec:-12.63, cat:'open_cluster', suit:'Trudny' },
+      { id:'M74', name:'M74', type:'Galaxy', mag:9.4, ra:1.611, dec:15.78, cat:'galaxy', suit:'Umiarkowany' },
+      { id:'M75', name:'M75', type:'Globular Cluster', mag:8.6, ra:20.102, dec:-21.92, cat:'globular', suit:'Dobry' },
+      { id:'M76', name:'M76 (Małe Hantle)', type:'Planetary Nebula', mag:10.1, ra:1.705, dec:51.57, cat:'nebula', suit:'Umiarkowany' },
+      { id:'M77', name:'M77', type:'Galaxy', mag:8.9, ra:2.712, dec:-0.01, cat:'galaxy', suit:'Dobry' },
+      { id:'M78', name:'M78', type:'Reflection Nebula', mag:8.3, ra:5.778, dec:0.08, cat:'reflection_nebula', suit:'Idealny' },
+      { id:'M79', name:'M79', type:'Globular Cluster', mag:7.7, ra:5.403, dec:-24.52, cat:'globular', suit:'Dobry' },
+      { id:'M80', name:'M80', type:'Globular Cluster', mag:7.3, ra:16.284, dec:-22.98, cat:'globular', suit:'Dobry' },
+      { id:'M81', name:'M81 (Galaktyka Bode\'go)', type:'Galaxy', mag:6.9, ra:9.926, dec:69.07, cat:'galaxy', suit:'Idealny' },
+      { id:'M82', name:'M82 (Galaktyka Cygaro)', type:'Galaxy', mag:8.4, ra:9.932, dec:69.68, cat:'galaxy', suit:'Idealny' },
+      { id:'M83', name:'M83 (Południowy Wiatraczek)', type:'Galaxy', mag:7.5, ra:13.617, dec:-29.87, cat:'galaxy', suit:'Umiarkowany' },
+      { id:'M84', name:'M84 (Łańcuch Markariana)', type:'Galaxy', mag:9.1, ra:12.42, dec:12.88, cat:'galaxy', suit:'Dobry' },
+      { id:'M85', name:'M85', type:'Galaxy', mag:9.1, ra:12.423, dec:18.19, cat:'galaxy', suit:'Dobry' },
+      { id:'M86', name:'M86 (Łańcuch Markariana)', type:'Galaxy', mag:8.9, ra:12.437, dec:12.94, cat:'galaxy', suit:'Dobry' },
+      { id:'M87', name:'M87 (Panna A)', type:'Galaxy', mag:8.6, ra:12.514, dec:12.39, cat:'galaxy', suit:'Dobry' },
+      { id:'M88', name:'M88', type:'Galaxy', mag:9.6, ra:12.533, dec:14.42, cat:'galaxy', suit:'Umiarkowany' },
+      { id:'M89', name:'M89', type:'Galaxy', mag:9.8, ra:12.593, dec:12.55, cat:'galaxy', suit:'Umiarkowany' },
+      { id:'M90', name:'M90', type:'Galaxy', mag:9.5, ra:12.614, dec:13.16, cat:'galaxy', suit:'Umiarkowany' },
+      { id:'M91', name:'M91', type:'Galaxy', mag:10.2, ra:12.59, dec:14.49, cat:'galaxy', suit:'Trudny' },
+      { id:'M92', name:'M92', type:'Globular Cluster', mag:6.4, ra:17.285, dec:43.14, cat:'globular', suit:'Idealny' },
+      { id:'M93', name:'M93', type:'Open Cluster', mag:6.0, ra:7.743, dec:-23.86, cat:'open_cluster', suit:'Dobry' },
+      { id:'M94', name:'M94 (Oko Kota)', type:'Galaxy', mag:8.2, ra:12.848, dec:41.12, cat:'galaxy', suit:'Idealny' },
+      { id:'M95', name:'M95', type:'Galaxy', mag:9.7, ra:10.733, dec:11.7, cat:'galaxy', suit:'Umiarkowany' },
+      { id:'M96', name:'M96', type:'Galaxy', mag:9.2, ra:10.778, dec:11.82, cat:'galaxy', suit:'Dobry' },
+      { id:'M97', name:'M97 (Mgławica Sowa)', type:'Planetary Nebula', mag:9.9, ra:11.248, dec:55.02, cat:'nebula', suit:'Dobry' },
+      { id:'M98', name:'M98', type:'Galaxy', mag:10.1, ra:12.23, dec:14.9, cat:'galaxy', suit:'Trudny' },
+      { id:'M99', name:'M99', type:'Galaxy', mag:9.9, ra:12.314, dec:14.42, cat:'galaxy', suit:'Umiarkowany' },
+      { id:'M100', name:'M100', type:'Galaxy', mag:9.3, ra:12.382, dec:15.82, cat:'galaxy', suit:'Dobry' },
+      { id:'M101', name:'M101 (Galaktyka Wiatraczek)', type:'Galaxy', mag:7.9, ra:14.053, dec:54.35, cat:'galaxy', suit:'Idealny' },
+      { id:'M102', name:'M102 (Galaktyka Wrzeciono / NGC 5866)', type:'Galaxy', mag:9.9, ra:15.11, dec:55.76, cat:'galaxy', suit:'Dobry' },
+      { id:'M103', name:'M103', type:'Open Cluster', mag:7.4, ra:1.553, dec:60.71, cat:'open_cluster', suit:'Idealny' },
+      { id:'M104', name:'M104 (Galaktyka Sombrero)', type:'Galaxy', mag:8.0, ra:12.666, dec:-11.62, cat:'galaxy', suit:'Idealny' },
+      { id:'M105', name:'M105', type:'Galaxy', mag:9.3, ra:10.797, dec:12.58, cat:'galaxy', suit:'Dobry' },
+      { id:'M106', name:'M106', type:'Galaxy', mag:8.4, ra:12.316, dec:47.3, cat:'galaxy', suit:'Idealny' },
+      { id:'M107', name:'M107', type:'Globular Cluster', mag:7.9, ra:16.542, dec:-13.05, cat:'globular', suit:'Dobry' },
+      { id:'M108', name:'M108', type:'Galaxy', mag:10.0, ra:11.185, dec:55.67, cat:'galaxy', suit:'Umiarkowany' },
+      { id:'M109', name:'M109', type:'Galaxy', mag:9.8, ra:11.96, dec:53.37, cat:'galaxy', suit:'Umiarkowany' },
+      { id:'M110', name:'M110', type:'Galaxy', mag:8.5, ra:0.673, dec:41.69, cat:'galaxy', suit:'Dobry' }
     ];
 
     function updateDateDisplay(now) {
@@ -687,7 +767,8 @@
             mag: pMag,
             ra: coords.ra,
             dec: coords.dec,
-            cat: 'planet'
+            cat: 'planet',
+            suit: 'Idealny'
           });
         }
       });
@@ -764,6 +845,11 @@
           peakText = `${formatTime(item.peakInfo.time)} (${item.peakInfo.azDir}, ${item.peakInfo.alt}°)`;
         }
 
+        let suitBadgeClass = "bg-emerald-950 text-emerald-400 border-emerald-800";
+        if (item.suit === 'Dobry') suitBadgeClass = "bg-cyan-950 text-cyan-300 border-cyan-800";
+        if (item.suit === 'Umiarkowany') suitBadgeClass = "bg-amber-950 text-amber-300 border-amber-800";
+        if (item.suit === 'Trudny') suitBadgeClass = "bg-rose-950 text-rose-300 border-rose-800";
+
         const cardHtml = `
           <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-indigo-500/50 transition-all space-y-3">
             <div class="flex gap-3 items-center">
@@ -778,7 +864,12 @@
                     ${item.currentAzDir} (${item.currentAlt}°)
                   </span>
                 </div>
-                <p class="text-xs text-slate-400 mt-0.5">${item.type} • Mag: ${item.mag}</p>
+                <div class="flex items-center gap-2 mt-0.5">
+                  <p class="text-xs text-slate-400">${item.type} • Mag: ${item.mag}</p>
+                  <span class="text-[10px] font-bold px-1.5 py-0.2 rounded border ${suitBadgeClass}">
+                    ${item.suit}
+                  </span>
+                </div>
               </div>
             </div>
 
