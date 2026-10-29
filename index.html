@@ -240,7 +240,7 @@
 
                 <!-- Dynamiczne Etykiety 8 Sektorów Kompasu -->
                 <text id="compass-N" x="100" y="16" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">N</text>
-                <text id="compass-E" x="188" y="104" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">E</text>
+                <text id="compass-E" x="188" y="104" text-anchor="middle" font-size="12" font-weight="900" class="fill-emerald-400">E</text>
                 <text id="compass-S" x="100" y="194" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">S</text>
                 <text id="compass-W" x="12" y="104" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">W</text>
 
@@ -473,7 +473,7 @@
 
     function getSeestarBaseConfig(cat) {
       if (cat === 'nebula') {
-        return { subExp: '10s', baseTime: '60-90 min', filter: 'Dual-Band LP', notes: 'Mgławica emisyjna. Filtr Dual-Band drastycznie podnosi kontrast.' };
+        return { subExp: '10s', baseTime: '60-90 min', filter: 'Dual-Band LP', notes: 'Mgławica emisyjna. Filtr Dual-Band drastically podnosi kontrast.' };
       } else if (cat === 'reflection_nebula') {
         return { subExp: '10s', baseTime: '90-120 min', filter: 'UV/IR Cut', notes: 'Mgławica pyłowa/odbiciowa. Filtr Dual-Band wytnie pył!' };
       } else if (cat === 'galaxy') {
@@ -560,7 +560,7 @@
     function getSectorZoneName(az, alt, useStrictHorizon) {
       if (useStrictHorizon) {
         if ((az >= 337.5 || az < 67.5) && alt >= 30) return azToMainSector(az);
-        if (az >= 67.5 && az < 112.5 && alt >= 50) return azToMainSector(az);
+        if (az >= 67.5 && az < 112.5 && alt >= 50) return azToMainSector(az); // Wschód > 50°
         if (az >= 112.5 && az <= 202.5 && alt >= 30) return azToMainSector(az);
         if (alt >= 65) return 'Zenit';
         return null;
@@ -628,10 +628,10 @@
       return { windows, maxVisibleAlt, peakInfo };
     }
 
-    // AKTUALIZACJA RÓŻY WIATRÓW W ZALEŻNOŚCI OD STANU PRZEŁĄCZNIKA
+    // AKTUALIZACJA RÓŻY WIATRÓW – TERAZ SEKTOR E JEST RÓWNIEŻ OTWARTY!
     function updateCompassVisuals(useStrictHorizon) {
       const allSectors = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-      const openSectorsInStrict = ['NE', 'SE', 'S']; // Własny horyzont
+      const openSectorsInStrict = ['NE', 'E', 'SE', 'S']; // NE, E (>50°), SE, S
 
       const activeColor = "fill-emerald-400 font-extrabold";
       const inactiveColor = "fill-slate-600 font-bold";
@@ -642,18 +642,16 @@
         if (!elem) return;
 
         if (!useStrictHorizon) {
-          // Wszystkie sektory aktywne
+          // Wszystkie sektory aktywne przy braku filtra
           if (['N', 'E', 'S', 'W'].includes(sec)) {
             elem.setAttribute('class', cardinalColor);
           } else {
             elem.setAttribute('class', activeColor);
           }
         } else {
-          // Tylko Twoje otwarte sektory
+          // Dedykowany horyzont: NE, E, SE, S są aktywne
           if (openSectorsInStrict.includes(sec)) {
             elem.setAttribute('class', activeColor);
-          } else if (['N', 'E', 'S'].includes(sec) && openSectorsInStrict.includes(sec)) {
-            elem.setAttribute('class', cardinalColor);
           } else {
             elem.setAttribute('class', inactiveColor);
           }
@@ -673,7 +671,7 @@
         legendElem.innerHTML = `
           <div class="flex items-center gap-1.5">
             <span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span>
-            <span class="text-slate-300 font-medium">Sektory otwarte (NE, SE, S)</span>
+            <span class="text-slate-300 font-medium">Sektory otwarte (NE, E &gt;50°, SE, S)</span>
           </div>
           <div class="flex items-center gap-1.5">
             <span class="w-2.5 h-2.5 rounded bg-slate-600 shrink-0"></span>
