@@ -218,10 +218,10 @@
           </div>
         </div>
 
-        <!-- Róża Wiatrów (Czytelne 8 Głównych Sektorów) -->
+        <!-- Dynamiczna Róża Wiatrów -->
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
           <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-3">
-            <i data-lucide="compass" class="text-emerald-400"></i> Róża Wiatrów (8 Sektorów)
+            <i data-lucide="compass" class="text-emerald-400"></i> Róża Wiatrów (Kierunki)
           </h2>
           
           <div class="flex flex-col items-center justify-center p-2">
@@ -238,28 +238,22 @@
                 <line x1="43.4" y1="43.4" x2="156.6" y2="156.6" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2" class="text-slate-800/60"/>
                 <line x1="156.6" y1="43.4" x2="43.4" y2="156.6" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2" class="text-slate-800/60"/>
 
-                <!-- 8 Głównych Sektorów Kompasu -->
-                <text x="100" y="16" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">N</text>
-                <text x="188" y="104" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">E</text>
-                <text x="100" y="194" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">S</text>
-                <text x="12" y="104" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">W</text>
+                <!-- Dynamiczne Etykiety 8 Sektorów Kompasu -->
+                <text id="compass-N" x="100" y="16" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">N</text>
+                <text id="compass-E" x="188" y="104" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">E</text>
+                <text id="compass-S" x="100" y="194" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">S</text>
+                <text id="compass-W" x="12" y="104" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">W</text>
 
-                <text x="152" y="48" text-anchor="middle" font-size="10" font-weight="bold" class="fill-emerald-400">NE</text>
-                <text x="152" y="158" text-anchor="middle" font-size="10" font-weight="bold" class="fill-emerald-400">SE</text>
-                <text x="48" y="158" text-anchor="middle" font-size="10" font-weight="bold" class="fill-slate-600">SW</text>
-                <text x="48" y="48" text-anchor="middle" font-size="10" font-weight="bold" class="fill-slate-600">NW</text>
+                <text id="compass-NE" x="152" y="48" text-anchor="middle" font-size="10" font-weight="bold" class="fill-emerald-400">NE</text>
+                <text id="compass-SE" x="152" y="158" text-anchor="middle" font-size="10" font-weight="bold" class="fill-emerald-400">SE</text>
+                <text id="compass-SW" x="48" y="158" text-anchor="middle" font-size="10" font-weight="bold" class="fill-slate-600">SW</text>
+                <text id="compass-NW" x="48" y="48" text-anchor="middle" font-size="10" font-weight="bold" class="fill-slate-600">NW</text>
               </svg>
             </div>
 
-            <div class="mt-3 grid grid-cols-2 gap-2 text-[11px] w-full pt-2 border-t border-slate-800">
-              <div class="flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span>
-                <span class="text-slate-300 font-medium">Sektory otwarte (NE, SE, S)</span>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded bg-slate-600 shrink-0"></span>
-                <span class="text-slate-400">Sektory zasłonięte</span>
-              </div>
+            <!-- Dynamiczna Legenda pod Różą Wiatrów -->
+            <div id="compassLegend" class="mt-3 grid grid-cols-1 gap-2 text-[11px] w-full pt-2 border-t border-slate-800">
+              <!-- Renderowane dynamicznie w JS -->
             </div>
           </div>
         </div>
@@ -557,7 +551,6 @@
       return { alt: Math.round(alt), az: Math.round(az) };
     }
 
-    // MAPOWANIE NA 8 GŁÓWNYCH SEKTORÓW (KOMPAKTOWA I CZYTELNA LISTA)
     function azToMainSector(az) {
       const mainSectors = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
       const index = Math.round(az / 45) % 8;
@@ -566,13 +559,9 @@
 
     function getSectorZoneName(az, alt, useStrictHorizon) {
       if (useStrictHorizon) {
-        // Północ i Północny Wschód (N, NE) > 30°
         if ((az >= 337.5 || az < 67.5) && alt >= 30) return azToMainSector(az);
-        // Wschód (E) > 50°
         if (az >= 67.5 && az < 112.5 && alt >= 50) return azToMainSector(az);
-        // Południowy Wschód i Południe (SE, S) > 30°
         if (az >= 112.5 && az <= 202.5 && alt >= 30) return azToMainSector(az);
-        // Okolice Zenitu
         if (alt >= 65) return 'Zenit';
         return null;
       } else {
@@ -637,6 +626,61 @@
       }
 
       return { windows, maxVisibleAlt, peakInfo };
+    }
+
+    // AKTUALIZACJA RÓŻY WIATRÓW W ZALEŻNOŚCI OD STANU PRZEŁĄCZNIKA
+    function updateCompassVisuals(useStrictHorizon) {
+      const allSectors = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+      const openSectorsInStrict = ['NE', 'SE', 'S']; // Własny horyzont
+
+      const activeColor = "fill-emerald-400 font-extrabold";
+      const inactiveColor = "fill-slate-600 font-bold";
+      const cardinalColor = "fill-indigo-400 font-black";
+
+      allSectors.forEach(sec => {
+        const elem = document.getElementById(`compass-${sec}`);
+        if (!elem) return;
+
+        if (!useStrictHorizon) {
+          // Wszystkie sektory aktywne
+          if (['N', 'E', 'S', 'W'].includes(sec)) {
+            elem.setAttribute('class', cardinalColor);
+          } else {
+            elem.setAttribute('class', activeColor);
+          }
+        } else {
+          // Tylko Twoje otwarte sektory
+          if (openSectorsInStrict.includes(sec)) {
+            elem.setAttribute('class', activeColor);
+          } else if (['N', 'E', 'S'].includes(sec) && openSectorsInStrict.includes(sec)) {
+            elem.setAttribute('class', cardinalColor);
+          } else {
+            elem.setAttribute('class', inactiveColor);
+          }
+        }
+      });
+
+      const legendElem = document.getElementById('compassLegend');
+      if (!useStrictHorizon) {
+        legendElem.innerHTML = `
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span>
+            <span class="text-emerald-300 font-semibold">Wszystkie sektory otwarte (&gt;0°)</span>
+          </div>
+          <p class="text-slate-400 text-[10px]">Filtr horyzontu jest wyłączony. Wyświetlanie obiektów nad pełnym horyzontem.</p>
+        `;
+      } else {
+        legendElem.innerHTML = `
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span>
+            <span class="text-slate-300 font-medium">Sektory otwarte (NE, SE, S)</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded bg-slate-600 shrink-0"></span>
+            <span class="text-slate-400">Sektory zasłonięte</span>
+          </div>
+        `;
+      }
     }
 
     function updateTargetsFilter() {
@@ -785,6 +829,8 @@
       const useStrictHorizon = document.getElementById('horizonToggle').checked;
       const labelElem = document.getElementById('horizonToggleLabel');
       const subtextElem = document.getElementById('horizonSubtext');
+
+      updateCompassVisuals(useStrictHorizon);
 
       if (useStrictHorizon) {
         labelElem.innerText = "Dopasowane do horyzontu";
