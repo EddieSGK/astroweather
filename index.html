@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="pl" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,6 +14,16 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
+    /* CSS Override dla iframe w Google Sites / GitHub Pages */
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      min-height: 100vh !important;
+      background-color: #020617 !important;
+      overflow-x: hidden;
+    }
+
     body.night-vision {
       background-color: #050000 !important;
       color: #ff3333 !important;
@@ -47,11 +57,27 @@
       border-color: #660000 !important;
       color: #ff4d4d !important;
     }
+    body.night-vision .legend-box {
+      background-color: #200000 !important;
+      border-color: #550000 !important;
+      color: #ff6666 !important;
+    }
   </style>
-</head>
-<body class="bg-slate-950 text-slate-100 min-h-screen transition-colors duration-300 font-sans pb-12">
 
-  <div class="max-w-7xl mx-auto px-4 py-6">
+  <script>
+    window.onload = function() {
+      try {
+        if (window.frameElement) {
+          window.frameElement.style.width = '100%';
+          window.frameElement.style.border = 'none';
+        }
+      } catch (e) {}
+    };
+  </script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen transition-colors duration-300 font-sans pb-12 w-full">
+
+  <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <!-- Header -->
     <header class="flex flex-col md:flex-row justify-between items-center pb-6 mb-6 border-b border-slate-800 gap-4">
       <div>
@@ -81,16 +107,62 @@
       <!-- Left Column: Summary & Solar/Lunar Info -->
       <div class="space-y-6">
         
-        <!-- Stargazing Index Card -->
-        <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
-          <h2 class="text-lg font-semibold text-slate-300 mb-2 flex items-center gap-2">
+        <!-- Stargazing Index Card WITH LEGEND -->
+        <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+          <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2">
             <i data-lucide="sparkles" class="text-amber-400"></i> Warunki Obserwacyjne
           </h2>
-          <div class="flex items-end gap-3 my-3">
+
+          <div class="flex items-end gap-3 my-2">
             <span id="stargazingScore" class="text-5xl font-black text-indigo-400">--</span>
             <span class="text-slate-400 mb-1 text-lg">/ 100</span>
           </div>
-          <p id="stargazingSummary" class="text-sm text-slate-300">Pobieranie danych meteorologicznych...</p>
+          <p id="stargazingSummary" class="text-sm font-medium text-slate-200">Pobieranie danych meteorologicznych...</p>
+
+          <!-- Legend Block -->
+          <div class="legend-box bg-slate-950/80 border border-slate-800/80 rounded-xl p-3.5 text-xs space-y-3 pt-3">
+            <p class="font-bold text-slate-300 border-b border-slate-800 pb-1.5 flex items-center gap-1.5">
+              <i data-lucide="info" class="w-3.5 h-3.5 text-indigo-400"></i> Skala oceny warunków:
+            </p>
+
+            <div class="space-y-2">
+              <div class="flex items-start gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 mt-1 shrink-0"></span>
+                <div>
+                  <span class="font-semibold text-emerald-400">85–100 pkt: Idealne</span>
+                  <p class="text-slate-400 text-[11px]">Czyste niebo, wysoka przejrzystość. Idealne na słabe mgławice i galaktyki (M33, M101).</p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-2">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 mt-1 shrink-0"></span>
+                <div>
+                  <span class="font-semibold text-cyan-400">60–84 pkt: Dobre</span>
+                  <p class="text-slate-400 text-[11px]">Warto rozstawiać teleskop. Słabe chmury wysokie lub jasny Księżyc (użyj filtra Dual-Band).</p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-2">
+                <span class="w-2 h-2 rounded-full bg-amber-400 mt-1 shrink-0"></span>
+                <div>
+                  <span class="font-semibold text-amber-400">30–59 pkt: Umiarkowane</span>
+                  <p class="text-slate-400 text-[11px]">Okienka w chmurach/wilgoć. Dobre na szybkie strzały w jasne obiekty (M42, M31, Księżyc).</p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-2">
+                <span class="w-2 h-2 rounded-full bg-rose-500 mt-1 shrink-0"></span>
+                <div>
+                  <span class="font-semibold text-rose-400">0–29 pkt: Słabe</span>
+                  <p class="text-slate-400 text-[11px]">Duże zachmurzenie. Wysokie ryzyko utraty śledzenia gwiazd przez Seestara.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="border-t border-slate-800/80 pt-2 text-[10px] text-slate-400 italic">
+              <strong>Jak wyliczamy?</strong> Start od 100 pkt. Wagi: śr. zachmurzenie w noc (-1 pkt/% chmur), niska widzialność &lt;10km (-20 pkt), pełnia Księżyca &gt;70% (-15 pkt).
+            </div>
+          </div>
         </div>
 
         <!-- Solar / Ephemeris Card -->
@@ -358,12 +430,10 @@
       return sectors[index];
     }
 
-    // Custom vs Open Horizon Check
     function isTargetVisible(alt, az, useStrictHorizon) {
       if (!useStrictHorizon) {
-        return alt > 0; // Show all objects above horizon
+        return alt > 0;
       }
-      // Strict User Horizon Rules
       if (az >= 315 || az < 67.5) return alt >= 30; // N - NE
       if (az >= 67.5 && az < 112.5) return alt >= 50; // E
       if (az >= 112.5 && az <= 202.5) return alt >= 30; // SE - S
@@ -615,7 +685,6 @@
         const cardHtml = `
           <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-indigo-500/50 transition-all space-y-3">
             <div class="flex gap-3 items-center">
-              <!-- Custom Stylized Icon Box -->
               <div class="thumb-box w-12 h-12 rounded-lg border border-slate-700/80 bg-slate-900/90 flex items-center justify-center shrink-0 shadow-inner">
                 ${iconSvg}
               </div>
@@ -631,7 +700,6 @@
               </div>
             </div>
 
-            <!-- Best Observation Window Highlight Block -->
             <div class="best-window-box bg-emerald-950/40 border border-emerald-500/40 p-2.5 rounded-lg text-xs space-y-1">
               <div class="flex items-center justify-between text-emerald-300 font-semibold">
                 <span class="flex items-center gap-1.5">
@@ -646,13 +714,11 @@
               </div>
             </div>
 
-            <!-- Sky Trajectory Block -->
             <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800 text-[11px] font-mono text-cyan-300 flex items-center justify-between gap-1">
               <span class="text-slate-400 text-[10px]">Ruch w noc:</span>
               <span class="font-semibold">${item.trajectoryText}</span>
             </div>
 
-            <!-- Seestar S30 Pro Cheat Sheet Block -->
             <div class="pt-2 border-t border-slate-800/80 space-y-2 text-xs">
               <div class="flex items-center justify-between font-mono text-emerald-400 font-semibold">
                 <span class="flex items-center gap-1.5">
