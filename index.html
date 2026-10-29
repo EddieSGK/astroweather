@@ -218,61 +218,43 @@
           </div>
         </div>
 
-        <!-- Róża Wiatrów / Kierunki Świata -->
+        <!-- Róża Wiatrów (Czytelne 8 Głównych Sektorów) -->
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
           <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-3">
-            <i data-lucide="compass" class="text-emerald-400"></i> Róża Wiatrów (Kierunki)
+            <i data-lucide="compass" class="text-emerald-400"></i> Róża Wiatrów (8 Sektorów)
           </h2>
           
           <div class="flex flex-col items-center justify-center p-2">
-            <!-- Kompas graficzny SVG -->
-            <div class="relative w-64 h-64 flex items-center justify-center">
+            <div class="relative w-56 h-56 flex items-center justify-center">
               <svg viewBox="0 0 200 200" class="w-full h-full text-slate-400">
-                <!-- Zewnętrzny okrąg kompasu -->
-                <circle cx="100" cy="100" r="85" fill="none" stroke="currentColor" stroke-width="1" class="text-slate-800"/>
-                <circle cx="100" cy="100" r="70" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2" class="text-slate-800"/>
+                <circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" stroke-width="1" class="text-slate-800"/>
                 <circle cx="100" cy="100" r="30" fill="none" stroke="currentColor" stroke-width="1" class="text-emerald-500/20"/>
                 
-                <!-- Oznaczenie Zenitu w centrum -->
                 <circle cx="100" cy="100" r="3" fill="currentColor" class="text-emerald-400"/>
                 <text x="100" y="112" text-anchor="middle" font-size="8" font-weight="bold" fill="currentColor" class="text-emerald-400">Zenit (&gt;65°)</text>
 
-                <!-- Linie pomocnicze (Główne i pośrednie) -->
                 <line x1="100" y1="20" x2="100" y2="180" stroke="currentColor" stroke-width="1" class="text-slate-800"/>
                 <line x1="20" y1="100" x2="180" y2="100" stroke="currentColor" stroke-width="1" class="text-slate-800"/>
                 <line x1="43.4" y1="43.4" x2="156.6" y2="156.6" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2" class="text-slate-800/60"/>
                 <line x1="156.6" y1="43.4" x2="43.4" y2="156.6" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2" class="text-slate-800/60"/>
 
-                <!-- Etykiety 16 kierunków świata -->
-                <!-- Kardynalne -->
-                <text x="100" y="14" text-anchor="middle" font-size="11" font-weight="900" class="fill-indigo-400">N</text>
-                <text x="188" y="103" text-anchor="middle" font-size="11" font-weight="900" class="fill-indigo-400">E</text>
-                <text x="100" y="195" text-anchor="middle" font-size="11" font-weight="900" class="fill-indigo-400">S</text>
-                <text x="12" y="103" text-anchor="middle" font-size="11" font-weight="900" class="fill-indigo-400">W</text>
+                <!-- 8 Głównych Sektorów Kompasu -->
+                <text x="100" y="16" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">N</text>
+                <text x="188" y="104" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">E</text>
+                <text x="100" y="194" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">S</text>
+                <text x="12" y="104" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">W</text>
 
-                <!-- Półkardynalne -->
-                <text x="155" y="45" text-anchor="middle" font-size="9" font-weight="bold" class="fill-emerald-400">NE</text>
-                <text x="155" y="160" text-anchor="middle" font-size="9" font-weight="bold" class="fill-emerald-400">SE</text>
-                <text x="45" y="160" text-anchor="middle" font-size="9" font-weight="bold" class="fill-slate-500">SW</text>
-                <text x="45" y="45" text-anchor="middle" font-size="9" font-weight="bold" class="fill-slate-500">NW</text>
-
-                <!-- Trzeciorzędne (Interkompasowe) -->
-                <text x="130" y="27" text-anchor="middle" font-size="7" font-weight="semibold" class="fill-emerald-300">NNE</text>
-                <text x="175" y="70" text-anchor="middle" font-size="7" font-weight="semibold" class="fill-emerald-300">ENE</text>
-                <text x="175" y="133" text-anchor="middle" font-size="7" font-weight="semibold" class="fill-emerald-300">ESE</text>
-                <text x="130" y="178" text-anchor="middle" font-size="7" font-weight="semibold" class="fill-emerald-300">SSE</text>
-                <text x="70" y="178" text-anchor="middle" font-size="7" font-weight="semibold" class="fill-slate-600">SSW</text>
-                <text x="25" y="133" text-anchor="middle" font-size="7" font-weight="semibold" class="fill-slate-600">WSW</text>
-                <text x="25" y="70" text-anchor="middle" font-size="7" font-weight="semibold" class="fill-slate-600">WNW</text>
-                <text x="70" y="27" text-anchor="middle" font-size="7" font-weight="semibold" class="fill-slate-600">NNW</text>
+                <text x="152" y="48" text-anchor="middle" font-size="10" font-weight="bold" class="fill-emerald-400">NE</text>
+                <text x="152" y="158" text-anchor="middle" font-size="10" font-weight="bold" class="fill-emerald-400">SE</text>
+                <text x="48" y="158" text-anchor="middle" font-size="10" font-weight="bold" class="fill-slate-600">SW</text>
+                <text x="48" y="48" text-anchor="middle" font-size="10" font-weight="bold" class="fill-slate-600">NW</text>
               </svg>
             </div>
 
-            <!-- Legendka stref pod różą -->
             <div class="mt-3 grid grid-cols-2 gap-2 text-[11px] w-full pt-2 border-t border-slate-800">
               <div class="flex items-center gap-1.5">
                 <span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span>
-                <span class="text-slate-300 font-medium">Sektory otwarte (NNE-NE, SE-S)</span>
+                <span class="text-slate-300 font-medium">Sektory otwarte (NE, SE, S)</span>
               </div>
               <div class="flex items-center gap-1.5">
                 <span class="w-2.5 h-2.5 rounded bg-slate-600 shrink-0"></span>
@@ -342,7 +324,6 @@
     let cachedAstroEnd = null;
     let cachedMoonFraction = 0;
 
-    // PEŁNA LISTA 110 OBIEKTÓW MESSIERA Z PRECYZYJNYMI DANYMI
     const MESSIER_CATALOG = [
       { id:'M1', name:'M1 (Mgławica Krab)', type:'Supernova Remnant', mag:8.4, ra:5.575, dec:22.01, cat:'nebula', suit:'Dobry' },
       { id:'M2', name:'M2', type:'Globular Cluster', mag:6.5, ra:21.558, dec:-0.82, cat:'globular', suit:'Idealny' },
@@ -576,27 +557,26 @@
       return { alt: Math.round(alt), az: Math.round(az) };
     }
 
-    // PRECYZYJNE ROZBICIE KOMPASOWE ZAMIAST OGÓLNYCH SEKTORÓW
-    function azToCompass(az) {
-      const sectors = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
-      const index = Math.round(az / 22.5) % 16;
-      return sectors[index];
+    // MAPOWANIE NA 8 GŁÓWNYCH SEKTORÓW (KOMPAKTOWA I CZYTELNA LISTA)
+    function azToMainSector(az) {
+      const mainSectors = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+      const index = Math.round(az / 45) % 8;
+      return mainSectors[index];
     }
 
-    // DEDYKOWANA WERYFIKACJA WIDOCZNOŚCI DLA TWOJEJ LOKALIZACJI
     function getSectorZoneName(az, alt, useStrictHorizon) {
       if (useStrictHorizon) {
-        // Północ i Północny Wschód (N - NE) > 30°
-        if ((az >= 315 || az < 67.5) && alt >= 30) return azToCompass(az);
+        // Północ i Północny Wschód (N, NE) > 30°
+        if ((az >= 337.5 || az < 67.5) && alt >= 30) return azToMainSector(az);
         // Wschód (E) > 50°
-        if (az >= 67.5 && az < 112.5 && alt >= 50) return azToCompass(az);
-        // Południowy Wschód i Południe (SE - S) > 30°
-        if (az >= 112.5 && az <= 202.5 && alt >= 30) return azToCompass(az);
+        if (az >= 67.5 && az < 112.5 && alt >= 50) return azToMainSector(az);
+        // Południowy Wschód i Południe (SE, S) > 30°
+        if (az >= 112.5 && az <= 202.5 && alt >= 30) return azToMainSector(az);
         // Okolice Zenitu
         if (alt >= 65) return 'Zenit';
         return null;
       } else {
-        if (alt > 0) return azToCompass(az);
+        if (alt > 0) return azToMainSector(az);
         return null;
       }
     }
@@ -628,7 +608,7 @@
           maxVisibleAlt = pos.alt;
           peakInfo = {
             time: new Date(currentTime.getTime()),
-            azDir: azToCompass(pos.az),
+            azDir: azToMainSector(pos.az),
             alt: pos.alt
           };
         }
@@ -853,15 +833,15 @@
 
           const posStart = getHorizontalCoordinates(item.ra, item.dec, LAT, astroStart);
           const posEnd = getHorizontalCoordinates(item.ra, item.dec, LAT, astroEnd);
-          const dirStart = `${azToCompass(posStart.az)} (${posStart.alt}°)`;
-          const dirMid = `${azToCompass(currentPos.az)} (${currentPos.alt}°)`;
-          const dirEnd = `${azToCompass(posEnd.az)} (${posEnd.alt}°)`;
+          const dirStart = `${azToMainSector(posStart.az)} (${posStart.alt}°)`;
+          const dirMid = `${azToMainSector(currentPos.az)} (${currentPos.alt}°)`;
+          const dirEnd = `${azToMainSector(posEnd.az)} (${posEnd.alt}°)`;
 
           validTargets.push({
             ...item,
             maxAlt: maxVisibleAlt,
             currentAlt: currentPos.alt,
-            currentAzDir: azToCompass(currentPos.az),
+            currentAzDir: azToMainSector(currentPos.az),
             trajectoryText: `${dirStart} ➔ ${dirMid} ➔ ${dirEnd}`,
             windows: windows,
             peakInfo: peakInfo
@@ -903,7 +883,7 @@
           windowsHtml += `
             <div class="flex items-center justify-between text-xs py-0.5 border-b border-emerald-900/30 last:border-0">
               <span class="font-bold text-emerald-300 flex items-center gap-1">
-                <i data-lucide="compass" class="w-3 h-3 text-emerald-400"></i> Kierunek ${w.zone}:
+                <i data-lucide="compass" class="w-3 h-3 text-emerald-400"></i> Sektor ${w.zone}:
               </span>
               <span class="font-mono font-bold text-emerald-200">${formatTime(w.start)} – ${formatTime(w.end)}</span>
             </div>
@@ -943,10 +923,10 @@
               </div>
             </div>
 
-            <!-- Precyzyjne Okna Widoczności -->
+            <!-- Scalone Przedziały Czasowe -->
             <div class="best-window-box bg-emerald-950/40 border border-emerald-500/40 p-2.5 rounded-lg text-xs space-y-1.5">
               <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1 mb-1">
-                <i data-lucide="clock" class="w-3.5 h-3.5"></i> Widoczność w Otwartej Przestrzeni:
+                <i data-lucide="clock" class="w-3.5 h-3.5"></i> Widoczność w Sektorach:
               </div>
               
               <div class="space-y-1">
