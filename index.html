@@ -278,7 +278,7 @@
     let cachedAstroEnd = null;
     let cachedMoonFraction = 0;
 
-    // PEŁNA LISTA 110 OBIEKTÓW MESSIERA (M1-M110) Z OCENĄ DLA SEESTARA S30 PRO
+    // PEŁNA LISTA 110 OBIEKTÓW MESSIERA Z PRECYZYJNYMI DANYMI
     const MESSIER_CATALOG = [
       { id:'M1', name:'M1 (Mgławica Krab)', type:'Supernova Remnant', mag:8.4, ra:5.575, dec:22.01, cat:'nebula', suit:'Dobry' },
       { id:'M2', name:'M2', type:'Globular Cluster', mag:6.5, ra:21.558, dec:-0.82, cat:'globular', suit:'Idealny' },
@@ -319,11 +319,11 @@
       { id:'M37', name:'M37', type:'Open Cluster', mag:6.2, ra:5.873, dec:32.55, cat:'open_cluster', suit:'Idealny' },
       { id:'M38', name:'M38', type:'Open Cluster', mag:7.4, ra:5.478, dec:35.85, cat:'open_cluster', suit:'Idealny' },
       { id:'M39', name:'M39', type:'Open Cluster', mag:4.6, ra:21.537, dec:48.43, cat:'open_cluster', suit:'Dobry' },
-      { id:'M40', name:'M40 (Gwiazda Podwójna Winnecke 4)', type:'Double Star', mag:8.4, ra:12.373, dec:58.08, cat:'open_cluster', suit:'Trudny' },
+      { id:'M40', name:'M40 (Gwiazda Podwójna)', type:'Double Star', mag:8.4, ra:12.373, dec:58.08, cat:'open_cluster', suit:'Trudny' },
       { id:'M41', name:'M41', type:'Open Cluster', mag:4.5, ra:6.783, dec:-20.74, cat:'open_cluster', suit:'Dobry' },
       { id:'M42', name:'M42 (Mgławica Oriona)', type:'Emission Nebula', mag:4.0, ra:5.588, dec:-5.39, cat:'nebula', suit:'Idealny' },
       { id:'M43', name:'M43 (Mgławica De Mairana)', type:'Emission Nebula', mag:9.0, ra:5.592, dec:-5.27, cat:'nebula', suit:'Dobry' },
-      { id:'M44', name:'M44 (Żłóbek / Praesepe)', type:'Open Cluster', mag:3.7, ra:8.667, dec:19.67, cat:'open_cluster', suit:'Umiarkowany' },
+      { id:'M44', name:'M44 (Żłóbek)', type:'Open Cluster', mag:3.7, ra:8.667, dec:19.67, cat:'open_cluster', suit:'Umiarkowany' },
       { id:'M45', name:'M45 (Plejady)', type:'Open Cluster', mag:1.6, ra:3.79, dec:24.11, cat:'reflection_nebula', suit:'Idealny' },
       { id:'M46', name:'M46', type:'Open Cluster', mag:6.0, ra:7.697, dec:-14.82, cat:'open_cluster', suit:'Idealny' },
       { id:'M47', name:'M47', type:'Open Cluster', mag:4.2, ra:7.61, dec:-14.5, cat:'open_cluster', suit:'Idealny' },
@@ -362,10 +362,10 @@
       { id:'M80', name:'M80', type:'Globular Cluster', mag:7.3, ra:16.284, dec:-22.98, cat:'globular', suit:'Dobry' },
       { id:'M81', name:'M81 (Galaktyka Bode\'go)', type:'Galaxy', mag:6.9, ra:9.926, dec:69.07, cat:'galaxy', suit:'Idealny' },
       { id:'M82', name:'M82 (Galaktyka Cygaro)', type:'Galaxy', mag:8.4, ra:9.932, dec:69.68, cat:'galaxy', suit:'Idealny' },
-      { id:'M83', name:'M83 (Południowy Wiatraczek)', type:'Galaxy', mag:7.5, ra:13.617, dec:-29.87, cat:'galaxy', suit:'Umiarkowany' },
-      { id:'M84', name:'M84 (Łańcuch Markariana)', type:'Galaxy', mag:9.1, ra:12.42, dec:12.88, cat:'galaxy', suit:'Dobry' },
+      { id:'M83', name:'M83', type:'Galaxy', mag:7.5, ra:13.617, dec:-29.87, cat:'galaxy', suit:'Umiarkowany' },
+      { id:'M84', name:'M84', type:'Galaxy', mag:9.1, ra:12.42, dec:12.88, cat:'galaxy', suit:'Dobry' },
       { id:'M85', name:'M85', type:'Galaxy', mag:9.1, ra:12.423, dec:18.19, cat:'galaxy', suit:'Dobry' },
-      { id:'M86', name:'M86 (Łańcuch Markariana)', type:'Galaxy', mag:8.9, ra:12.437, dec:12.94, cat:'galaxy', suit:'Dobry' },
+      { id:'M86', name:'M86', type:'Galaxy', mag:8.9, ra:12.437, dec:12.94, cat:'galaxy', suit:'Dobry' },
       { id:'M87', name:'M87 (Panna A)', type:'Galaxy', mag:8.6, ra:12.514, dec:12.39, cat:'galaxy', suit:'Dobry' },
       { id:'M88', name:'M88', type:'Galaxy', mag:9.6, ra:12.533, dec:14.42, cat:'galaxy', suit:'Umiarkowany' },
       { id:'M89', name:'M89', type:'Galaxy', mag:9.8, ra:12.593, dec:12.55, cat:'galaxy', suit:'Umiarkowany' },
@@ -381,7 +381,7 @@
       { id:'M99', name:'M99', type:'Galaxy', mag:9.9, ra:12.314, dec:14.42, cat:'galaxy', suit:'Umiarkowany' },
       { id:'M100', name:'M100', type:'Galaxy', mag:9.3, ra:12.382, dec:15.82, cat:'galaxy', suit:'Dobry' },
       { id:'M101', name:'M101 (Galaktyka Wiatraczek)', type:'Galaxy', mag:7.9, ra:14.053, dec:54.35, cat:'galaxy', suit:'Idealny' },
-      { id:'M102', name:'M102 (Galaktyka Wrzeciono / NGC 5866)', type:'Galaxy', mag:9.9, ra:15.11, dec:55.76, cat:'galaxy', suit:'Dobry' },
+      { id:'M102', name:'M102 (Galaktyka Wrzeciono)', type:'Galaxy', mag:9.9, ra:15.11, dec:55.76, cat:'galaxy', suit:'Dobry' },
       { id:'M103', name:'M103', type:'Open Cluster', mag:7.4, ra:1.553, dec:60.71, cat:'open_cluster', suit:'Idealny' },
       { id:'M104', name:'M104 (Galaktyka Sombrero)', type:'Galaxy', mag:8.0, ra:12.666, dec:-11.62, cat:'galaxy', suit:'Idealny' },
       { id:'M105', name:'M105', type:'Galaxy', mag:9.3, ra:10.797, dec:12.58, cat:'galaxy', suit:'Dobry' },
@@ -512,17 +512,23 @@
       return { alt: Math.round(alt), az: Math.round(az) };
     }
 
+    // PRECYZYJNE ROZBICIE KOMPASOWE ZAMIAST OGÓLNYCH SEKTORÓW
     function azToCompass(az) {
-      const sectors = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-      const index = Math.round(az / 45) % 8;
+      const sectors = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+      const index = Math.round(az / 22.5) % 16;
       return sectors[index];
     }
 
+    // DEDYKOWANA WERYFIKACJA WIDOCZNOŚCI DLA TWOJEJ LOKALIZACJI
     function getSectorZoneName(az, alt, useStrictHorizon) {
       if (useStrictHorizon) {
-        if ((az >= 315 || az < 67.5) && alt >= 30) return 'N-NE';
-        if (az >= 67.5 && az < 112.5 && alt >= 50) return 'E';
-        if (az >= 112.5 && az <= 202.5 && alt >= 30) return 'SE-S';
+        // Północ i Północny Wschód (N - NE) > 30°
+        if ((az >= 315 || az < 67.5) && alt >= 30) return azToCompass(az);
+        // Wschód (E) > 50°
+        if (az >= 67.5 && az < 112.5 && alt >= 50) return azToCompass(az);
+        // Południowy Wschód i Południe (SE - S) > 30°
+        if (az >= 112.5 && az <= 202.5 && alt >= 30) return azToCompass(az);
+        // Okolice Zenitu
         if (alt >= 65) return 'Zenit';
         return null;
       } else {
@@ -833,7 +839,7 @@
           windowsHtml += `
             <div class="flex items-center justify-between text-xs py-0.5 border-b border-emerald-900/30 last:border-0">
               <span class="font-bold text-emerald-300 flex items-center gap-1">
-                <i data-lucide="compass" class="w-3 h-3 text-emerald-400"></i> Sektor ${w.zone}:
+                <i data-lucide="compass" class="w-3 h-3 text-emerald-400"></i> Kierunek ${w.zone}:
               </span>
               <span class="font-mono font-bold text-emerald-200">${formatTime(w.start)} – ${formatTime(w.end)}</span>
             </div>
@@ -873,10 +879,10 @@
               </div>
             </div>
 
-            <!-- Dynamic Precision Window Highlight Block -->
+            <!-- Precyzyjne Okna Widoczności -->
             <div class="best-window-box bg-emerald-950/40 border border-emerald-500/40 p-2.5 rounded-lg text-xs space-y-1.5">
               <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1 mb-1">
-                <i data-lucide="clock" class="w-3.5 h-3.5"></i> Widoczność w Twoich sektorach:
+                <i data-lucide="clock" class="w-3.5 h-3.5"></i> Widoczność w Otwartej Przestrzeni:
               </div>
               
               <div class="space-y-1">
@@ -889,13 +895,13 @@
               </div>
             </div>
 
-            <!-- Sky Trajectory Block -->
+            <!-- Trajektoria Ruchu -->
             <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800 text-[11px] font-mono text-cyan-300 flex items-center justify-between gap-1">
               <span class="text-slate-400 text-[10px]">Ruch w noc:</span>
               <span class="font-semibold">${item.trajectoryText}</span>
             </div>
 
-            <!-- Seestar S30 Pro Cheat Sheet Block -->
+            <!-- Seestar S30 Pro Settings -->
             <div class="pt-2 border-t border-slate-800/80 space-y-2 text-xs">
               <div class="flex items-center justify-between font-mono text-emerald-400 font-semibold">
                 <span class="flex items-center gap-1.5">
