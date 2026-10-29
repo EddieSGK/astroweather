@@ -78,7 +78,14 @@
         <h1 class="text-3xl font-bold flex items-center gap-2">
           <i data-lucide="telescope" class="text-indigo-400"></i> AstroWeather Dashboard
         </h1>
-        <p class="text-slate-400 text-sm mt-1">Lokalizacja: <span id="locName" class="font-semibold text-slate-200">Bydgoszcz</span> (53.12° N, 18.00° E)</p>
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-slate-400 text-sm mt-1">
+          <p>Lokalizacja: <span id="locName" class="font-semibold text-slate-200">Bydgoszcz</span> (53.12° N, 18.00° E)</p>
+          <span class="text-slate-600 hidden sm:inline">•</span>
+          <p class="flex items-center gap-1.5 font-medium text-indigo-300">
+            <i data-lucide="calendar" class="w-4 h-4 text-indigo-400"></i>
+            <span id="currentDate">Ładowanie daty...</span>
+          </p>
+        </div>
       </div>
 
       <div class="flex items-center gap-3">
@@ -89,7 +96,7 @@
         </button>
 
         <!-- Refresh Button -->
-        <button onclick="initDashboard()" class="p-2 bg-slate-900 border border-slate-700 hover:border-indigo-500 rounded-lg transition-all">
+        <button onclick="initDashboard()" class="p-2 bg-slate-900 border border-slate-700 hover:border-indigo-500 rounded-lg transition-all" title="Odśwież dane">
           <i data-lucide="refresh-cw" class="w-5 h-5 text-indigo-400"></i>
         </button>
       </div>
@@ -305,6 +312,13 @@
       { id:'M104', name:'M104 (Galaktyka Sombrero)', type:'Galaxy', mag:8.0, ra:12.666, dec:-11.62, cat:'galaxy' }
     ];
 
+    function updateDateDisplay(now) {
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      let formattedDate = now.toLocaleDateString('pl-PL', options);
+      formattedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+      document.getElementById('currentDate').innerText = formattedDate;
+    }
+
     function getPlanetCoordinates(planetName, date) {
       const d = (date - new Date(2000, 0, 1, 12, 0, 0)) / 86400000;
       let N, i, w, a, e, M;
@@ -438,11 +452,10 @@
     }
 
     function calculateDirectionWindows(ra, dec, astroStart, astroEnd, useStrictHorizon) {
-      const stepMs = 15 * 60 * 1000; // Próbkowanie co 15 minut
+      const stepMs = 15 * 60 * 1000;
       let startTime = new Date(astroStart.getTime());
       let endTime = new Date(astroEnd.getTime());
 
-      // Zabezpieczenie na wypadek nieprawidłowego okresu nocy
       if (isNaN(startTime.getTime()) || isNaN(endTime.getTime()) || startTime >= endTime) {
         const now = new Date();
         startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0);
@@ -506,6 +519,8 @@
       lucide.createIcons();
       const now = new Date();
 
+      updateDateDisplay(now);
+
       const sunTimes = SunCalc.getTimes(now, LAT, LON);
       const moonTimes = SunCalc.getMoonTimes(now, LAT, LON);
       const moonIllum = SunCalc.getMoonIllumination(now);
@@ -523,7 +538,6 @@
         isWhiteNight = true;
       }
 
-      // Bezpieczny backup, jeśli SunCalc da puste wartości
       if (!astroStart || isNaN(astroStart.valueOf())) {
         astroStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0);
       }
