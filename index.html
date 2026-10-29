@@ -14,7 +14,6 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
-    /* CSS Override dla iframe w Google Sites / GitHub Pages */
     html, body {
       margin: 0 !important;
       padding: 0 !important;
@@ -35,11 +34,6 @@
     }
     body.night-vision .text-muted {
       color: #b33d3d !important;
-    }
-    body.night-vision .accent-badge {
-      background-color: #330000 !important;
-      color: #ff6666 !important;
-      border: 1px solid #770000 !important;
     }
     body.night-vision button {
       border-color: #770000 !important;
@@ -430,14 +424,76 @@
       return sectors[index];
     }
 
-    function isTargetVisible(alt, az, useStrictHorizon) {
-      if (!useStrictHorizon) {
-        return alt > 0;
+    function getSectorZoneName(az, alt, useStrictHorizon) {
+      if (useStrictHorizon) {
+        if ((az >= 315 || az < 67.5) && alt >= 30) return 'N-NE';
+        if (az >= 67.5 && az < 112.5 && alt >= 50) return 'E';
+        if (az >= 112.5 && az <= 202.5 && alt >= 30) return 'SE-S';
+        if (alt >= 65) return 'Zenit';
+        return null;
+      } else {
+        if (alt > 0) return azToCompass(az);
+        return null;
       }
-      if (az >= 315 || az < 67.5) return alt >= 30; // N - NE
-      if (az >= 67.5 && az < 112.5) return alt >= 50; // E
-      if (az >= 112.5 && az <= 202.5) return alt >= 30; // SE - S
-      return alt >= 65; // Zenit
+    }
+
+    function calculateDirectionWindows(ra, dec, astroStart, astroEnd, useStrictHorizon) {
+      const stepMs = 15 * 60 * 1000; // Próbkowanie co 15 minut
+      let startTime = new Date(astroStart.getTime());
+      let endTime = new Date(astroEnd.getTime());
+
+      // Zabezpieczenie na wypadek nieprawidłowego okresu nocy
+      if (isNaN(startTime.getTime()) || isNaN(endTime.getTime()) || startTime >= endTime) {
+        const now = new Date();
+        startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0);
+        endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 5, 0, 0);
+      }
+
+      let currentTime = new Date(startTime.getTime());
+      let currentZone = null;
+      let zoneStartTime = null;
+      let windows = [];
+
+      let maxVisibleAlt = -999;
+      let peakInfo = null;
+
+      while (currentTime <= endTime) {
+        const pos = getHorizontalCoordinates(ra, dec, LAT, currentTime);
+        const zone = getSectorZoneName(pos.az, pos.alt, useStrictHorizon);
+
+        if (zone !== null && pos.alt > maxVisibleAlt) {
+          maxVisibleAlt = pos.alt;
+          peakInfo = {
+            time: new Date(currentTime.getTime()),
+            azDir: azToCompass(pos.az),
+            alt: pos.alt
+          };
+        }
+
+        if (zone !== currentZone) {
+          if (currentZone !== null) {
+            windows.push({
+              zone: currentZone,
+              start: new Date(zoneStartTime.getTime()),
+              end: new Date(currentTime.getTime())
+            });
+          }
+          currentZone = zone;
+          zoneStartTime = new Date(currentTime.getTime());
+        }
+
+        currentTime = new Date(currentTime.getTime() + stepMs);
+      }
+
+      if (currentZone !== null) {
+        windows.push({
+          zone: currentZone,
+          start: new Date(zoneStartTime.getTime()),
+          end: new Date(endTime.getTime())
+        });
+      }
+
+      return { windows, maxVisibleAlt, peakInfo };
     }
 
     function updateTargetsFilter() {
@@ -465,6 +521,14 @@
         astroStart = sunTimes.nauticalDusk || sunTimes.dusk;
         astroEnd = sunTimes.nauticalDawn || sunTimes.dawn;
         isWhiteNight = true;
+      }
+
+      // Bezpieczny backup, jeśli SunCalc da puste wartości
+      if (!astroStart || isNaN(astroStart.valueOf())) {
+        astroStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0);
+      }
+      if (!astroEnd || isNaN(astroEnd.valueOf())) {
+        astroEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 5, 0, 0);
       }
 
       cachedAstroStart = astroStart;
@@ -617,38 +681,25 @@
       const validTargets = [];
 
       fullCatalog.forEach(item => {
-        const posStart = getHorizontalCoordinates(item.ra, item.dec, LAT, astroStart);
-        const posMid = getHorizontalCoordinates(item.ra, item.dec, LAT, midNight);
-        const posEnd = getHorizontalCoordinates(item.ra, item.dec, LAT, astroEnd);
+        const { windows, maxVisibleAlt, peakInfo } = calculateDirectionWindows(item.ra, item.dec, astroStart, astroEnd, useStrictHorizon);
 
-        const isVisStart = isTargetVisible(posStart.alt, posStart.az, useStrictHorizon);
-        const isVisMid = isTargetVisible(posMid.alt, posMid.az, useStrictHorizon);
-        const isVisEnd = isTargetVisible(posEnd.alt, posEnd.az, useStrictHorizon);
+        if (windows.length > 0 && maxVisibleAlt > -90) {
+          const currentPos = getHorizontalCoordinates(item.ra, item.dec, LAT, midNight);
 
-        if (isVisStart || isVisMid || isVisEnd) {
-          const maxAlt = Math.max(posStart.alt, posMid.alt, posEnd.alt);
-
-          let bestTimeText = `${formatTime(astroStart)} – ${formatTime(astroEnd)}`;
-          let peakText = `${formatTime(midNight)} (${azToCompass(posMid.az)}, ${posMid.alt}°)`;
-
-          if (posStart.alt >= posMid.alt && posStart.alt >= posEnd.alt) {
-            peakText = `${formatTime(astroStart)} (${azToCompass(posStart.az)}, ${posStart.alt}°)`;
-          } else if (posEnd.alt >= posMid.alt && posEnd.alt >= posStart.alt) {
-            peakText = `${formatTime(astroEnd)} (${azToCompass(posEnd.az)}, ${posEnd.alt}°)`;
-          }
-
+          const posStart = getHorizontalCoordinates(item.ra, item.dec, LAT, astroStart);
+          const posEnd = getHorizontalCoordinates(item.ra, item.dec, LAT, astroEnd);
           const dirStart = `${azToCompass(posStart.az)} (${posStart.alt}°)`;
-          const dirMid = `${azToCompass(posMid.az)} (${posMid.alt}°)`;
+          const dirMid = `${azToCompass(currentPos.az)} (${currentPos.alt}°)`;
           const dirEnd = `${azToCompass(posEnd.az)} (${posEnd.alt}°)`;
 
           validTargets.push({
             ...item,
-            maxAlt: maxAlt,
-            currentAlt: posMid.alt,
-            currentAzDir: azToCompass(posMid.az),
+            maxAlt: maxVisibleAlt,
+            currentAlt: currentPos.alt,
+            currentAzDir: azToCompass(currentPos.az),
             trajectoryText: `${dirStart} ➔ ${dirMid} ➔ ${dirEnd}`,
-            bestWindowText: bestTimeText,
-            peakTimeText: peakText
+            windows: windows,
+            peakInfo: peakInfo
           });
         }
       });
@@ -682,6 +733,23 @@
 
         const iconSvg = getCategoryIcon(item.cat);
 
+        let windowsHtml = '';
+        item.windows.forEach(w => {
+          windowsHtml += `
+            <div class="flex items-center justify-between text-xs py-0.5 border-b border-emerald-900/30 last:border-0">
+              <span class="font-bold text-emerald-300 flex items-center gap-1">
+                <i data-lucide="compass" class="w-3 h-3 text-emerald-400"></i> Sektor ${w.zone}:
+              </span>
+              <span class="font-mono font-bold text-emerald-200">${formatTime(w.start)} – ${formatTime(w.end)}</span>
+            </div>
+          `;
+        });
+
+        let peakText = '--:--';
+        if (item.peakInfo) {
+          peakText = `${formatTime(item.peakInfo.time)} (${item.peakInfo.azDir}, ${item.peakInfo.alt}°)`;
+        }
+
         const cardHtml = `
           <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-indigo-500/50 transition-all space-y-3">
             <div class="flex gap-3 items-center">
@@ -700,25 +768,29 @@
               </div>
             </div>
 
-            <div class="best-window-box bg-emerald-950/40 border border-emerald-500/40 p-2.5 rounded-lg text-xs space-y-1">
-              <div class="flex items-center justify-between text-emerald-300 font-semibold">
-                <span class="flex items-center gap-1.5">
-                  <i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400"></i>
-                  <u>Najlepszy czas:</u>
-                </span>
-                <span class="font-bold text-emerald-200">${item.bestWindowText}</span>
+            <!-- Dynamic Precision Window Highlight Block -->
+            <div class="best-window-box bg-emerald-950/40 border border-emerald-500/40 p-2.5 rounded-lg text-xs space-y-1.5">
+              <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1 mb-1">
+                <i data-lucide="clock" class="w-3.5 h-3.5"></i> Widoczność w Twoich sektorach:
               </div>
-              <div class="text-[11px] text-slate-300 flex justify-between pt-0.5">
-                <span class="text-slate-400">Szczyt:</span>
-                <span class="font-mono text-emerald-300 font-bold">${item.peakTimeText}</span>
+              
+              <div class="space-y-1">
+                ${windowsHtml}
+              </div>
+
+              <div class="text-[11px] text-slate-300 flex justify-between pt-1 border-t border-emerald-900/40 mt-1">
+                <span class="text-slate-400">Najwyższy punkt:</span>
+                <span class="font-mono text-emerald-300 font-bold">${peakText}</span>
               </div>
             </div>
 
+            <!-- Sky Trajectory Block -->
             <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800 text-[11px] font-mono text-cyan-300 flex items-center justify-between gap-1">
               <span class="text-slate-400 text-[10px]">Ruch w noc:</span>
               <span class="font-semibold">${item.trajectoryText}</span>
             </div>
 
+            <!-- Seestar S30 Pro Cheat Sheet Block -->
             <div class="pt-2 border-t border-slate-800/80 space-y-2 text-xs">
               <div class="flex items-center justify-between font-mono text-emerald-400 font-semibold">
                 <span class="flex items-center gap-1.5">
