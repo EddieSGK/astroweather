@@ -622,7 +622,8 @@
         const pos = getHorizontalCoordinates(ra, dec, LAT, currentTime);
         const zone = getSectorZoneName(pos.az, pos.alt, mode);
 
-        if (zone !== null && pos.alt > maxVisibleAlt) {
+        // POPRAWKA: Rejestrujemy szczytową wysokość ze całej nocy astronomicznej, niezależnie od horyzontu
+        if (pos.alt > maxVisibleAlt) {
           maxVisibleAlt = pos.alt;
           peakInfo = {
             time: new Date(currentTime.getTime()),
