@@ -92,7 +92,7 @@
         <!-- Night Vision Toggle -->
         <button id="nightToggle" onclick="toggleNightVision()" class="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-700 hover:border-red-500 rounded-lg text-sm font-medium transition-all">
           <i data-lucide="eye" class="text-red-500"></i>
-          <span>Tryb Czerwony (Night Vision)</span>
+          <span>Tryb Czerwony</span>
         </button>
 
         <!-- Refresh Button -->
@@ -108,7 +108,7 @@
       <!-- Left Column: Summary & Solar/Lunar Info -->
       <div class="space-y-6">
         
-        <!-- Stargazing Index Card WITH PRECIPITATION ALERT -->
+        <!-- Stargazing Index Card -->
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
           <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2">
             <i data-lucide="sparkles" class="text-amber-400"></i> Warunki Obserwacyjne
@@ -161,7 +161,7 @@
                 <span class="w-2 h-2 rounded-full bg-rose-500 mt-1 shrink-0"></span>
                 <div>
                   <span class="font-semibold text-rose-400">0–29 pkt: Słabe / Opad</span>
-                  <p class="text-slate-400 text-[11px]">Duże zachmurzenie LUB wykryto opady deszczu. Nie wystawiaj teleskopu!</p>
+                  <p class="text-slate-400 text-[11px]">Duże zachmurzenie LUB opady deszczu. Nie wystawiaj teleskopu!</p>
                 </div>
               </div>
             </div>
@@ -265,7 +265,7 @@
       <!-- Right Column: Chart & Suggested Targets -->
       <div class="lg:col-span-2 space-y-6">
 
-        <!-- Chart Card WITH RAIN/PRECIPITATION DATA -->
+        <!-- Chart Card -->
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
             <div>
@@ -284,21 +284,36 @@
 
         <!-- Seestar Telescope Cheat Sheet / Targets -->
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-4">
+          <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-4">
             <div>
               <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2">
                 <i data-lucide="target" class="text-emerald-400"></i> Widoczne Dziś Obiekty (Messier M1-M110 & Planety)
               </h2>
-              <p id="horizonSubtext" class="text-xs text-slate-400 mt-0.5">Dopasowane do Twoich horyzontów (N-NE & SE-S > 30°, E > 50°)</p>
+              <p id="horizonSubtext" class="text-xs text-slate-400 mt-0.5">Dopasowane do wybranego punktu obserwacji</p>
             </div>
 
-            <!-- Horizon Filter Toggle Control -->
-            <div class="flex items-center gap-2 bg-slate-950 p-1.5 rounded-xl border border-slate-800 shrink-0">
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="horizonToggle" class="sr-only peer" checked onchange="updateTargetsFilter()">
-                <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+            <!-- Segmented Radio Buttons Toggle -->
+            <div class="inline-flex p-1 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold shrink-0">
+              <label class="cursor-pointer">
+                <input type="radio" name="horizonMode" value="my_balcony" class="sr-only peer" checked onchange="updateTargetsFilter()">
+                <span class="px-3 py-1.5 rounded-lg text-slate-400 peer-checked:bg-emerald-600 peer-checked:text-white transition-all flex items-center gap-1">
+                  <i data-lucide="home" class="w-3.5 h-3.5"></i> Mój balkon
+                </span>
               </label>
-              <span id="horizonToggleLabel" class="text-xs font-semibold text-emerald-400 pr-1">Dopasowane do horyzontu</span>
+
+              <label class="cursor-pointer">
+                <input type="radio" name="horizonMode" value="grzes_garden" class="sr-only peer" onchange="updateTargetsFilter()">
+                <span class="px-3 py-1.5 rounded-lg text-slate-400 peer-checked:bg-emerald-600 peer-checked:text-white transition-all flex items-center gap-1">
+                  <i data-lucide="trees" class="w-3.5 h-3.5"></i> Ogródek Grzesia
+                </span>
+              </label>
+
+              <label class="cursor-pointer">
+                <input type="radio" name="horizonMode" value="all_objects" class="sr-only peer" onchange="updateTargetsFilter()">
+                <span class="px-3 py-1.5 rounded-lg text-slate-400 peer-checked:bg-indigo-600 peer-checked:text-white transition-all flex items-center gap-1">
+                  <i data-lucide="globe" class="w-3.5 h-3.5"></i> Wszystkie obiekty
+                </span>
+              </label>
             </div>
           </div>
 
@@ -559,20 +574,30 @@
       return mainSectors[index];
     }
 
-    function getSectorZoneName(az, alt, useStrictHorizon) {
-      if (useStrictHorizon) {
-        if ((az >= 337.5 || az < 67.5) && alt >= 30) return azToMainSector(az);
-        if (az >= 67.5 && az < 112.5 && alt >= 50) return azToMainSector(az); // Wschód > 50°
-        if (az >= 112.5 && az <= 202.5 && alt >= 30) return azToMainSector(az);
-        if (alt >= 65) return 'Zenit';
+    function getSectorZoneName(az, alt, mode) {
+      if (mode === 'all_objects') {
+        if (alt > 0) return azToMainSector(az);
+        return null;
+      }
+
+      if (mode === 'grzes_garden') {
+        // OGRÓDEK GRZESIA (SKŁODOWSKIEJ 92)
+        if ((az >= 337.5 || az < 67.5) && alt >= 24) return azToMainSector(az); // N, NE >24°
+        if (az >= 67.5 && az < 112.5 && alt >= 27) return azToMainSector(az);  // E >27°
+        if (az >= 112.5 && az <= 165 && alt >= 18) return azToMainSector(az);  // SE >18°
+        if (alt >= 75) return 'Zenit';
         return null;
       } else {
-        if (alt > 0) return azToMainSector(az);
+        // MÓJ BALKON
+        if ((az >= 337.5 || az < 67.5) && alt >= 30) return azToMainSector(az);
+        if (az >= 67.5 && az < 112.5 && alt >= 50) return azToMainSector(az);
+        if (az >= 112.5 && az <= 202.5 && alt >= 30) return azToMainSector(az);
+        if (alt >= 65) return 'Zenit';
         return null;
       }
     }
 
-    function calculateDirectionWindows(ra, dec, astroStart, astroEnd, useStrictHorizon) {
+    function calculateDirectionWindows(ra, dec, astroStart, astroEnd, mode) {
       const stepMs = 15 * 60 * 1000;
       let startTime = new Date(astroStart.getTime());
       let endTime = new Date(astroEnd.getTime());
@@ -593,7 +618,7 @@
 
       while (currentTime <= endTime) {
         const pos = getHorizontalCoordinates(ra, dec, LAT, currentTime);
-        const zone = getSectorZoneName(pos.az, pos.alt, useStrictHorizon);
+        const zone = getSectorZoneName(pos.az, pos.alt, mode);
 
         if (zone !== null && pos.alt > maxVisibleAlt) {
           maxVisibleAlt = pos.alt;
@@ -630,9 +655,13 @@
       return { windows, maxVisibleAlt, peakInfo };
     }
 
-    function updateCompassVisuals(useStrictHorizon) {
+    function updateCompassVisuals(mode) {
       const allSectors = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-      const openSectorsInStrict = ['NE', 'E', 'SE', 'S'];
+      let openSectors = ['NE', 'E', 'SE', 'S']; // Mój balkon
+
+      if (mode === 'grzes_garden') {
+        openSectors = ['N', 'NE', 'E', 'SE']; // Ogródek Grzesia
+      }
 
       const activeColor = "fill-emerald-400 font-extrabold";
       const inactiveColor = "fill-slate-600 font-bold";
@@ -642,14 +671,14 @@
         const elem = document.getElementById(`compass-${sec}`);
         if (!elem) return;
 
-        if (!useStrictHorizon) {
+        if (mode === 'all_objects') {
           if (['N', 'E', 'S', 'W'].includes(sec)) {
             elem.setAttribute('class', cardinalColor);
           } else {
             elem.setAttribute('class', activeColor);
           }
         } else {
-          if (openSectorsInStrict.includes(sec)) {
+          if (openSectors.includes(sec)) {
             elem.setAttribute('class', activeColor);
           } else {
             elem.setAttribute('class', inactiveColor);
@@ -658,7 +687,7 @@
       });
 
       const legendElem = document.getElementById('compassLegend');
-      if (!useStrictHorizon) {
+      if (mode === 'all_objects') {
         legendElem.innerHTML = `
           <div class="flex items-center gap-1.5">
             <span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span>
@@ -666,11 +695,22 @@
           </div>
           <p class="text-slate-400 text-[10px]">Filtr horyzontu jest wyłączony. Wyświetlanie obiektów nad pełnym horyzontem.</p>
         `;
+      } else if (mode === 'grzes_garden') {
+        legendElem.innerHTML = `
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span>
+            <span class="text-slate-300 font-medium">Ogródek Grzesia (N &gt;24°, NE, E &gt;27°, SE &gt;18°)</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded bg-slate-600 shrink-0"></span>
+            <span class="text-slate-400">Ściana bloku (Zachód zasłonięty)</span>
+          </div>
+        `;
       } else {
         legendElem.innerHTML = `
           <div class="flex items-center gap-1.5">
             <span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span>
-            <span class="text-slate-300 font-medium">Sektory otwarte (NE, E &gt;50°, SE, S)</span>
+            <span class="text-slate-300 font-medium">Mój balkon (NE, E &gt;50°, SE, S)</span>
           </div>
           <div class="flex items-center gap-1.5">
             <span class="w-2.5 h-2.5 rounded bg-slate-600 shrink-0"></span>
@@ -739,7 +779,6 @@
       document.getElementById('moonPhase').innerText = phaseText;
 
       try {
-        // POBIERAMY DODATKOWO OPADY (precipitation_probability, precipitation)
         const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=cloud_cover,precipitation_probability,precipitation,visibility,dew_point_2m,temperature_2m,relative_humidity_2m&timezone=auto`);
         const weatherData = await response.json();
 
@@ -779,10 +818,9 @@
       if (avgVis < 10) score -= 20;
       if (moonFraction > 0.7) score -= 15;
 
-      // KRYTYCZNA DYSKWALIFIKACJA ZA OPADY DESZCZU
       const rainAlertBanner = document.getElementById('rainAlertBanner');
       if (maxRainProb > 20 || totalRainMm > 0) {
-        score = 0; // Zerujemy wynik
+        score = 0;
         rainAlertBanner.classList.remove('hidden');
         document.getElementById('rainAlertText').innerText = `Ostrzeżenie! Ryzyko opadu do ${maxRainProb}% (suma: ${totalRainMm.toFixed(1)} mm). Nie wystawiaj teleskopu!`;
       } else {
@@ -864,20 +902,18 @@
       const container = document.getElementById('targetsList');
       container.innerHTML = '';
 
-      const useStrictHorizon = document.getElementById('horizonToggle').checked;
-      const labelElem = document.getElementById('horizonToggleLabel');
+      const modeRadio = document.querySelector('input[name="horizonMode"]:checked');
+      const mode = modeRadio ? modeRadio.value : 'my_balcony';
       const subtextElem = document.getElementById('horizonSubtext');
 
-      updateCompassVisuals(useStrictHorizon);
+      updateCompassVisuals(mode);
 
-      if (useStrictHorizon) {
-        labelElem.innerText = "Dopasowane do horyzontu";
-        labelElem.className = "text-xs font-semibold text-emerald-400 pr-1";
-        subtextElem.innerText = "Dopasowane do Twoich horyzontów (N-NE & SE-S > 30°, E > 50°)";
-      } else {
-        labelElem.innerText = "Wszystkie obiekty (>0°)";
-        labelElem.className = "text-xs font-semibold text-indigo-400 pr-1";
+      if (mode === 'grzes_garden') {
+        subtextElem.innerText = "Ogródek Grzesia: N >24°, NE, E >27°, SE >18° (Zachód całkowicie zasłonięty)";
+      } else if (mode === 'all_objects') {
         subtextElem.innerText = "Wszystkie obiekty przebywające powyżej horyzontu (bez filtrów przestrzennych)";
+      } else {
+        subtextElem.innerText = "Mój balkon: N-NE & SE-S >30°, E >50°";
       }
 
       const nightDurationHours = (astroEnd - astroStart) / 3600000;
@@ -910,7 +946,7 @@
       const validTargets = [];
 
       fullCatalog.forEach(item => {
-        const { windows, maxVisibleAlt, peakInfo } = calculateDirectionWindows(item.ra, item.dec, astroStart, astroEnd, useStrictHorizon);
+        const { windows, maxVisibleAlt, peakInfo } = calculateDirectionWindows(item.ra, item.dec, astroStart, astroEnd, mode);
 
         if (windows.length > 0 && maxVisibleAlt > -90) {
           const currentPos = getHorizontalCoordinates(item.ra, item.dec, LAT, midNight);
