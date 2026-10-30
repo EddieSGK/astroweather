@@ -126,6 +126,12 @@
             <span id="rainAlertText">Uwaga! Prognozowane opady deszczu w nocy.</span>
           </div>
 
+          <!-- Dew Point / Heater Alert Banner -->
+          <div id="dewAlertBanner" class="hidden bg-amber-950/80 border border-amber-600/80 rounded-xl p-3 text-xs text-amber-200 flex items-center gap-2 font-semibold">
+            <i data-lucide="thermometer-snowflake" class="w-5 h-5 text-amber-400 shrink-0"></i>
+            <span id="dewAlertText">Wykryto wysokie ryzyko rosy! Włącz grzałkę obiektywu w Seestarze (Anti-Dew).</span>
+          </div>
+
           <!-- Legend Block -->
           <div class="legend-box bg-slate-950/80 border border-slate-800/80 rounded-xl p-3.5 text-xs space-y-3 pt-3">
             <p class="font-bold text-slate-300 border-b border-slate-800 pb-1.5 flex items-center gap-1.5">
@@ -168,6 +174,32 @@
 
             <div class="border-t border-slate-800/80 pt-2 text-[10px] text-slate-400 italic">
               <strong>Jak wyliczamy?</strong> Start od 100 pkt. Wagi: śr. zachmurzenie (-1 pkt/% chmur), <strong>opad &gt;0mm (-100 pkt - automatyczna dyskwalifikacja!)</strong>, niska widzialność &lt;10km (-20 pkt).
+            </div>
+          </div>
+        </div>
+
+        <!-- Dew Point & Dew Heater Status Card -->
+        <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+          <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-3">
+            <i data-lucide="droplets" class="text-cyan-400"></i> Temperatura & Wilgotność (Roszenie)
+          </h2>
+
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p class="text-muted text-xs text-slate-400">Średnia Temp. (Noc)</p>
+              <p id="avgTemp" class="font-bold text-slate-200">-- °C</p>
+            </div>
+            <div>
+              <p class="text-muted text-xs text-slate-400">Średni Punkt Rosy</p>
+              <p id="avgDewPoint" class="font-bold text-cyan-300">-- °C</p>
+            </div>
+            <div>
+              <p class="text-muted text-xs text-slate-400">Wilgotność Względna</p>
+              <p id="avgHumidity" class="font-bold text-slate-200">-- %</p>
+            </div>
+            <div>
+              <p class="text-muted text-xs text-slate-400">Zalecenie Grzałki</p>
+              <p id="heaterStatus" class="font-bold text-emerald-400">Wyłączona</p>
             </div>
           </div>
         </div>
@@ -270,14 +302,14 @@
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
             <div>
               <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2">
-                <i data-lucide="cloud-rain" class="text-cyan-400"></i> Zachmurzenie i Opady w Noc Astronomiczną
+                <i data-lucide="cloud-rain" class="text-cyan-400"></i> Zachmurzenie, Temp. i Punkt Rosy w Noc Astronomiczną
               </h2>
-              <p id="chartSubtext" class="text-xs text-slate-400 mt-1">Linia niebieska: Zachmurzenie (%) | Słupki fioletowe: Prawdopodobieństwo opadu (%)</p>
+              <p id="chartSubtext" class="text-xs text-slate-400 mt-1">Niebieska linia: Zachmurzenie (%) | Fioletowe słupki: Prawdop. opadu (%) | Czerwona/Morska linia: Temp. vs Punkt Rosy (°C)</p>
             </div>
             <div id="weatherBadges" class="flex gap-2"></div>
           </div>
 
-          <div class="chart-container relative h-60 w-full">
+          <div class="chart-container relative h-64 w-full">
             <canvas id="cloudChart"></canvas>
           </div>
         </div>
@@ -317,6 +349,33 @@
             </div>
           </div>
 
+          <!-- NOWOŚĆ: Filtry Kategorii Obiektów -->
+          <div class="flex flex-wrap items-center gap-2 mb-5 pb-3 border-b border-slate-800/60">
+            <span class="text-xs font-semibold text-slate-400 mr-1 flex items-center gap-1">
+              <i data-lucide="filter" class="w-3.5 h-3.5 text-indigo-400"></i> Typ:
+            </span>
+
+            <button onclick="setCategoryFilter('all')" id="catBtn-all" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-indigo-600 text-white border-indigo-500 shadow">
+              Wszystkie (<span id="cnt-all">0</span>)
+            </button>
+
+            <button onclick="setCategoryFilter('galaxy')" id="catBtn-galaxy" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">
+              Galaktyki (<span id="cnt-galaxy">0</span>)
+            </button>
+
+            <button onclick="setCategoryFilter('nebula')" id="catBtn-nebula" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">
+              Mgławice (<span id="cnt-nebula">0</span>)
+            </button>
+
+            <button onclick="setCategoryFilter('cluster')" id="catBtn-cluster" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">
+              Gromady (<span id="cnt-cluster">0</span>)
+            </button>
+
+            <button onclick="setCategoryFilter('planet')" id="catBtn-planet" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">
+              Planety (<span id="cnt-planet">0</span>)
+            </button>
+          </div>
+
           <div id="targetsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <p class="text-sm text-slate-400 col-span-2">Ładowanie obiektów...</p>
           </div>
@@ -334,6 +393,7 @@
     let cachedAstroStart = null;
     let cachedAstroEnd = null;
     let cachedMoonFraction = 0;
+    let activeCategoryFilter = 'all';
 
     const MESSIER_CATALOG = [
       { id:'M1', name:'M1 (Mgławica Krab)', type:'Supernova Remnant', mag:8.4, ra:5.575, dec:22.01, cat:'nebula', suit:'Dobry' },
@@ -581,14 +641,13 @@
       }
 
       if (mode === 'grzes_garden') {
-        // SKORYGOWANY HORYZONT DLA OGRÓDKA GRZESIA (SKŁODOWSKIEJ 92)
-        if ((az >= 337.5 || az < 22.5) && alt >= 24) return azToMainSector(az);   // Północ (N) >24°
-        if (az >= 22.5 && az < 67.5 && alt >= 25) return azToMainSector(az);     // Północny Wschód (NE) >25°
-        if (az >= 67.5 && az < 112.5 && alt >= 27) return azToMainSector(az);    // Wschód (E ~104°) >27°
-        if (az >= 112.5 && az < 157.5 && alt >= 20) return azToMainSector(az);   // Południowy Wschód (SE ~140°) >20°
-        if (az >= 157.5 && az <= 202.5 && alt >= 16) return azToMainSector(az);  // Południe (S ~180°) >16°
+        if ((az >= 337.5 || az < 22.5) && alt >= 24) return azToMainSector(az);   // N >24°
+        if (az >= 22.5 && az < 67.5 && alt >= 25) return azToMainSector(az);     // NE >25°
+        if (az >= 67.5 && az < 112.5 && alt >= 27) return azToMainSector(az);    // E >27°
+        if (az >= 112.5 && az < 157.5 && alt >= 20) return azToMainSector(az);   // SE >20°
+        if (az >= 157.5 && az <= 202.5 && alt >= 16) return azToMainSector(az);  // S >16°
         if (alt >= 75) return 'Zenit';
-        return null; // Zachód (W, SW, NW) całkowicie blokowany
+        return null; // Zachód całkowicie blokowany
       } else {
         // MÓJ BALKON
         if ((az >= 337.5 || az < 67.5) && alt >= 30) return azToMainSector(az);
@@ -622,7 +681,6 @@
         const pos = getHorizontalCoordinates(ra, dec, LAT, currentTime);
         const zone = getSectorZoneName(pos.az, pos.alt, mode);
 
-        // POPRAWKA: Rejestrujemy szczytową wysokość ze całej nocy astronomicznej, niezależnie od horyzontu
         if (pos.alt > maxVisibleAlt) {
           maxVisibleAlt = pos.alt;
           peakInfo = {
@@ -660,10 +718,10 @@
 
     function updateCompassVisuals(mode) {
       const allSectors = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-      let openSectors = ['NE', 'E', 'SE', 'S']; // Mój balkon
+      let openSectors = ['NE', 'E', 'SE', 'S']; 
 
       if (mode === 'grzes_garden') {
-        openSectors = ['N', 'NE', 'E', 'SE', 'S']; // Ogródek Grzesia (N, NE, E, SE, S)
+        openSectors = ['N', 'NE', 'E', 'SE', 'S']; 
       }
 
       const activeColor = "fill-emerald-400 font-extrabold";
@@ -721,6 +779,23 @@
           </div>
         `;
       }
+    }
+
+    function setCategoryFilter(cat) {
+      activeCategoryFilter = cat;
+      const categories = ['all', 'galaxy', 'nebula', 'cluster', 'planet'];
+      
+      categories.forEach(c => {
+        const btn = document.getElementById(`catBtn-${c}`);
+        if (!btn) return;
+        if (c === cat) {
+          btn.className = "px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-indigo-600 text-white border-indigo-500 shadow";
+        } else {
+          btn.className = "px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700";
+        }
+      });
+
+      updateTargetsFilter();
     }
 
     function updateTargetsFilter() {
@@ -812,10 +887,36 @@
       const rainMms = windowIndices.map(i => hourly.precipitation ? hourly.precipitation[i] : 0);
       const visibilities = windowIndices.map(i => hourly.visibility[i] / 1000);
 
+      const temps = windowIndices.map(i => hourly.temperature_2m[i]);
+      const dewPoints = windowIndices.map(i => hourly.dew_point_2m[i]);
+      const humidities = windowIndices.map(i => hourly.relative_humidity_2m[i]);
+
       const avgCloud = clouds.reduce((a, b) => a + b, 0) / clouds.length;
       const avgVis = visibilities.reduce((a, b) => a + b, 0) / visibilities.length;
       const maxRainProb = Math.max(...rainProbs);
       const totalRainMm = rainMms.reduce((a, b) => a + b, 0);
+
+      const avgTemp = (temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1);
+      const avgDew = (dewPoints.reduce((a, b) => a + b, 0) / dewPoints.length).toFixed(1);
+      const avgHum = Math.round(humidities.reduce((a, b) => a + b, 0) / humidities.length);
+
+      document.getElementById('avgTemp').innerText = `${avgTemp} °C`;
+      document.getElementById('avgDewPoint').innerText = `${avgDew} °C`;
+      document.getElementById('avgHumidity').innerText = `${avgHum} %`;
+
+      const minTempDewDelta = Math.min(...temps.map((t, idx) => t - dewPoints[idx]));
+      const heaterBanner = document.getElementById('dewAlertBanner');
+      const heaterStatusElem = document.getElementById('heaterStatus');
+
+      if (minTempDewDelta <= 2.5 || avgHum >= 85) {
+        heaterBanner.classList.remove('hidden');
+        heaterStatusElem.innerText = "WŁĄCZ (Anti-Dew)";
+        heaterStatusElem.className = "font-bold text-amber-400 animate-pulse";
+      } else {
+        heaterBanner.classList.add('hidden');
+        heaterStatusElem.innerText = "Nie wymagana";
+        heaterStatusElem.className = "font-bold text-emerald-400";
+      }
 
       let score = 100 - avgCloud;
       if (avgVis < 10) score -= 20;
@@ -841,11 +942,11 @@
       else if (score < 85) summary = "Dobre warunki do obserwacji!";
       document.getElementById('stargazingSummary').innerText = summary;
 
-      renderCloudChart(labels, clouds, rainProbs);
+      renderCloudChart(labels, clouds, rainProbs, temps, dewPoints);
       renderTargets(astroStart, astroEnd, moonFraction);
     }
 
-    function renderCloudChart(labels, cloudsData, rainProbsData) {
+    function renderCloudChart(labels, cloudsData, rainProbsData, tempsData, dewPointsData) {
       const ctx = document.getElementById('cloudChart').getContext('2d');
       if (chartInstance) chartInstance.destroy();
 
@@ -859,19 +960,38 @@
               label: 'Zachmurzenie (%)',
               data: cloudsData,
               borderColor: '#38bdf8',
-              backgroundColor: 'rgba(56, 189, 248, 0.15)',
+              backgroundColor: 'rgba(56, 189, 248, 0.1)',
               fill: true,
               tension: 0.3,
               borderWidth: 2,
-              pointRadius: 4,
-              pointBackgroundColor: '#38bdf8',
+              pointRadius: 3,
               yAxisID: 'y'
+            },
+            {
+              type: 'line',
+              label: 'Temperatura (°C)',
+              data: tempsData,
+              borderColor: '#f97316',
+              borderWidth: 2,
+              pointRadius: 2,
+              borderDash: [3, 3],
+              yAxisID: 'yTemp'
+            },
+            {
+              type: 'line',
+              label: 'Punkt Rosy (°C)',
+              data: dewPointsData,
+              borderColor: '#06b6d4',
+              borderWidth: 2,
+              pointRadius: 2,
+              borderDash: [2, 2],
+              yAxisID: 'yTemp'
             },
             {
               type: 'bar',
               label: 'Prawdop. Opadu (%)',
               data: rainProbsData,
-              backgroundColor: 'rgba(168, 85, 247, 0.5)',
+              backgroundColor: 'rgba(168, 85, 247, 0.4)',
               borderColor: '#a855f7',
               borderWidth: 1,
               borderRadius: 4,
@@ -886,15 +1006,21 @@
             y: { 
               min: 0, 
               max: 100, 
+              position: 'left',
               ticks: { color: '#94a3b8' }, 
               grid: { color: 'rgba(255, 255, 255, 0.05)' } 
+            },
+            yTemp: {
+              position: 'right',
+              ticks: { color: '#f97316' },
+              grid: { drawOnChartArea: false }
             },
             x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
           },
           plugins: { 
             legend: { 
               display: true,
-              labels: { color: '#cbd5e1', font: { size: 11 } }
+              labels: { color: '#cbd5e1', font: { size: 10 } }
             } 
           }
         }
@@ -958,7 +1084,6 @@
           const posEnd = getHorizontalCoordinates(item.ra, item.dec, LAT, astroEnd);
           const dirStart = `${azToMainSector(posStart.az)} (${posStart.alt}°)`;
           
-          // Używamy wyliczonego szczytu (kulminacji) dla środkowego punktu trajektorii
           const dirMax = peakInfo ? `${peakInfo.azDir} (${peakInfo.alt}° max)` : `${azToMainSector(currentPos.az)} (${currentPos.alt}°)`;
           const dirEnd = `${azToMainSector(posEnd.az)} (${posEnd.alt}°)`;
 
@@ -976,12 +1101,39 @@
 
       validTargets.sort((a, b) => b.maxAlt - a.maxAlt);
 
-      if (validTargets.length === 0) {
-        container.innerHTML = `<p class="text-sm text-slate-400 col-span-2 py-4">Brak obiektów spełniających wybrane kryteria horyzontu w tę noc.</p>`;
+      // Aktualizacja liczników w przyciskach filtrów
+      const counts = {
+        all: validTargets.length,
+        galaxy: validTargets.filter(t => t.cat === 'galaxy').length,
+        nebula: validTargets.filter(t => t.cat === 'nebula' || t.cat === 'reflection_nebula').length,
+        cluster: validTargets.filter(t => t.cat === 'globular' || t.cat === 'open_cluster').length,
+        planet: validTargets.filter(t => t.cat === 'planet').length
+      };
+
+      document.getElementById('cnt-all').innerText = counts.all;
+      document.getElementById('cnt-galaxy').innerText = counts.galaxy;
+      document.getElementById('cnt-nebula').innerText = counts.nebula;
+      document.getElementById('cnt-cluster').innerText = counts.cluster;
+      document.getElementById('cnt-planet').innerText = counts.planet;
+
+      // Filtrowanie listy według wybranego przycisku
+      let filteredTargets = validTargets;
+      if (activeCategoryFilter === 'galaxy') {
+        filteredTargets = validTargets.filter(t => t.cat === 'galaxy');
+      } else if (activeCategoryFilter === 'nebula') {
+        filteredTargets = validTargets.filter(t => t.cat === 'nebula' || t.cat === 'reflection_nebula');
+      } else if (activeCategoryFilter === 'cluster') {
+        filteredTargets = validTargets.filter(t => t.cat === 'globular' || t.cat === 'open_cluster');
+      } else if (activeCategoryFilter === 'planet') {
+        filteredTargets = validTargets.filter(t => t.cat === 'planet');
+      }
+
+      if (filteredTargets.length === 0) {
+        container.innerHTML = `<p class="text-sm text-slate-400 col-span-2 py-4">Brak obiektów z wybranej kategorii spełniających kryteria horyzontu w tę noc.</p>`;
         return;
       }
 
-      validTargets.forEach(item => {
+      filteredTargets.forEach(item => {
         const seestarBase = getSeestarBaseConfig(item.cat);
         let dynamicFilter = seestarBase.filter;
         let dynamicNotes = seestarBase.notes;
