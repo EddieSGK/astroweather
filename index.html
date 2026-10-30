@@ -120,7 +120,7 @@
           </div>
           <p id="stargazingSummary" class="text-sm font-medium text-slate-200">Pobieranie danych meteorologicznych...</p>
 
-          <!-- Precipitation Risk Banner -->
+          <!-- Precipitaiton Risk Banner -->
           <div id="rainAlertBanner" class="hidden bg-rose-950/80 border border-rose-600/80 rounded-xl p-3 text-xs text-rose-200 flex items-center gap-2 font-semibold">
             <i data-lucide="cloud-rain" class="w-5 h-5 text-rose-400 shrink-0"></i>
             <span id="rainAlertText">Uwaga! Prognozowane opady deszczu w nocy.</span>
@@ -247,7 +247,7 @@
                 <text id="compass-N" x="100" y="16" text-anchor="middle" font-size="12" font-weight="900" class="fill-emerald-400">N</text>
                 <text id="compass-E" x="188" y="104" text-anchor="middle" font-size="12" font-weight="900" class="fill-emerald-400">E</text>
                 <text id="compass-S" x="100" y="194" text-anchor="middle" font-size="12" font-weight="900" class="fill-emerald-400">S</text>
-                <text id="compass-W" x="12" y="104" text-anchor="middle" font-size="12" font-weight="900" class="fill-slate-600">W</text>
+                <text id="compass-W" x="12" y="104" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">W</text>
 
                 <text id="compass-NE" x="152" y="48" text-anchor="middle" font-size="10" font-weight="bold" class="fill-emerald-400">NE</text>
                 <text id="compass-SE" x="152" y="158" text-anchor="middle" font-size="10" font-weight="bold" class="fill-emerald-400">SE</text>
@@ -581,14 +581,14 @@
       }
 
       if (mode === 'grzes_garden') {
-        // PRECYZYJNY HORYZONT DLA OGRÓDKA GRZESIA (SKŁODOWSKIEJ 92)
-        if ((az >= 337.5 || az < 22.5) && alt >= 24) return 'N';
-        if (az >= 22.5 && az < 67.5 && alt >= 25) return 'NE';
-        if (az >= 67.5 && az < 112.5 && alt >= 27) return 'E';
-        if (az >= 112.5 && az < 157.5 && alt >= 20) return 'SE';
-        if (az >= 157.5 && az <= 202.5 && alt >= 16) return 'S';
+        // SKORYGOWANY HORYZONT DLA OGRÓDKA GRZESIA (SKŁODOWSKIEJ 92)
+        if ((az >= 337.5 || az < 22.5) && alt >= 24) return azToMainSector(az);   // Północ (N) >24°
+        if (az >= 22.5 && az < 67.5 && alt >= 25) return azToMainSector(az);     // Północny Wschód (NE) >25°
+        if (az >= 67.5 && az < 112.5 && alt >= 27) return azToMainSector(az);    // Wschód (E ~104°) >27°
+        if (az >= 112.5 && az < 157.5 && alt >= 20) return azToMainSector(az);   // Południowy Wschód (SE ~140°) >20°
+        if (az >= 157.5 && az <= 202.5 && alt >= 16) return azToMainSector(az);  // Południe (S ~180°) >16°
         if (alt >= 75) return 'Zenit';
-        return null; // SW, W, NW w pełni przysłonięte ścianą bloku
+        return null; // Zachód (W, SW, NW) całkowicie blokowany
       } else {
         // MÓJ BALKON
         if ((az >= 337.5 || az < 67.5) && alt >= 30) return azToMainSector(az);
@@ -662,7 +662,7 @@
       let openSectors = ['NE', 'E', 'SE', 'S']; // Mój balkon
 
       if (mode === 'grzes_garden') {
-        openSectors = ['N', 'NE', 'E', 'SE', 'S']; // Ogródek Grzesia
+        openSectors = ['N', 'NE', 'E', 'SE', 'S']; // Ogródek Grzesia (N, NE, E, SE, S)
       }
 
       const activeColor = "fill-emerald-400 font-extrabold";
@@ -705,7 +705,7 @@
           </div>
           <div class="flex items-center gap-1.5">
             <span class="w-2.5 h-2.5 rounded bg-slate-600 shrink-0"></span>
-            <span class="text-slate-400">Ściana bloku (SW, W, NW zasłonięte)</span>
+            <span class="text-slate-400">Ściana bloku Skłodowskiej 92 (Zachód zasłonięty)</span>
           </div>
         `;
       } else {
@@ -956,7 +956,9 @@
           const posStart = getHorizontalCoordinates(item.ra, item.dec, LAT, astroStart);
           const posEnd = getHorizontalCoordinates(item.ra, item.dec, LAT, astroEnd);
           const dirStart = `${azToMainSector(posStart.az)} (${posStart.alt}°)`;
-          const dirMid = `${azToMainSector(currentPos.az)} (${currentPos.alt}°)`;
+          
+          // Używamy wyliczonego szczytu (kulminacji) dla środkowego punktu trajektorii
+          const dirMax = peakInfo ? `${peakInfo.azDir} (${peakInfo.alt}° max)` : `${azToMainSector(currentPos.az)} (${currentPos.alt}°)`;
           const dirEnd = `${azToMainSector(posEnd.az)} (${posEnd.alt}°)`;
 
           validTargets.push({
@@ -964,7 +966,7 @@
             maxAlt: maxVisibleAlt,
             currentAlt: currentPos.alt,
             currentAzDir: azToMainSector(currentPos.az),
-            trajectoryText: `${dirStart} ➔ ${dirMid} ➔ ${dirEnd}`,
+            trajectoryText: `${dirStart} ➔ ${dirMax} ➔ ${dirEnd}`,
             windows: windows,
             peakInfo: peakInfo
           });
