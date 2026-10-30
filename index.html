@@ -244,9 +244,9 @@
                 <line x1="43.4" y1="43.4" x2="156.6" y2="156.6" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2" class="text-slate-800/60"/>
                 <line x1="156.6" y1="43.4" x2="43.4" y2="156.6" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2" class="text-slate-800/60"/>
 
-                <text id="compass-N" x="100" y="16" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">N</text>
+                <text id="compass-N" x="100" y="16" text-anchor="middle" font-size="12" font-weight="900" class="fill-emerald-400">N</text>
                 <text id="compass-E" x="188" y="104" text-anchor="middle" font-size="12" font-weight="900" class="fill-emerald-400">E</text>
-                <text id="compass-S" x="100" y="194" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">S</text>
+                <text id="compass-S" x="100" y="194" text-anchor="middle" font-size="12" font-weight="900" class="fill-emerald-400">S</text>
                 <text id="compass-W" x="12" y="104" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">W</text>
 
                 <text id="compass-NE" x="152" y="48" text-anchor="middle" font-size="10" font-weight="bold" class="fill-emerald-400">NE</text>
@@ -581,12 +581,14 @@
       }
 
       if (mode === 'grzes_garden') {
-        // OGRÓDEK GRZESIA (SKŁODOWSKIEJ 92)
-        if ((az >= 337.5 || az < 67.5) && alt >= 24) return azToMainSector(az); // N, NE >24°
-        if (az >= 67.5 && az < 112.5 && alt >= 27) return azToMainSector(az);  // E >27°
-        if (az >= 112.5 && az <= 165 && alt >= 18) return azToMainSector(az);  // SE >18°
+        // SKORYGOWANY HORYZONT DLA OGRÓDKA GRZESIA (SKŁODOWSKIEJ 92)
+        if ((az >= 337.5 || az < 22.5) && alt >= 24) return azToMainSector(az);   // Północ (N) >24°
+        if (az >= 22.5 && az < 67.5 && alt >= 25) return azToMainSector(az);     // Północny Wschód (NE) >25°
+        if (az >= 67.5 && az < 112.5 && alt >= 27) return azToMainSector(az);    // Wschód (E ~104°) >27°
+        if (az >= 112.5 && az < 157.5 && alt >= 20) return azToMainSector(az);   // Południowy Wschód (SE ~140°) >20°
+        if (az >= 157.5 && az <= 202.5 && alt >= 16) return azToMainSector(az);  // Południe (S ~180°) >16°
         if (alt >= 75) return 'Zenit';
-        return null;
+        return null; // Zachód (W, SW, NW) całkowicie blokowany
       } else {
         // MÓJ BALKON
         if ((az >= 337.5 || az < 67.5) && alt >= 30) return azToMainSector(az);
@@ -660,7 +662,7 @@
       let openSectors = ['NE', 'E', 'SE', 'S']; // Mój balkon
 
       if (mode === 'grzes_garden') {
-        openSectors = ['N', 'NE', 'E', 'SE']; // Ogródek Grzesia
+        openSectors = ['N', 'NE', 'E', 'SE', 'S']; // Ogródek Grzesia (N, NE, E, SE, S)
       }
 
       const activeColor = "fill-emerald-400 font-extrabold";
@@ -699,11 +701,11 @@
         legendElem.innerHTML = `
           <div class="flex items-center gap-1.5">
             <span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span>
-            <span class="text-slate-300 font-medium">Ogródek Grzesia (N &gt;24°, NE, E &gt;27°, SE &gt;18°)</span>
+            <span class="text-slate-300 font-medium">Ogródek Grzesia (N &gt;24°, NE &gt;25°, E &gt;27°, SE &gt;20°, S &gt;16°)</span>
           </div>
           <div class="flex items-center gap-1.5">
             <span class="w-2.5 h-2.5 rounded bg-slate-600 shrink-0"></span>
-            <span class="text-slate-400">Ściana bloku (Zachód zasłonięty)</span>
+            <span class="text-slate-400">Ściana bloku Skłodowskiej 92 (Zachód zasłonięty)</span>
           </div>
         `;
       } else {
@@ -909,7 +911,7 @@
       updateCompassVisuals(mode);
 
       if (mode === 'grzes_garden') {
-        subtextElem.innerText = "Ogródek Grzesia: N >24°, NE, E >27°, SE >18° (Zachód całkowicie zasłonięty)";
+        subtextElem.innerText = "Ogródek Grzesia: N >24°, NE >25°, E >27°, SE >20°, S >16° (Zachód całkowicie zasłonięty)";
       } else if (mode === 'all_objects') {
         subtextElem.innerText = "Wszystkie obiekty przebywające powyżej horyzontu (bez filtrów przestrzennych)";
       } else {
