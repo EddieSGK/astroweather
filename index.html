@@ -108,7 +108,7 @@
       <!-- Left Column: Summary & Solar/Lunar Info -->
       <div class="space-y-6">
         
-        <!-- Stargazing Index Card WITH LEGEND -->
+        <!-- Stargazing Index Card WITH PRECIPITATION ALERT -->
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
           <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2">
             <i data-lucide="sparkles" class="text-amber-400"></i> Warunki Obserwacyjne
@@ -119,6 +119,12 @@
             <span class="text-slate-400 mb-1 text-lg">/ 100</span>
           </div>
           <p id="stargazingSummary" class="text-sm font-medium text-slate-200">Pobieranie danych meteorologicznych...</p>
+
+          <!-- Precipitaiton Risk Banner -->
+          <div id="rainAlertBanner" class="hidden bg-rose-950/80 border border-rose-600/80 rounded-xl p-3 text-xs text-rose-200 flex items-center gap-2 font-semibold">
+            <i data-lucide="cloud-rain" class="w-5 h-5 text-rose-400 shrink-0"></i>
+            <span id="rainAlertText">Uwaga! Prognozowane opady deszczu w nocy.</span>
+          </div>
 
           <!-- Legend Block -->
           <div class="legend-box bg-slate-950/80 border border-slate-800/80 rounded-xl p-3.5 text-xs space-y-3 pt-3">
@@ -131,7 +137,7 @@
                 <span class="w-2 h-2 rounded-full bg-emerald-400 mt-1 shrink-0"></span>
                 <div>
                   <span class="font-semibold text-emerald-400">85–100 pkt: Idealne</span>
-                  <p class="text-slate-400 text-[11px]">Czyste niebo, wysoka przejrzystość. Idealne na słabe mgławice i galaktyki (M33, M101).</p>
+                  <p class="text-slate-400 text-[11px]">Brak opadów, czyste niebo. Bezpiecznie na całonocną sesję.</p>
                 </div>
               </div>
 
@@ -139,7 +145,7 @@
                 <span class="w-2 h-2 rounded-full bg-cyan-400 mt-1 shrink-0"></span>
                 <div>
                   <span class="font-semibold text-cyan-400">60–84 pkt: Dobre</span>
-                  <p class="text-slate-400 text-[11px]">Warto rozstawiać teleskop. Słabe chmury wysokie lub jasny Księżyc (użyj filtra Dual-Band).</p>
+                  <p class="text-slate-400 text-[11px]">Słabe chmury/Księżyc. Brak ryzyka deszczu.</p>
                 </div>
               </div>
 
@@ -147,21 +153,21 @@
                 <span class="w-2 h-2 rounded-full bg-amber-400 mt-1 shrink-0"></span>
                 <div>
                   <span class="font-semibold text-amber-400">30–59 pkt: Umiarkowane</span>
-                  <p class="text-slate-400 text-[11px]">Okienka w chmurach/wilgoć. Dobre na szybkie strzały w jasne obiekty (M42, M31, Księżyc).</p>
+                  <p class="text-slate-400 text-[11px]">Zachmurzenie lub wysoka wilgotność / ryzyko rosy.</p>
                 </div>
               </div>
 
               <div class="flex items-start gap-2">
                 <span class="w-2 h-2 rounded-full bg-rose-500 mt-1 shrink-0"></span>
                 <div>
-                  <span class="font-semibold text-rose-400">0–29 pkt: Słabe</span>
-                  <p class="text-slate-400 text-[11px]">Duże zachmurzenie. Wysokie ryzyko utraty śledzenia gwiazd przez Seestara.</p>
+                  <span class="font-semibold text-rose-400">0–29 pkt: Słabe / Opad</span>
+                  <p class="text-slate-400 text-[11px]">Duże zachmurzenie LUB wykryto opady deszczu. Nie wystawiaj teleskopu!</p>
                 </div>
               </div>
             </div>
 
             <div class="border-t border-slate-800/80 pt-2 text-[10px] text-slate-400 italic">
-              <strong>Jak wyliczamy?</strong> Start od 100 pkt. Wagi: śr. zachmurzenie w noc (-1 pkt/% chmur), niska widzialność &lt;10km (-20 pkt), pełnia Księżyca &gt;70% (-15 pkt).
+              <strong>Jak wyliczamy?</strong> Start od 100 pkt. Wagi: śr. zachmurzenie (-1 pkt/% chmur), <strong>opad &gt;0mm (-100 pkt - automatyczna dyskwalifikacja!)</strong>, niska widzialność &lt;10km (-20 pkt).
             </div>
           </div>
         </div>
@@ -238,7 +244,6 @@
                 <line x1="43.4" y1="43.4" x2="156.6" y2="156.6" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2" class="text-slate-800/60"/>
                 <line x1="156.6" y1="43.4" x2="43.4" y2="156.6" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2" class="text-slate-800/60"/>
 
-                <!-- Dynamiczne Etykiety 8 Sektorów Kompasu -->
                 <text id="compass-N" x="100" y="16" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">N</text>
                 <text id="compass-E" x="188" y="104" text-anchor="middle" font-size="12" font-weight="900" class="fill-emerald-400">E</text>
                 <text id="compass-S" x="100" y="194" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">S</text>
@@ -251,10 +256,7 @@
               </svg>
             </div>
 
-            <!-- Dynamiczna Legenda pod Różą Wiatrów -->
-            <div id="compassLegend" class="mt-3 grid grid-cols-1 gap-2 text-[11px] w-full pt-2 border-t border-slate-800">
-              <!-- Renderowane dynamicznie w JS -->
-            </div>
+            <div id="compassLegend" class="mt-3 grid grid-cols-1 gap-2 text-[11px] w-full pt-2 border-t border-slate-800"></div>
           </div>
         </div>
 
@@ -263,19 +265,19 @@
       <!-- Right Column: Chart & Suggested Targets -->
       <div class="lg:col-span-2 space-y-6">
 
-        <!-- Chart Card (Astronomical Night Cloud Cover) -->
+        <!-- Chart Card WITH RAIN/PRECIPITATION DATA -->
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
             <div>
               <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2">
-                <i data-lucide="cloud-moon" class="text-cyan-400"></i> Zachmurzenie podczas Nocy Astronomicznej
+                <i data-lucide="cloud-rain" class="text-cyan-400"></i> Zachmurzenie i Opady w Noc Astronomiczną
               </h2>
-              <p id="chartSubtext" class="text-xs text-slate-400 mt-1">Zakres: od zmierzchu do świtu astronomicznego</p>
+              <p id="chartSubtext" class="text-xs text-slate-400 mt-1">Linia niebieska: Zachmurzenie (%) | Słupki fioletowe: Prawdopodobieństwo opadu (%)</p>
             </div>
             <div id="weatherBadges" class="flex gap-2"></div>
           </div>
 
-          <div class="chart-container relative h-56 w-full">
+          <div class="chart-container relative h-60 w-full">
             <canvas id="cloudChart"></canvas>
           </div>
         </div>
@@ -473,7 +475,7 @@
 
     function getSeestarBaseConfig(cat) {
       if (cat === 'nebula') {
-        return { subExp: '10s', baseTime: '60-90 min', filter: 'Dual-Band LP', notes: 'Mgławica emisyjna. Filtr Dual-Band drastically podnosi kontrast.' };
+        return { subExp: '10s', baseTime: '60-90 min', filter: 'Dual-Band LP', notes: 'Mgławica emisyjna. Filtr Dual-Band drastycznie podnosi kontrast.' };
       } else if (cat === 'reflection_nebula') {
         return { subExp: '10s', baseTime: '90-120 min', filter: 'UV/IR Cut', notes: 'Mgławica pyłowa/odbiciowa. Filtr Dual-Band wytnie pył!' };
       } else if (cat === 'galaxy') {
@@ -628,10 +630,9 @@
       return { windows, maxVisibleAlt, peakInfo };
     }
 
-    // AKTUALIZACJA RÓŻY WIATRÓW – TERAZ SEKTOR E JEST RÓWNIEŻ OTWARTY!
     function updateCompassVisuals(useStrictHorizon) {
       const allSectors = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-      const openSectorsInStrict = ['NE', 'E', 'SE', 'S']; // NE, E (>50°), SE, S
+      const openSectorsInStrict = ['NE', 'E', 'SE', 'S'];
 
       const activeColor = "fill-emerald-400 font-extrabold";
       const inactiveColor = "fill-slate-600 font-bold";
@@ -642,14 +643,12 @@
         if (!elem) return;
 
         if (!useStrictHorizon) {
-          // Wszystkie sektory aktywne przy braku filtra
           if (['N', 'E', 'S', 'W'].includes(sec)) {
             elem.setAttribute('class', cardinalColor);
           } else {
             elem.setAttribute('class', activeColor);
           }
         } else {
-          // Dedykowany horyzont: NE, E, SE, S są aktywne
           if (openSectorsInStrict.includes(sec)) {
             elem.setAttribute('class', activeColor);
           } else {
@@ -740,7 +739,8 @@
       document.getElementById('moonPhase').innerText = phaseText;
 
       try {
-        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=cloud_cover,visibility,dew_point_2m,temperature_2m,relative_humidity_2m&timezone=auto`);
+        // POBIERAMY DODATKOWO OPADY (precipitation_probability, precipitation)
+        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=cloud_cover,precipitation_probability,precipitation,visibility,dew_point_2m,temperature_2m,relative_humidity_2m&timezone=auto`);
         const weatherData = await response.json();
 
         processWeatherData(weatherData, astroStart, astroEnd, moonIllum.fraction);
@@ -766,56 +766,96 @@
 
       const labels = windowIndices.map(i => times[i].getHours().toString().padStart(2, '0') + ':00');
       const clouds = windowIndices.map(i => hourly.cloud_cover[i]);
+      const rainProbs = windowIndices.map(i => hourly.precipitation_probability ? hourly.precipitation_probability[i] : 0);
+      const rainMms = windowIndices.map(i => hourly.precipitation ? hourly.precipitation[i] : 0);
       const visibilities = windowIndices.map(i => hourly.visibility[i] / 1000);
 
       const avgCloud = clouds.reduce((a, b) => a + b, 0) / clouds.length;
       const avgVis = visibilities.reduce((a, b) => a + b, 0) / visibilities.length;
+      const maxRainProb = Math.max(...rainProbs);
+      const totalRainMm = rainMms.reduce((a, b) => a + b, 0);
 
       let score = 100 - avgCloud;
       if (avgVis < 10) score -= 20;
       if (moonFraction > 0.7) score -= 15;
+
+      // KRYTYCZNA DYSKWALIFIKACJA ZA OPADY DESZCZU
+      const rainAlertBanner = document.getElementById('rainAlertBanner');
+      if (maxRainProb > 20 || totalRainMm > 0) {
+        score = 0; // Zerujemy wynik
+        rainAlertBanner.classList.remove('hidden');
+        document.getElementById('rainAlertText').innerText = `Ostrzeżenie! Ryzyko opadu do ${maxRainProb}% (suma: ${totalRainMm.toFixed(1)} mm). Nie wystawiaj teleskopu!`;
+      } else {
+        rainAlertBanner.classList.add('hidden');
+      }
+
       score = Math.max(0, Math.min(100, Math.round(score)));
 
       document.getElementById('stargazingScore').innerText = score;
       
-      let summary = "Doskonałe warunki! Czyste niebo.";
-      if (score < 30) summary = "Słabe warunki - duże zachmurzenie.";
+      let summary = "Doskonałe warunki! Czyste niebo, brak deszczu.";
+      if (maxRainProb > 20 || totalRainMm > 0) summary = "🛑 ZAKAZ WYSTAWIANIA: Wykryto ryzyko opadów deszczu!";
+      else if (score < 30) summary = "Słabe warunki - duże zachmurzenie.";
       else if (score < 60) summary = "Umiarkowane warunki - możliwe przelotne chmury.";
       else if (score < 85) summary = "Dobre warunki do obserwacji!";
       document.getElementById('stargazingSummary').innerText = summary;
 
-      renderCloudChart(labels, clouds);
+      renderCloudChart(labels, clouds, rainProbs);
       renderTargets(astroStart, astroEnd, moonFraction);
     }
 
-    function renderCloudChart(labels, cloudsData) {
+    function renderCloudChart(labels, cloudsData, rainProbsData) {
       const ctx = document.getElementById('cloudChart').getContext('2d');
       if (chartInstance) chartInstance.destroy();
 
       chartInstance = new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
           labels: labels,
-          datasets: [{
-            label: 'Zachmurzenie (%)',
-            data: cloudsData,
-            borderColor: '#38bdf8',
-            backgroundColor: 'rgba(56, 189, 248, 0.15)',
-            fill: true,
-            tension: 0.3,
-            borderWidth: 2,
-            pointRadius: 4,
-            pointBackgroundColor: '#38bdf8'
-          }]
+          datasets: [
+            {
+              type: 'line',
+              label: 'Zachmurzenie (%)',
+              data: cloudsData,
+              borderColor: '#38bdf8',
+              backgroundColor: 'rgba(56, 189, 248, 0.15)',
+              fill: true,
+              tension: 0.3,
+              borderWidth: 2,
+              pointRadius: 4,
+              pointBackgroundColor: '#38bdf8',
+              yAxisID: 'y'
+            },
+            {
+              type: 'bar',
+              label: 'Prawdop. Opadu (%)',
+              data: rainProbsData,
+              backgroundColor: 'rgba(168, 85, 247, 0.5)',
+              borderColor: '#a855f7',
+              borderWidth: 1,
+              borderRadius: 4,
+              yAxisID: 'y'
+            }
+          ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           scales: {
-            y: { min: 0, max: 100, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+            y: { 
+              min: 0, 
+              max: 100, 
+              ticks: { color: '#94a3b8' }, 
+              grid: { color: 'rgba(255, 255, 255, 0.05)' } 
+            },
             x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
           },
-          plugins: { legend: { display: false } }
+          plugins: { 
+            legend: { 
+              display: true,
+              labels: { color: '#cbd5e1', font: { size: 11 } }
+            } 
+          }
         }
       });
     }
