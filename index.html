@@ -673,7 +673,7 @@
     }
 
     function calculateDirectionWindows(ra, dec, astroStart, astroEnd, mode) {
-      const stepMs = 15 * 60 * 1000;
+      const stepMs = 30 * 60 * 1000; // PRÓBKOWANIE CO 30 MINUT
       let startTime = new Date(astroStart.getTime());
       let endTime = new Date(astroEnd.getTime());
 
@@ -726,7 +726,7 @@
         currentTime = new Date(currentTime.getTime() + stepMs);
       }
 
-      // SCALANIE SĄSIEDNICH BLOKÓW W CIĄGŁE OKNA OBSERWACYJNE
+      // PRECYZYJNE GRUPOWANIE CIĄGŁYCH PRZEDZIAŁÓW DLA TEGO SAMEO SEKTORA
       let windows = [];
       if (rawWindows.length > 0) {
         let currentWindow = {
@@ -737,14 +737,10 @@
 
         for (let i = 1; i < rawWindows.length; i++) {
           const item = rawWindows[i];
-          const prevTime = rawWindows[i - 1].time;
-          const diffMinutes = (item.time - prevTime) / 60000;
 
-          if (diffMinutes <= 20) {
+          // DZIELIMY OKNO, JEŚLI ZMIENIŁ SIĘ SEKTOR LUB BYŁA PRZERWA W WIDOCZNOŚCI
+          if (item.zone === currentWindow.zone) {
             currentWindow.end = new Date(item.time.getTime() + stepMs);
-            if (currentWindow.zone !== item.zone && item.zone !== 'Zenit') {
-              currentWindow.zone = item.zone;
-            }
           } else {
             windows.push(currentWindow);
             currentWindow = {
