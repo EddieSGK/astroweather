@@ -120,7 +120,7 @@
           </div>
           <p id="stargazingSummary" class="text-sm font-medium text-slate-200">Pobieranie danych meteorologicznych...</p>
 
-          <!-- Precipitaiton Risk Banner -->
+          <!-- Precipitation Risk Banner -->
           <div id="rainAlertBanner" class="hidden bg-rose-950/80 border border-rose-600/80 rounded-xl p-3 text-xs text-rose-200 flex items-center gap-2 font-semibold">
             <i data-lucide="cloud-rain" class="w-5 h-5 text-rose-400 shrink-0"></i>
             <span id="rainAlertText">Uwaga! Prognozowane opady deszczu w nocy.</span>
@@ -349,7 +349,7 @@
             </div>
           </div>
 
-          <!-- NOWOŚĆ: Filtry Kategorii Obiektów -->
+          <!-- Filtry Kategorii Obiektów -->
           <div class="flex flex-wrap items-center gap-2 mb-5 pb-3 border-b border-slate-800/60">
             <span class="text-xs font-semibold text-slate-400 mr-1 flex items-center gap-1">
               <i data-lucide="filter" class="w-3.5 h-3.5 text-indigo-400"></i> Typ:
@@ -393,6 +393,7 @@
     let cachedAstroStart = null;
     let cachedAstroEnd = null;
     let cachedMoonFraction = 0;
+    let cachedHourlyWeather = null;
     let activeCategoryFilter = 'all';
 
     const MESSIER_CATALOG = [
@@ -681,6 +682,7 @@
         const pos = getHorizontalCoordinates(ra, dec, LAT, currentTime);
         const zone = getSectorZoneName(pos.az, pos.alt, mode);
 
+        // Wyliczamy rzeczywistą kulminację (szczyt) na niebie
         if (pos.alt > maxVisibleAlt) {
           maxVisibleAlt = pos.alt;
           peakInfo = {
@@ -690,7 +692,18 @@
           };
         }
 
-        if (zone !== currentZone) {
+        // Filtrowanie z uwzględnieniem zachmurzenia w danej godzinie (< 30%)
+        let cloudOk = true;
+        if (cachedHourlyWeather && cachedHourlyWeather.times) {
+          const matchingIdx = cachedHourlyWeather.times.findIndex(t => Math.abs(t - currentTime) < 1800000);
+          if (matchingIdx !== -1 && cachedHourlyWeather.clouds[matchingIdx] > 30) {
+            cloudOk = false;
+          }
+        }
+
+        const effectiveZone = cloudOk ? zone : null;
+
+        if (effectiveZone !== currentZone) {
           if (currentZone !== null) {
             windows.push({
               zone: currentZone,
@@ -698,7 +711,7 @@
               end: new Date(currentTime.getTime())
             });
           }
-          currentZone = zone;
+          currentZone = effectiveZone;
           zoneStartTime = new Date(currentTime.getTime());
         }
 
@@ -871,6 +884,11 @@
       const hourly = data.hourly;
       const times = hourly.time.map(t => new Date(t));
       
+      cachedHourlyWeather = {
+        times: times,
+        clouds: hourly.cloud_cover
+      };
+
       let windowIndices = [];
       for (let i = 0; i < times.length; i++) {
         const t = times[i];
@@ -1101,6 +1119,56 @@
 
       validTargets.sort((a, b) => b.maxAlt - a.maxAlt);
 
+      // --- DEDYKOWANY PANEL REKOMENDACJI NA DZIŚ (TOP 4) ---
+      const idealTargets = validTargets.filter(t => t.suit === 'Idealny' && t.maxAlt >= 25);
+      const currentScore = parseInt(document.getElementById('stargazingScore').innerText) || 0;
+      let top4 = [];
+
+      if (currentScore >= 85) {
+        // Przy idealnej pogodzie proponujemy również trudniejsze/słabsze obiekty wyzwaniowe
+        top4 = idealTargets.sort((a, b) => b.mag - a.mag).slice(0, 4);
+      } else {
+        // Standardowo - najjaśniejsze i najbardziej widowiskowe
+        top4 = idealTargets.sort((a, b) => a.mag - b.mag).slice(0, 4);
+      }
+
+      if (top4.length > 0) {
+        const suggestionBox = document.createElement('div');
+        suggestionBox.className = "col-span-1 md:col-span-2 mb-2 p-4 rounded-xl bg-gradient-to-r from-indigo-950/90 via-slate-900 to-slate-950 border border-indigo-500/40 shadow-xl space-y-3";
+
+        let top4Html = top4.map(item => `
+          <div class="flex items-center justify-between p-2.5 bg-slate-950/80 border border-indigo-900/40 rounded-lg text-xs">
+            <div class="flex items-center gap-2.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+              <div>
+                <span class="font-bold text-slate-100 block">${item.name}</span>
+                <span class="text-slate-400 text-[11px]">${item.type} (Mag: ${item.mag})</span>
+              </div>
+            </div>
+            <div class="text-right font-mono">
+              <span class="text-indigo-300 font-bold block">${item.peakInfo ? formatTime(item.peakInfo.time) : '--:--'} (Max: ${item.maxAlt}°)</span>
+              <span class="text-emerald-400 text-[10px]">Okno: ${item.windows.length > 0 ? formatTime(item.windows[0].start) + ' - ' + formatTime(item.windows[0].end) : 'Brak'}</span>
+            </div>
+          </div>
+        `).join('');
+
+        suggestionBox.innerHTML = `
+          <div class="flex items-center justify-between border-b border-indigo-800/50 pb-2">
+            <h3 class="text-sm font-bold text-indigo-300 flex items-center gap-2">
+              <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i> Dedykowany Plan Obserwacyjny na Dziś (Top 4)
+            </h3>
+            <span class="text-[11px] px-2 py-0.5 rounded bg-indigo-900/60 text-indigo-200 border border-indigo-700/50">
+              ${currentScore >= 85 ? '🌟 Warunki Idealne (Tryb Zaawansowany)' : '🎯 Standardowy Plan Obserwacji'}
+            </span>
+          </div>
+          <p class="text-xs text-slate-400">Obiekty spełniające kryterium <strong class="text-emerald-400">Idealny</strong> przy zachmurzeniu &lt;30%:</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+            ${top4Html}
+          </div>
+        `;
+        container.appendChild(suggestionBox);
+      }
+
       // Aktualizacja liczników w przyciskach filtrów
       const counts = {
         all: validTargets.length,
@@ -1129,7 +1197,8 @@
       }
 
       if (filteredTargets.length === 0) {
-        container.innerHTML = `<p class="text-sm text-slate-400 col-span-2 py-4">Brak obiektów z wybranej kategorii spełniających kryteria horyzontu w tę noc.</p>`;
+        container.innerHTML += `<p class="text-sm text-slate-400 col-span-2 py-4">Brak obiektów z wybranej kategorii spełniających kryteria horyzontu w tę noc.</p>`;
+        lucide.createIcons();
         return;
       }
 
