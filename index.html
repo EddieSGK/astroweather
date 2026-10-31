@@ -269,24 +269,36 @@
           </h2>
           
           <div class="flex flex-col items-center justify-center p-2">
-            <div class="relative w-56 h-56 flex items-center justify-center">
-              <svg viewBox="0 0 200 200" class="w-full h-full text-slate-400">
-                <circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" stroke-width="1" class="text-slate-800"/>
-                <circle cx="100" cy="100" r="30" fill="none" stroke="currentColor" stroke-width="1" class="text-emerald-500/20"/>
+            <div class="relative w-60 h-60 flex items-center justify-center">
+              <svg viewBox="0 0 200 200" class="w-full h-full">
+                <!-- Tło i podziałki wysokości -->
+                <circle cx="100" cy="100" r="82" fill="none" stroke="#1e293b" stroke-width="2"/>
+                <circle cx="100" cy="100" r="55" fill="none" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <circle cx="100" cy="100" r="28" fill="#020617" stroke="#10b981" stroke-width="1.5" stroke-opacity="0.3"/>
                 
-                <circle cx="100" cy="100" r="3" fill="currentColor" class="text-emerald-400"/>
-                <text x="100" y="112" text-anchor="middle" font-size="8" font-weight="bold" fill="currentColor" class="text-emerald-400">Zenit (&gt;65°)</text>
+                <!-- Punkt i napis Zenit -->
+                <circle cx="100" cy="100" r="3.5" fill="#34d399"/>
+                <text x="100" y="112" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#34d399">Zenit (&gt;65°)</text>
 
-                <line x1="100" y1="20" x2="100" y2="180" stroke="currentColor" stroke-width="1" class="text-slate-800"/>
-                <line x1="20" y1="100" x2="180" y2="100" stroke="currentColor" stroke-width="1" class="text-slate-800"/>
-                <line x1="43.4" y1="43.4" x2="156.6" y2="156.6" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2" class="text-slate-800/60"/>
-                <line x1="156.6" y1="43.4" x2="43.4" y2="156.6" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2" class="text-slate-800/60"/>
+                <!-- Główna siatka celownicza (grubsze linie) -->
+                <line x1="100" y1="28" x2="100" y2="172" stroke="#334155" stroke-width="2"/>
+                <line x1="28" y1="100" x2="172" y2="100" stroke="#334155" stroke-width="2"/>
+                
+                <!-- Przekątne (NW-SE, NE-SW) -->
+                <line x1="42" y1="42" x2="158" y2="158" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <line x1="158" y1="42" x2="42" y2="158" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="3 3"/>
 
-                <text id="compass-N" x="100" y="16" text-anchor="middle" font-size="12" font-weight="900" class="fill-emerald-400">N</text>
+                <!-- Efektowna Strzałka / Grot Północy (North Compass Arrow) -->
+                <polygon points="100,10 94,32 100,26" fill="#ef4444" />
+                <polygon points="100,10 106,32 100,26" fill="#b91c1c" />
+
+                <!-- Litery kierunków świata -->
+                <text id="compass-N" x="100" y="24" text-anchor="middle" font-size="12" font-weight="900" class="fill-red-500">N</text>
                 <text id="compass-E" x="188" y="104" text-anchor="middle" font-size="12" font-weight="900" class="fill-emerald-400">E</text>
-                <text id="compass-S" x="100" y="194" text-anchor="middle" font-size="12" font-weight="900" class="fill-emerald-400">S</text>
+                <text id="compass-S" x="100" y="193" text-anchor="middle" font-size="12" font-weight="900" class="fill-emerald-400">S</text>
                 <text id="compass-W" x="12" y="104" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">W</text>
 
+                <!-- Kierunki pośrednie -->
                 <text id="compass-NE" x="152" y="48" text-anchor="middle" font-size="10" font-weight="bold" class="fill-emerald-400">NE</text>
                 <text id="compass-SE" x="152" y="158" text-anchor="middle" font-size="10" font-weight="bold" class="fill-emerald-400">SE</text>
                 <text id="compass-SW" x="48" y="158" text-anchor="middle" font-size="10" font-weight="bold" class="fill-slate-600">SW</text>
