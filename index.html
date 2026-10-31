@@ -177,7 +177,7 @@
             </div>
 
             <div class="border-t border-slate-800/80 pt-2 text-[10px] text-slate-400 italic">
-              <strong>Jak wyliczamy?</strong> Start od 100 pkt. Wagi: śr. zachmurzenie (-1 pkt/% chmur), <strong>opad &gt;0mm (-100 pkt - automatyczna dyskwalifikacja!)</strong>, niska widzialność &lt;10km (-20 pkt).
+              <strong>Jak wyliczamy?</strong> Start od 100 pkt. Wagi: śr. zachmurzenie (-1 pkt/% chmur), <strong>opad &gt;10% lub &gt;0mm (-100 pkt - automatyczna dyskwalifikacja!)</strong>, niska widzialność &lt;10km (-20 pkt).
             </div>
           </div>
         </div>
@@ -974,10 +974,12 @@
       if (moonFraction > 0.7) score -= 15;
 
       const rainAlertBanner = document.getElementById('rainAlertBanner');
-      if (maxRainProb > 20 || totalRainMm > 0) {
+      
+      // TWARDE WYMUSZENIE SCORE = 0 PRZY JAKIMKOLWIEK RYZYKU OPADÓW (>10% LUB >0mm)
+      if (maxRainProb > 10 || totalRainMm > 0) {
         score = 0;
         rainAlertBanner.classList.remove('hidden');
-        document.getElementById('rainAlertText').innerText = `Ostrzeżenie! Ryzyko opadu do ${maxRainProb}% (suma: ${totalRainMm.toFixed(1)} mm). Nie wystawiaj teleskopu!`;
+        document.getElementById('rainAlertText').innerText = `Ostrzeżenie! Ryzyko opadu do ${maxRainProb}% (suma: ${totalRainMm.toFixed(1)} mm). NIE WYSTAWIAJ TELESKOPU!`;
       } else {
         rainAlertBanner.classList.add('hidden');
       }
@@ -987,7 +989,7 @@
       document.getElementById('stargazingScore').innerText = score;
       
       let summary = "Doskonałe warunki! Czyste niebo, brak deszczu.";
-      if (maxRainProb > 20 || totalRainMm > 0) summary = "🛑 ZAKAZ WYSTAWIANIA: Wykryto ryzyko opadów deszczu!";
+      if (maxRainProb > 10 || totalRainMm > 0) summary = "🛑 ZAKAZ WYSTAWIANIA: Wykryto ryzyko opadów deszczu!";
       else if (score < 30) summary = "Słabe warunki - duże zachmurzenie.";
       else if (score < 60) summary = "Umiarkowane warunki - możliwe przelotne chmury.";
       else if (score < 85) summary = "Dobre warunki do obserwacji!";
@@ -1155,7 +1157,9 @@
 
       validTargets.sort((a, b) => b.maxAlt - a.maxAlt);
 
-      // REKOMENDACJE TOP 4: TYLKO DLA OBIEKTÓW Z OKNEM ZACHMURZENIA < 30% I BEZ PLANET
+      const currentScore = parseInt(document.getElementById('stargazingScore').innerText) || 0;
+
+      // REKOMENDACJE TOP 4 (TYLKO BEZPIECZNE OKNA CHMUR <30%)
       const idealTargets = validTargets.filter(t => 
         t.suit === 'Idealny' && 
         t.maxAlt >= 25 && 
@@ -1164,19 +1168,34 @@
         ['galaxy', 'nebula', 'reflection_nebula'].includes(t.cat)
       );
 
-      const currentScore = parseInt(document.getElementById('stargazingScore').innerText) || 0;
       let top4 = [];
-
       if (currentScore >= 85) {
         top4 = idealTargets.sort((a, b) => b.mag - a.mag).slice(0, 4);
       } else {
         top4 = idealTargets.sort((a, b) => a.mag - b.mag).slice(0, 4);
       }
 
-      if (top4.length > 0) {
-        const suggestionBox = document.createElement('div');
-        suggestionBox.className = "col-span-1 md:col-span-2 mb-2 p-4 rounded-xl bg-gradient-to-r from-indigo-950/90 via-slate-900 to-slate-950 border border-indigo-500/40 shadow-xl space-y-3";
+      // PANEL TOP 4 RENDEROWANY ZAWSZE (MIMO BRAKU REKOMENDACJI LUB OPADÓW)
+      const suggestionBox = document.createElement('div');
+      suggestionBox.className = "col-span-1 md:col-span-2 mb-2 p-4 rounded-xl bg-gradient-to-r from-indigo-950/90 via-slate-900 to-slate-950 border border-indigo-500/40 shadow-xl space-y-3";
 
+      if (currentScore === 0) {
+        // WARUNEK OPADÓW / DYSKWALIFIKACJI
+        suggestionBox.innerHTML = `
+          <div class="flex items-center justify-between border-b border-rose-800/50 pb-2">
+            <h3 class="text-sm font-bold text-rose-300 flex items-center gap-2">
+              <i data-lucide="cloud-rain" class="w-4 h-4 text-rose-400"></i> Rekomendowane Obiekty na Dziś
+            </h3>
+            <span class="text-[11px] px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800 font-bold">
+              🛑 Brak Rekomendacji (Ryzyko Opadów)
+            </span>
+          </div>
+          <p class="text-xs text-rose-200 bg-rose-950/40 p-2.5 rounded-lg border border-rose-900/50">
+            <strong>Sesja odwołana:</strong> Prognoza pogody wskazuje na możliwość opadów deszczu w nocy. Ze względów bezpieczeństwa sprzętu brak rekomendowanych celów do obserwacji.
+          </p>
+        `;
+      } else if (top4.length > 0) {
+        // STANDARDOWY PANEL Z OBIEKTAMI
         let top4Html = top4.map(item => `
           <div class="flex items-center justify-between p-2.5 bg-slate-950/80 border border-indigo-900/40 rounded-lg text-xs">
             <div class="flex items-center gap-2.5">
@@ -1207,8 +1226,24 @@
             ${top4Html}
           </div>
         `;
-        container.appendChild(suggestionBox);
+      } else {
+        // BRAK OBIEKTÓW ZE WZGLĘDU NA DUŻE ZACHMURZENIE
+        suggestionBox.innerHTML = `
+          <div class="flex items-center justify-between border-b border-indigo-800/50 pb-2">
+            <h3 class="text-sm font-bold text-indigo-300 flex items-center gap-2">
+              <i data-lucide="cloud" class="w-4 h-4 text-amber-400"></i> Rekomendowane Obiekty na Dziś
+            </h3>
+            <span class="text-[11px] px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800">
+              ⚠️ Brak Rekomendacji (Wysokie Zachmurzenie)
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 bg-slate-950/60 p-2.5 rounded-lg border border-slate-800">
+            Brak rekomendowanych obiektów ze względu na zachmurzenie przekraczające 30% w godzinach ich przebywania nad horyzontem. Obiekty teoretycznie dostępne widoczne są na liście poniżej.
+          </p>
+        `;
       }
+      
+      container.appendChild(suggestionBox);
 
       // AKTUALIZACJA LICZNIKÓW
       const counts = {
