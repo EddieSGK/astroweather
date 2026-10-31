@@ -384,7 +384,7 @@
             </button>
           </div>
 
-          <!-- Obiekty (W tym dynamiczny panel rekomendacji Top 4) -->
+          <!-- Lista Obiektów (W tym dynamiczny panel rekomendacji Top 4) -->
           <div id="targetsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <p class="text-sm text-slate-400 col-span-2">Ładowanie obiektów...</p>
           </div>
@@ -521,336 +521,333 @@
     ];
     <!-- END #9 -->
 
-    <!-- #10a: JS_CALCULATIONS_FIXED -->
-<script>
-  function updateDateDisplay(now) {
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    let formattedDate = now.toLocaleDateString('pl-PL', options);
-    formattedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
-    document.getElementById('currentDate').innerText = formattedDate;
-  }
-
-  function getPlanetCoordinates(planetName, date) {
-    const d = (date - new Date(2000, 0, 1, 12, 0, 0)) / 86400000;
-    let N, i, w, a, e, M;
-
-    if (planetName === 'Jupiter') {
-      N = 100.4644 + 0.00003871 * d; i = 1.303; w = 273.867 + 0.00001645 * d;
-      a = 5.2026; e = 0.04849; M = 19.975 + 0.0830853 * d;
-    } else if (planetName === 'Saturn') {
-      N = 113.6655 + 0.00002388 * d; i = 2.489; w = 339.392 + 0.00002976 * d;
-      a = 9.5549; e = 0.05555; M = 317.020 + 0.0334442 * d;
-    } else if (planetName === 'Mars') {
-      N = 49.5581 + 0.00002110 * d; i = 1.8497; w = 286.502 + 0.00002929 * d;
-      a = 1.52368; e = 0.09340; M = 18.602 + 0.5240208 * d;
-    } else {
-      return null;
+    <!-- #10: JS_CALCULATIONS_AND_HELPERS -->
+    function updateDateDisplay(now) {
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      let formattedDate = now.toLocaleDateString('pl-PL', options);
+      formattedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+      document.getElementById('currentDate').innerText = formattedDate;
     }
 
-    const rad = Math.PI / 180;
-    let E = M + e * (180 / Math.PI) * Math.sin(M * rad);
-    for(let iter = 0; iter < 3; iter++) {
-      E = M + e * (180 / Math.PI) * Math.sin(E * rad);
-    }
+    function getPlanetCoordinates(planetName, date) {
+      const d = (date - new Date(2000, 0, 1, 12, 0, 0)) / 86400000;
+      let N, i, w, a, e, M;
 
-    const xv = a * (Math.cos(E * rad) - e);
-    const yv = a * Math.sqrt(1.0 - e * e) * Math.sin(E * rad);
-    const v = Math.atan2(yv, xv) / rad;
-    const eclipticLon = (v + w) % 360;
-    const raHours = (eclipticLon / 15 + 24) % 24;
-    const decDeg = 23.44 * Math.sin(eclipticLon * rad);
-
-    return { ra: raHours, dec: decDeg };
-  }
-
-  function getSeestarBaseConfig(cat) {
-    if (cat === 'nebula') {
-      return { subExp: '10s', baseTime: '60-90 min', filter: 'Dual-Band LP', notes: 'Mgławica emisyjna. Filtr Dual-Band drastycznie podnosi kontrast.' };
-    } else if (cat === 'reflection_nebula') {
-      return { subExp: '10s', baseTime: '90-120 min', filter: 'UV/IR Cut', notes: 'Mgławica pyłowa/odbiciowa. Filtr Dual-Band wytnie pył!' };
-    } else if (cat === 'galaxy') {
-      return { subExp: '10s', baseTime: '90-120 min', filter: 'UV/IR Cut', notes: 'Obiekt o widmie ciągłym. Wyłącz filtr Dual-Band.' };
-    } else if (cat === 'planet') {
-      return { subExp: '1s-2s / Video', baseTime: '5-10 min', filter: 'UV/IR Cut', notes: 'Użyj najkrótszych czasów/trybu Planetary, aby zapobiec prześwietleniu tarczy.' };
-    } else {
-      return { subExp: '10s', baseTime: '30-45 min', filter: 'UV/IR Cut', notes: 'Gromada gwiazd. Wystarczy krótka integracja bez filtrów pasmowych.' };
-    }
-  }
-
-  function getCategoryIcon(cat) {
-    if (cat === 'galaxy') {
-      return `<svg class="w-8 h-8 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <ellipse cx="12" cy="12" rx="9" ry="4" transform="rotate(-30 12 12)" stroke-dasharray="2 2"/>
-        <path d="M12 12c-2-1-4 0-5 2s0 4 2 4 4 0 5-2" stroke-linecap="round"/>
-        <path d="M12 12c2 1 4 0 5-2s0-4-2-4-4 0-5 2" stroke-linecap="round"/>
-        <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
-      </svg>`;
-    } else if (cat === 'globular') {
-      return `<svg class="w-8 h-8 text-purple-300" viewBox="0 0 24 24" fill="currentColor">
-        <circle cx="12" cy="12" r="3.5" class="text-white"/>
-        <circle cx="12" cy="7" r="1"/> <circle cx="12" cy="17" r="1"/>
-        <circle cx="7" cy="12" r="1"/> <circle cx="17" cy="12" r="1"/>
-        <circle cx="8.5" cy="8.5" r="1"/> <circle cx="15.5" cy="15.5" r="1"/>
-        <circle cx="15.5" cy="8.5" r="1"/> <circle cx="8.5" cy="15.5" r="1"/>
-        <circle cx="12" cy="4" r="0.6" opacity="0.6"/> <circle cx="12" cy="20" r="0.6" opacity="0.6"/>
-        <circle cx="4" cy="12" r="0.6" opacity="0.6"/> <circle cx="20" cy="12" r="0.6" opacity="0.6"/>
-      </svg>`;
-    } else if (cat === 'open_cluster') {
-      return `<svg class="w-8 h-8 text-amber-300" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2l1 2.5L15.5 5 13 6.5l.5 3L12 8l-1.5 1.5.5-3L8.5 5l2.5-.5z"/>
-        <circle cx="6" cy="14" r="1.5"/> <circle cx="18" cy="9" r="1.5"/>
-        <circle cx="15" cy="17" r="1.8"/> <circle cx="8" cy="8" r="1"/>
-      </svg>`;
-    } else if (cat === 'nebula' || cat === 'reflection_nebula') {
-      return `<svg class="w-8 h-8 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path d="M6 15c-2 0-4-1.5-4-3.5S4 8 6 8c.5-2 2.5-4 5-4 3 0 5 2 5.5 4.5 2 .5 3.5 2 3.5 4 0 2.5-2 4.5-4.5 4.5H6z" stroke-dasharray="3 2"/>
-        <circle cx="11" cy="11" r="1.5" fill="currentColor"/>
-      </svg>`;
-    } else if (cat === 'planet') {
-      return `<svg class="w-8 h-8 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <circle cx="12" cy="12" r="6"/>
-        <path d="M3 12c3-3 12-3 18 0M3 12c3 3 12 3 18 0" stroke-linecap="round"/>
-      </svg>`;
-    } else {
-      return `<svg class="w-8 h-8 text-slate-400" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="2"/></svg>`;
-    }
-  }
-
-  function toggleNightVision() {
-    document.body.classList.toggle('night-vision');
-  }
-
-  function formatTime(date) {
-    if (!date || isNaN(date.valueOf())) return '--:--';
-    return date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
-  }
-
-  function getHorizontalCoordinates(raHours, decDeg, latDeg, date) {
-    const rad = Math.PI / 180;
-    const d = (date - new Date(date.getUTCFullYear(), 0, 0)) / 86400000;
-    const LST = (100.46 + 0.985647 * d + LON + 15 * (date.getUTCHours() + date.getUTCMinutes() / 60)) % 360;
-    const HA = (LST - (raHours * 15) + 360) % 360;
-    
-    const sinAlt = Math.sin(decDeg * rad) * Math.sin(latDeg * rad) + 
-                   Math.cos(decDeg * rad) * Math.cos(latDeg * rad) * Math.cos(HA * rad);
-    const alt = Math.asin(sinAlt) / rad;
-
-    const cosAz = (Math.sin(decDeg * rad) - Math.sin(latDeg * rad) * Math.sin(alt * rad)) / 
-                  (Math.cos(latDeg * rad) * Math.cos(alt * rad));
-    let az = Math.acos(Math.max(-1, Math.min(1, cosAz))) / rad;
-    if (Math.sin(HA * rad) > 0) az = 360 - az;
-
-    return { alt: Math.round(alt), az: Math.round(az) };
-  }
-
-  function azToMainSector(az) {
-    const mainSectors = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-    const index = Math.round(az / 45) % 8;
-    return mainSectors[index];
-  }
-
-  function getSectorZoneName(az, alt, mode) {
-    if (mode === 'all_objects') {
-      if (alt > 0) return azToMainSector(az);
-      return null;
-    }
-
-    if (mode === 'grzes_garden') {
-      if ((az >= 337.5 || az < 22.5) && alt >= 24) return azToMainSector(az);
-      if (az >= 22.5 && az < 67.5 && alt >= 25) return azToMainSector(az);
-      if (az >= 67.5 && az < 112.5 && alt >= 27) return azToMainSector(az);
-      if (az >= 112.5 && az < 157.5 && alt >= 20) return azToMainSector(az);
-      if (az >= 157.5 && az <= 202.5 && alt >= 16) return azToMainSector(az);
-      if (alt >= 75) return 'Zenit';
-      return null;
-    } else {
-      // MÓJ BALKON
-      if ((az >= 337.5 || az < 67.5) && alt >= 30) return azToMainSector(az);
-      if (az >= 67.5 && az < 112.5 && alt >= 50) return azToMainSector(az);
-      if (az >= 112.5 && az <= 202.5 && alt >= 30) return azToMainSector(az);
-      if (alt >= 65) return 'Zenit';
-      return null;
-    }
-  }
-
-  // WIDOCZNOŚĆ GEOMETRYCZNA + WERYFIKACJA POGODOWA
-  function calculateDirectionWindows(ra, dec, astroStart, astroEnd, mode) {
-    const stepMs = 15 * 60 * 1000;
-    let startTime = new Date(astroStart.getTime());
-    let endTime = new Date(astroEnd.getTime());
-
-    if (isNaN(startTime.getTime()) || isNaN(endTime.getTime()) || startTime >= endTime) {
-      const now = new Date();
-      startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0);
-      endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 5, 0, 0);
-    }
-
-    let currentTime = new Date(startTime.getTime());
-    let rawWindows = [];
-
-    let maxVisibleAlt = -999;
-    let peakInfo = null;
-    let hasClearSkyWindow = false;
-
-    while (currentTime <= endTime) {
-      const pos = getHorizontalCoordinates(ra, dec, LAT, currentTime);
-      const zone = getSectorZoneName(pos.az, pos.alt, mode);
-
-      if (pos.alt > maxVisibleAlt) {
-        maxVisibleAlt = pos.alt;
-        peakInfo = {
-          time: new Date(currentTime.getTime()),
-          azDir: azToMainSector(pos.az),
-          alt: pos.alt
-        };
+      if (planetName === 'Jupiter') {
+        N = 100.4644 + 0.00003871 * d; i = 1.303; w = 273.867 + 0.00001645 * d;
+        a = 5.2026; e = 0.04849; M = 19.975 + 0.0830853 * d;
+      } else if (planetName === 'Saturn') {
+        N = 113.6655 + 0.00002388 * d; i = 2.489; w = 339.392 + 0.00002976 * d;
+        a = 9.5549; e = 0.05555; M = 317.020 + 0.0334442 * d;
+      } else if (planetName === 'Mars') {
+        N = 49.5581 + 0.00002110 * d; i = 1.8497; w = 286.502 + 0.00002929 * d;
+        a = 1.52368; e = 0.09340; M = 18.602 + 0.5240208 * d;
+      } else {
+        return null;
       }
 
-      let cloudCover = 0;
-      if (cachedHourlyWeather && cachedHourlyWeather.times) {
-        const curHour = currentTime.getHours();
-        const matchIdx = cachedHourlyWeather.times.findIndex(t => t.getHours() === curHour);
-        if (matchIdx !== -1) {
-          cloudCover = cachedHourlyWeather.clouds[matchIdx];
-        }
+      const rad = Math.PI / 180;
+      let E = M + e * (180 / Math.PI) * Math.sin(M * rad);
+      for(let iter = 0; iter < 3; iter++) {
+        E = M + e * (180 / Math.PI) * Math.sin(E * rad);
       }
 
-      if (zone !== null) {
-        if (cloudCover <= 30) {
-          hasClearSkyWindow = true;
-        }
-        rawWindows.push({
-          zone: zone,
-          time: new Date(currentTime.getTime()),
-          cloudCover: cloudCover
-        });
-      }
+      const xv = a * (Math.cos(E * rad) - e);
+      const yv = a * Math.sqrt(1.0 - e * e) * Math.sin(E * rad);
+      const v = Math.atan2(yv, xv) / rad;
+      const eclipticLon = (v + w) % 360;
+      const raHours = (eclipticLon / 15 + 24) % 24;
+      const decDeg = 23.44 * Math.sin(eclipticLon * rad);
 
-      currentTime = new Date(currentTime.getTime() + stepMs);
+      return { ra: raHours, dec: decDeg };
     }
 
-    // SCALANIE SĄSIEDNICH BLOKÓW W CIĄGŁE OKNA OBSERWACYJNE
-    let windows = [];
-    if (rawWindows.length > 0) {
-      let currentWindow = {
-        zone: rawWindows[0].zone,
-        start: rawWindows[0].time,
-        end: new Date(rawWindows[0].time.getTime() + stepMs)
-      };
+    function getSeestarBaseConfig(cat) {
+      if (cat === 'nebula') {
+        return { subExp: '10s', baseTime: '60-90 min', filter: 'Dual-Band LP', notes: 'Mgławica emisyjna. Filtr Dual-Band drastycznie podnosi kontrast.' };
+      } else if (cat === 'reflection_nebula') {
+        return { subExp: '10s', baseTime: '90-120 min', filter: 'UV/IR Cut', notes: 'Mgławica pyłowa/odbiciowa. Filtr Dual-Band wytnie pył!' };
+      } else if (cat === 'galaxy') {
+        return { subExp: '10s', baseTime: '90-120 min', filter: 'UV/IR Cut', notes: 'Obiekt o widmie ciągłym. Wyłącz filtr Dual-Band.' };
+      } else if (cat === 'planet') {
+        return { subExp: '1s-2s / Video', baseTime: '5-10 min', filter: 'UV/IR Cut', notes: 'Użyj najkrótszych czasów/trybu Planetary, aby zapobiec prześwietleniu tarczy.' };
+      } else {
+        return { subExp: '10s', baseTime: '30-45 min', filter: 'UV/IR Cut', notes: 'Gromada gwiazd. Wystarczy krótka integracja bez filtrów pasmowych.' };
+      }
+    }
 
-      for (let i = 1; i < rawWindows.length; i++) {
-        const item = rawWindows[i];
-        const prevTime = rawWindows[i - 1].time;
-        const diffMinutes = (item.time - prevTime) / 60000;
+    function getCategoryIcon(cat) {
+      if (cat === 'galaxy') {
+        return `<svg class="w-8 h-8 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <ellipse cx="12" cy="12" rx="9" ry="4" transform="rotate(-30 12 12)" stroke-dasharray="2 2"/>
+          <path d="M12 12c-2-1-4 0-5 2s0 4 2 4 4 0 5-2" stroke-linecap="round"/>
+          <path d="M12 12c2 1 4 0 5-2s0-4-2-4-4 0-5 2" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+        </svg>`;
+      } else if (cat === 'globular') {
+        return `<svg class="w-8 h-8 text-purple-300" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="12" cy="12" r="3.5" class="text-white"/>
+          <circle cx="12" cy="7" r="1"/> <circle cx="12" cy="17" r="1"/>
+          <circle cx="7" cy="12" r="1"/> <circle cx="17" cy="12" r="1"/>
+          <circle cx="8.5" cy="8.5" r="1"/> <circle cx="15.5" cy="15.5" r="1"/>
+          <circle cx="15.5" cy="8.5" r="1"/> <circle cx="8.5" cy="15.5" r="1"/>
+          <circle cx="12" cy="4" r="0.6" opacity="0.6"/> <circle cx="12" cy="20" r="0.6" opacity="0.6"/>
+          <circle cx="4" cy="12" r="0.6" opacity="0.6"/> <circle cx="20" cy="12" r="0.6" opacity="0.6"/>
+        </svg>`;
+      } else if (cat === 'open_cluster') {
+        return `<svg class="w-8 h-8 text-amber-300" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2l1 2.5L15.5 5 13 6.5l.5 3L12 8l-1.5 1.5.5-3L8.5 5l2.5-.5z"/>
+          <circle cx="6" cy="14" r="1.5"/> <circle cx="18" cy="9" r="1.5"/>
+          <circle cx="15" cy="17" r="1.8"/> <circle cx="8" cy="8" r="1"/>
+        </svg>`;
+      } else if (cat === 'nebula' || cat === 'reflection_nebula') {
+        return `<svg class="w-8 h-8 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M6 15c-2 0-4-1.5-4-3.5S4 8 6 8c.5-2 2.5-4 5-4 3 0 5 2 5.5 4.5 2 .5 3.5 2 3.5 4 0 2.5-2 4.5-4.5 4.5H6z" stroke-dasharray="3 2"/>
+          <circle cx="11" cy="11" r="1.5" fill="currentColor"/>
+        </svg>`;
+      } else if (cat === 'planet') {
+        return `<svg class="w-8 h-8 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="6"/>
+          <path d="M3 12c3-3 12-3 18 0M3 12c3 3 12 3 18 0" stroke-linecap="round"/>
+        </svg>`;
+      } else {
+        return `<svg class="w-8 h-8 text-slate-400" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="2"/></svg>`;
+      }
+    }
 
-        if (diffMinutes <= 20) {
-          currentWindow.end = new Date(item.time.getTime() + stepMs);
-          if (currentWindow.zone !== item.zone && item.zone !== 'Zenit') {
-            currentWindow.zone = item.zone;
-          }
-        } else {
-          windows.push(currentWindow);
-          currentWindow = {
-            zone: item.zone,
-            start: item.time,
-            end: new Date(item.time.getTime() + stepMs)
+    function toggleNightVision() {
+      document.body.classList.toggle('night-vision');
+    }
+
+    function formatTime(date) {
+      if (!date || isNaN(date.valueOf())) return '--:--';
+      return date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function getHorizontalCoordinates(raHours, decDeg, latDeg, date) {
+      const rad = Math.PI / 180;
+      const d = (date - new Date(date.getUTCFullYear(), 0, 0)) / 86400000;
+      const LST = (100.46 + 0.985647 * d + LON + 15 * (date.getUTCHours() + date.getUTCMinutes() / 60)) % 360;
+      const HA = (LST - (raHours * 15) + 360) % 360;
+      
+      const sinAlt = Math.sin(decDeg * rad) * Math.sin(latDeg * rad) + 
+                     Math.cos(decDeg * rad) * Math.cos(latDeg * rad) * Math.cos(HA * rad);
+      const alt = Math.asin(sinAlt) / rad;
+
+      const cosAz = (Math.sin(decDeg * rad) - Math.sin(latDeg * rad) * Math.sin(alt * rad)) / 
+                    (Math.cos(latDeg * rad) * Math.cos(alt * rad));
+      let az = Math.acos(Math.max(-1, Math.min(1, cosAz))) / rad;
+      if (Math.sin(HA * rad) > 0) az = 360 - az;
+
+      return { alt: Math.round(alt), az: Math.round(az) };
+    }
+
+    function azToMainSector(az) {
+      const mainSectors = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+      const index = Math.round(az / 45) % 8;
+      return mainSectors[index];
+    }
+
+    function getSectorZoneName(az, alt, mode) {
+      if (mode === 'all_objects') {
+        if (alt > 0) return azToMainSector(az);
+        return null;
+      }
+
+      if (mode === 'grzes_garden') {
+        if ((az >= 337.5 || az < 22.5) && alt >= 24) return azToMainSector(az);
+        if (az >= 22.5 && az < 67.5 && alt >= 25) return azToMainSector(az);
+        if (az >= 67.5 && az < 112.5 && alt >= 27) return azToMainSector(az);
+        if (az >= 112.5 && az < 157.5 && alt >= 20) return azToMainSector(az);
+        if (az >= 157.5 && az <= 202.5 && alt >= 16) return azToMainSector(az);
+        if (alt >= 75) return 'Zenit';
+        return null;
+      } else {
+        // MÓJ BALKON
+        if ((az >= 337.5 || az < 67.5) && alt >= 30) return azToMainSector(az);
+        if (az >= 67.5 && az < 112.5 && alt >= 50) return azToMainSector(az);
+        if (az >= 112.5 && az <= 202.5 && alt >= 30) return azToMainSector(az);
+        if (alt >= 65) return 'Zenit';
+        return null;
+      }
+    }
+
+    function calculateDirectionWindows(ra, dec, astroStart, astroEnd, mode) {
+      const stepMs = 15 * 60 * 1000;
+      let startTime = new Date(astroStart.getTime());
+      let endTime = new Date(astroEnd.getTime());
+
+      if (isNaN(startTime.getTime()) || isNaN(endTime.getTime()) || startTime >= endTime) {
+        const now = new Date();
+        startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0);
+        endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 5, 0, 0);
+      }
+
+      let currentTime = new Date(startTime.getTime());
+      let rawWindows = [];
+
+      let maxVisibleAlt = -999;
+      let peakInfo = null;
+      let hasClearSkyWindow = false;
+
+      while (currentTime <= endTime) {
+        const pos = getHorizontalCoordinates(ra, dec, LAT, currentTime);
+        const zone = getSectorZoneName(pos.az, pos.alt, mode);
+
+        if (pos.alt > maxVisibleAlt) {
+          maxVisibleAlt = pos.alt;
+          peakInfo = {
+            time: new Date(currentTime.getTime()),
+            azDir: azToMainSector(pos.az),
+            alt: pos.alt
           };
         }
+
+        let cloudCover = 0;
+        if (cachedHourlyWeather && cachedHourlyWeather.times) {
+          const curHour = currentTime.getHours();
+          const matchIdx = cachedHourlyWeather.times.findIndex(t => t.getHours() === curHour);
+          if (matchIdx !== -1) {
+            cloudCover = cachedHourlyWeather.clouds[matchIdx];
+          }
+        }
+
+        if (zone !== null) {
+          if (cloudCover <= 30) {
+            hasClearSkyWindow = true;
+          }
+          rawWindows.push({
+            zone: zone,
+            time: new Date(currentTime.getTime()),
+            cloudCover: cloudCover
+          });
+        }
+
+        currentTime = new Date(currentTime.getTime() + stepMs);
       }
-      windows.push(currentWindow);
+
+      // SCALANIE SĄSIEDNICH BLOKÓW W CIĄGŁE OKNA OBSERWACYJNE
+      let windows = [];
+      if (rawWindows.length > 0) {
+        let currentWindow = {
+          zone: rawWindows[0].zone,
+          start: rawWindows[0].time,
+          end: new Date(rawWindows[0].time.getTime() + stepMs)
+        };
+
+        for (let i = 1; i < rawWindows.length; i++) {
+          const item = rawWindows[i];
+          const prevTime = rawWindows[i - 1].time;
+          const diffMinutes = (item.time - prevTime) / 60000;
+
+          if (diffMinutes <= 20) {
+            currentWindow.end = new Date(item.time.getTime() + stepMs);
+            if (currentWindow.zone !== item.zone && item.zone !== 'Zenit') {
+              currentWindow.zone = item.zone;
+            }
+          } else {
+            windows.push(currentWindow);
+            currentWindow = {
+              zone: item.zone,
+              start: item.time,
+              end: new Date(item.time.getTime() + stepMs)
+            };
+          }
+        }
+        windows.push(currentWindow);
+      }
+
+      return { windows, maxVisibleAlt, peakInfo, hasClearSkyWindow };
     }
 
-    return { windows, maxVisibleAlt, peakInfo, hasClearSkyWindow };
-  }
+    function updateCompassVisuals(mode) {
+      const allSectors = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+      let openSectors = ['NE', 'E', 'SE', 'S']; 
 
-  function updateCompassVisuals(mode) {
-    const allSectors = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-    let openSectors = ['NE', 'E', 'SE', 'S']; 
+      if (mode === 'grzes_garden') {
+        openSectors = ['N', 'NE', 'E', 'SE', 'S']; 
+      }
 
-    if (mode === 'grzes_garden') {
-      openSectors = ['N', 'NE', 'E', 'SE', 'S']; 
-    }
+      const activeColor = "fill-emerald-400 font-extrabold";
+      const inactiveColor = "fill-slate-600 font-bold";
+      const cardinalColor = "fill-indigo-400 font-black";
 
-    const activeColor = "fill-emerald-400 font-extrabold";
-    const inactiveColor = "fill-slate-600 font-bold";
-    const cardinalColor = "fill-indigo-400 font-black";
+      allSectors.forEach(sec => {
+        const elem = document.getElementById(`compass-${sec}`);
+        if (!elem) return;
 
-    allSectors.forEach(sec => {
-      const elem = document.getElementById(`compass-${sec}`);
-      if (!elem) return;
+        if (mode === 'all_objects') {
+          if (['N', 'E', 'S', 'W'].includes(sec)) {
+            elem.setAttribute('class', cardinalColor);
+          } else {
+            elem.setAttribute('class', activeColor);
+          }
+        } else {
+          if (openSectors.includes(sec)) {
+            elem.setAttribute('class', activeColor);
+          } else {
+            elem.setAttribute('class', inactiveColor);
+          }
+        }
+      });
 
+      const legendElem = document.getElementById('compassLegend');
       if (mode === 'all_objects') {
-        if (['N', 'E', 'S', 'W'].includes(sec)) {
-          elem.setAttribute('class', cardinalColor);
-        } else {
-          elem.setAttribute('class', activeColor);
-        }
+        legendElem.innerHTML = `
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span>
+            <span class="text-emerald-300 font-semibold">Wszystkie sektory otwarte (&gt;0°)</span>
+          </div>
+          <p class="text-slate-400 text-[10px]">Filtr horyzontu jest wyłączony. Wyświetlanie obiektów nad pełnym horyzontem.</p>
+        `;
+      } else if (mode === 'grzes_garden') {
+        legendElem.innerHTML = `
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span>
+            <span class="text-slate-300 font-medium">Ogródek Grzesia (N &gt;24°, NE &gt;25°, E &gt;27°, SE &gt;20°, S &gt;16°)</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded bg-slate-600 shrink-0"></span>
+            <span class="text-slate-400">Ściana bloku Skłodowskiej 92 (Zachód zasłonięty)</span>
+          </div>
+        `;
       } else {
-        if (openSectors.includes(sec)) {
-          elem.setAttribute('class', activeColor);
+        legendElem.innerHTML = `
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span>
+            <span class="text-slate-300 font-medium">Mój balkon (NE, E &gt;50°, SE, S)</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded bg-slate-600 shrink-0"></span>
+            <span class="text-slate-400">Sektory zasłonięte</span>
+          </div>
+        `;
+      }
+    }
+
+    function setCategoryFilter(cat) {
+      activeCategoryFilter = cat;
+      const categories = ['all', 'galaxy', 'nebula', 'cluster', 'planet'];
+      
+      categories.forEach(c => {
+        const btn = document.getElementById(`catBtn-${c}`);
+        if (!btn) return;
+        if (c === cat) {
+          btn.className = "px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-indigo-600 text-white border-indigo-500 shadow";
         } else {
-          elem.setAttribute('class', inactiveColor);
+          btn.className = "px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700";
         }
-      }
-    });
+      });
 
-    const legendElem = document.getElementById('compassLegend');
-    if (mode === 'all_objects') {
-      legendElem.innerHTML = `
-        <div class="flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span>
-          <span class="text-emerald-300 font-semibold">Wszystkie sektory otwarte (&gt;0°)</span>
-        </div>
-        <p class="text-slate-400 text-[10px]">Filtr horyzontu jest wyłączony. Wyświetlanie obiektów nad pełnym horyzontem.</p>
-      `;
-    } else if (mode === 'grzes_garden') {
-      legendElem.innerHTML = `
-        <div class="flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span>
-          <span class="text-slate-300 font-medium">Ogródek Grzesia (N &gt;24°, NE &gt;25°, E &gt;27°, SE &gt;20°, S &gt;16°)</span>
-        </div>
-        <div class="flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded bg-slate-600 shrink-0"></span>
-          <span class="text-slate-400">Ściana bloku Skłodowskiej 92 (Zachód zasłonięty)</span>
-        </div>
-      `;
-    } else {
-      legendElem.innerHTML = `
-        <div class="flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span>
-          <span class="text-slate-300 font-medium">Mój balkon (NE, E &gt;50°, SE, S)</span>
-        </div>
-        <div class="flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded bg-slate-600 shrink-0"></span>
-          <span class="text-slate-400">Sektory zasłonięte</span>
-        </div>
-      `;
+      updateTargetsFilter();
     }
-  }
 
-  function setCategoryFilter(cat) {
-    activeCategoryFilter = cat;
-    const categories = ['all', 'galaxy', 'nebula', 'cluster', 'planet'];
-    
-    categories.forEach(c => {
-      const btn = document.getElementById(`catBtn-${c}`);
-      if (!btn) return;
-      if (c === cat) {
-        btn.className = "px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-indigo-600 text-white border-indigo-500 shadow";
-      } else {
-        btn.className = "px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700";
+    function updateTargetsFilter() {
+      if (cachedAstroStart && cachedAstroEnd) {
+        renderTargets(cachedAstroStart, cachedAstroEnd, cachedMoonFraction);
       }
-    });
-
-    updateTargetsFilter();
-  }
-
-  function updateTargetsFilter() {
-    if (cachedAstroStart && cachedAstroEnd) {
-      renderTargets(cachedAstroStart, cachedAstroEnd, cachedMoonFraction);
     }
-  }
-</script>
-<!-- END #10a -->
+    <!-- END #10 -->
 
     <!-- #11: JS_INIT_AND_WEATHER_PROCESSING -->
     async function initDashboard() {
@@ -1131,9 +1128,9 @@
       const validTargets = [];
 
       fullCatalog.forEach(item => {
-        const { windows, maxVisibleAlt, peakInfo } = calculateDirectionWindows(item.ra, item.dec, astroStart, astroEnd, mode);
+        const { windows, maxVisibleAlt, peakInfo, hasClearSkyWindow } = calculateDirectionWindows(item.ra, item.dec, astroStart, astroEnd, mode);
 
-        if (windows.length > 0 && maxVisibleAlt > -90) {
+        if (windows.length > 0 && maxVisibleAlt > 0) {
           const currentPos = getHorizontalCoordinates(item.ra, item.dec, LAT, midNight);
 
           const posStart = getHorizontalCoordinates(item.ra, item.dec, LAT, astroStart);
@@ -1150,18 +1147,20 @@
             currentAzDir: azToMainSector(currentPos.az),
             trajectoryText: `${dirStart} ➔ ${dirMax} ➔ ${dirEnd}`,
             windows: windows,
-            peakInfo: peakInfo
+            peakInfo: peakInfo,
+            hasClearSkyWindow: hasClearSkyWindow
           });
         }
       });
 
       validTargets.sort((a, b) => b.maxAlt - a.maxAlt);
 
-      // REKOMENDOWANE OBIEKTY (WYKLUCZAMY PLANETY, TYLKO GALAKTYKI I MGŁAWICE)
+      // REKOMENDACJE TOP 4: TYLKO DLA OBIEKTÓW Z OKNEM ZACHMURZENIA < 30% I BEZ PLANET
       const idealTargets = validTargets.filter(t => 
         t.suit === 'Idealny' && 
         t.maxAlt >= 25 && 
         t.cat !== 'planet' &&
+        t.hasClearSkyWindow &&
         ['galaxy', 'nebula', 'reflection_nebula'].includes(t.cat)
       );
 
@@ -1169,10 +1168,8 @@
       let top4 = [];
 
       if (currentScore >= 85) {
-        // Dobra pogoda - wyzwania (słabsze jasnościowo)
         top4 = idealTargets.sort((a, b) => b.mag - a.mag).slice(0, 4);
       } else {
-        // Standardowo - najjaśniejsze cele
         top4 = idealTargets.sort((a, b) => a.mag - b.mag).slice(0, 4);
       }
 
@@ -1213,7 +1210,7 @@
         container.appendChild(suggestionBox);
       }
 
-      // Aktualizacja liczników w przyciskach filtrów
+      // AKTUALIZACJA LICZNIKÓW
       const counts = {
         all: validTargets.length,
         galaxy: validTargets.filter(t => t.cat === 'galaxy').length,
@@ -1240,7 +1237,7 @@
       }
 
       if (filteredTargets.length === 0) {
-        container.innerHTML += `<p class="text-sm text-slate-400 col-span-2 py-4">Brak obiektów z wybranej kategorii spełniających kryteria horyzontu i pogody.</p>`;
+        container.innerHTML += `<p class="text-sm text-slate-400 col-span-2 py-4">Brak obiektów z wybranej kategorii spełniających kryteria horyzontu w tę noc.</p>`;
         lucide.createIcons();
         return;
       }
@@ -1312,14 +1309,14 @@
               </div>
             </div>
 
-            <!-- Scalone Przedziały Czasowe -->
+            <!-- Scalone Przedziały Czasowe Widoczności -->
             <div class="best-window-box bg-emerald-950/40 border border-emerald-500/40 p-2.5 rounded-lg text-xs space-y-1.5">
               <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1 mb-1">
                 <i data-lucide="clock" class="w-3.5 h-3.5"></i> Widoczność w Sektorach:
               </div>
               
               <div class="space-y-1">
-                ${windowsHtml || '<span class="text-rose-400">Brak okna z zachmurzeniem &lt;30%</span>'}
+                ${windowsHtml}
               </div>
 
               <div class="text-[11px] text-slate-300 flex justify-between pt-1 border-t border-emerald-900/40 mt-1">
