@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pl" class="h-full">
 <head>
+  <!-- #1: HEAD_META_AND_STYLES -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard Pogodowo-Astronomiczny (Bydgoszcz)</title>
@@ -68,11 +69,13 @@
       } catch (e) {}
     };
   </script>
+  <!-- END #1 -->
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen transition-colors duration-300 font-sans pb-12 w-full">
 
   <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <!-- Header -->
+    
+    <!-- #2: HEADER_SECTION -->
     <header class="flex flex-col md:flex-row justify-between items-center pb-6 mb-6 border-b border-slate-800 gap-4">
       <div>
         <h1 class="text-3xl font-bold flex items-center gap-2">
@@ -101,6 +104,7 @@
         </button>
       </div>
     </header>
+    <!-- END #2 -->
 
     <!-- Main Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -108,7 +112,7 @@
       <!-- Left Column: Summary & Solar/Lunar Info -->
       <div class="space-y-6">
         
-        <!-- Stargazing Index Card -->
+        <!-- #3: STARGAZING_INDEX_CARD -->
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
           <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2">
             <i data-lucide="sparkles" class="text-amber-400"></i> Warunki Obserwacyjne
@@ -177,8 +181,9 @@
             </div>
           </div>
         </div>
+        <!-- END #3 -->
 
-        <!-- Dew Point & Dew Heater Status Card -->
+        <!-- #4: DEW_POINT_CARD -->
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
           <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-3">
             <i data-lucide="droplets" class="text-cyan-400"></i> Temperatura & Wilgotność (Roszenie)
@@ -203,8 +208,9 @@
             </div>
           </div>
         </div>
+        <!-- END #4 -->
 
-        <!-- Solar / Ephemeris Card -->
+        <!-- #5: SOLAR_LUNAR_CARDS -->
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
           <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-3">
             <i data-lucide="sun" class="text-amber-400"></i> Słońce & Zmierzch
@@ -230,7 +236,6 @@
           </div>
         </div>
 
-        <!-- Lunar Info Card -->
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
           <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-3">
             <i data-lucide="moon" class="text-blue-300"></i> Księżyc
@@ -255,8 +260,9 @@
             </div>
           </div>
         </div>
+        <!-- END #5 -->
 
-        <!-- Dynamiczna Róża Wiatrów -->
+        <!-- #6: COMPASS_ROSE_CARD -->
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
           <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-3">
             <i data-lucide="compass" class="text-emerald-400"></i> Róża Wiatrów (Kierunki)
@@ -291,13 +297,14 @@
             <div id="compassLegend" class="mt-3 grid grid-cols-1 gap-2 text-[11px] w-full pt-2 border-t border-slate-800"></div>
           </div>
         </div>
+        <!-- END #6 -->
 
       </div>
 
       <!-- Right Column: Chart & Suggested Targets -->
       <div class="lg:col-span-2 space-y-6">
 
-        <!-- Chart Card -->
+        <!-- #7: CHART_CARD -->
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
             <div>
@@ -313,8 +320,9 @@
             <canvas id="cloudChart"></canvas>
           </div>
         </div>
+        <!-- END #7 -->
 
-        <!-- Seestar Telescope Cheat Sheet / Targets -->
+        <!-- #8: TARGETS_SECTION_HEADER_AND_FILTERS -->
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
           <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-4">
             <div>
@@ -376,16 +384,19 @@
             </button>
           </div>
 
+          <!-- Obiekty (W tym dynamiczny panel rekomendacji Top 4) -->
           <div id="targetsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <p class="text-sm text-slate-400 col-span-2">Ładowanie obiektów...</p>
           </div>
         </div>
+        <!-- END #8 -->
 
       </div>
 
     </div>
   </div>
 
+  <!-- #9: JS_SCRIPT_CONFIG_AND_CATALOG -->
   <script>
     const LAT = 53.1235; // Bydgoszcz
     const LON = 18.0084;
@@ -508,7 +519,9 @@
       { id:'M109', name:'M109', type:'Galaxy', mag:9.8, ra:11.96, dec:53.37, cat:'galaxy', suit:'Umiarkowany' },
       { id:'M110', name:'M110', type:'Galaxy', mag:8.5, ra:0.673, dec:41.69, cat:'galaxy', suit:'Dobry' }
     ];
+    <!-- END #9 -->
 
+    <!-- #10: JS_CALCULATIONS_AND_HELPERS -->
     function updateDateDisplay(now) {
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
       let formattedDate = now.toLocaleDateString('pl-PL', options);
@@ -642,13 +655,13 @@
       }
 
       if (mode === 'grzes_garden') {
-        if ((az >= 337.5 || az < 22.5) && alt >= 24) return azToMainSector(az);   // N >24°
-        if (az >= 22.5 && az < 67.5 && alt >= 25) return azToMainSector(az);     // NE >25°
-        if (az >= 67.5 && az < 112.5 && alt >= 27) return azToMainSector(az);    // E >27°
-        if (az >= 112.5 && az < 157.5 && alt >= 20) return azToMainSector(az);   // SE >20°
-        if (az >= 157.5 && az <= 202.5 && alt >= 16) return azToMainSector(az);  // S >16°
+        if ((az >= 337.5 || az < 22.5) && alt >= 24) return azToMainSector(az);
+        if (az >= 22.5 && az < 67.5 && alt >= 25) return azToMainSector(az);
+        if (az >= 67.5 && az < 112.5 && alt >= 27) return azToMainSector(az);
+        if (az >= 112.5 && az < 157.5 && alt >= 20) return azToMainSector(az);
+        if (az >= 157.5 && az <= 202.5 && alt >= 16) return azToMainSector(az);
         if (alt >= 75) return 'Zenit';
-        return null; // Zachód całkowicie blokowany
+        return null;
       } else {
         // MÓJ BALKON
         if ((az >= 337.5 || az < 67.5) && alt >= 30) return azToMainSector(az);
@@ -659,6 +672,7 @@
       }
     }
 
+    // NAPRAWIONA FUNKCJA OKIEN CZASOWYCH I ZACHMURZENIA
     function calculateDirectionWindows(ra, dec, astroStart, astroEnd, mode) {
       const stepMs = 15 * 60 * 1000;
       let startTime = new Date(astroStart.getTime());
@@ -671,9 +685,7 @@
       }
 
       let currentTime = new Date(startTime.getTime());
-      let currentZone = null;
-      let zoneStartTime = null;
-      let windows = [];
+      let rawWindows = [];
 
       let maxVisibleAlt = -999;
       let peakInfo = null;
@@ -682,7 +694,6 @@
         const pos = getHorizontalCoordinates(ra, dec, LAT, currentTime);
         const zone = getSectorZoneName(pos.az, pos.alt, mode);
 
-        // Wyliczamy rzeczywistą kulminację (szczyt) na niebie
         if (pos.alt > maxVisibleAlt) {
           maxVisibleAlt = pos.alt;
           peakInfo = {
@@ -692,38 +703,56 @@
           };
         }
 
-        // Filtrowanie z uwzględnieniem zachmurzenia w danej godzinie (< 30%)
         let cloudOk = true;
         if (cachedHourlyWeather && cachedHourlyWeather.times) {
-          const matchingIdx = cachedHourlyWeather.times.findIndex(t => Math.abs(t - currentTime) < 1800000);
-          if (matchingIdx !== -1 && cachedHourlyWeather.clouds[matchingIdx] > 30) {
+          const curHour = currentTime.getHours();
+          const matchIdx = cachedHourlyWeather.times.findIndex(t => t.getHours() === curHour);
+          if (matchIdx !== -1 && cachedHourlyWeather.clouds[matchIdx] > 30) {
             cloudOk = false;
           }
         }
 
         const effectiveZone = cloudOk ? zone : null;
 
-        if (effectiveZone !== currentZone) {
-          if (currentZone !== null) {
-            windows.push({
-              zone: currentZone,
-              start: new Date(zoneStartTime.getTime()),
-              end: new Date(currentTime.getTime())
-            });
-          }
-          currentZone = effectiveZone;
-          zoneStartTime = new Date(currentTime.getTime());
+        if (effectiveZone !== null) {
+          rawWindows.push({
+            zone: effectiveZone,
+            time: new Date(currentTime.getTime())
+          });
         }
 
         currentTime = new Date(currentTime.getTime() + stepMs);
       }
 
-      if (currentZone !== null) {
-        windows.push({
-          zone: currentZone,
-          start: new Date(zoneStartTime.getTime()),
-          end: new Date(endTime.getTime())
-        });
+      // SCALANIE SĄSIEDNICH BLOKÓW W CIĄGŁE OKNA OBSERWACYJNE
+      let windows = [];
+      if (rawWindows.length > 0) {
+        let currentWindow = {
+          zone: rawWindows[0].zone,
+          start: rawWindows[0].time,
+          end: new Date(rawWindows[0].time.getTime() + stepMs)
+        };
+
+        for (let i = 1; i < rawWindows.length; i++) {
+          const item = rawWindows[i];
+          const prevTime = rawWindows[i - 1].time;
+          const diffMinutes = (item.time - prevTime) / 60000;
+
+          if (diffMinutes <= 20) {
+            currentWindow.end = new Date(item.time.getTime() + stepMs);
+            if (currentWindow.zone !== item.zone && item.zone !== 'Zenit') {
+              currentWindow.zone = item.zone;
+            }
+          } else {
+            windows.push(currentWindow);
+            currentWindow = {
+              zone: item.zone,
+              start: item.time,
+              end: new Date(item.time.getTime() + stepMs)
+            };
+          }
+        }
+        windows.push(currentWindow);
       }
 
       return { windows, maxVisibleAlt, peakInfo };
@@ -816,7 +845,9 @@
         renderTargets(cachedAstroStart, cachedAstroEnd, cachedMoonFraction);
       }
     }
+    <!-- END #10 -->
 
+    <!-- #11: JS_INIT_AND_WEATHER_PROCESSING -->
     async function initDashboard() {
       lucide.createIcons();
       const now = new Date();
@@ -1044,7 +1075,9 @@
         }
       });
     }
+    <!-- END #11 -->
 
+    <!-- #12: JS_RENDER_TARGETS_AND_TOP4 -->
     function renderTargets(astroStart, astroEnd, moonFraction) {
       const container = document.getElementById('targetsList');
       container.innerHTML = '';
@@ -1119,16 +1152,22 @@
 
       validTargets.sort((a, b) => b.maxAlt - a.maxAlt);
 
-      // --- DEDYKOWANY PANEL REKOMENDACJI NA DZIŚ (TOP 4) ---
-      const idealTargets = validTargets.filter(t => t.suit === 'Idealny' && t.maxAlt >= 25);
+      // REKOMENDOWANE OBIEKTY (WYKLUCZAMY PLANETY, TYLKO GALAKTYKI I MGŁAWICE)
+      const idealTargets = validTargets.filter(t => 
+        t.suit === 'Idealny' && 
+        t.maxAlt >= 25 && 
+        t.cat !== 'planet' &&
+        ['galaxy', 'nebula', 'reflection_nebula'].includes(t.cat)
+      );
+
       const currentScore = parseInt(document.getElementById('stargazingScore').innerText) || 0;
       let top4 = [];
 
       if (currentScore >= 85) {
-        // Przy idealnej pogodzie proponujemy również trudniejsze/słabsze obiekty wyzwaniowe
+        // Dobra pogoda - wyzwania (słabsze jasnościowo)
         top4 = idealTargets.sort((a, b) => b.mag - a.mag).slice(0, 4);
       } else {
-        // Standardowo - najjaśniejsze i najbardziej widowiskowe
+        // Standardowo - najjaśniejsze cele
         top4 = idealTargets.sort((a, b) => a.mag - b.mag).slice(0, 4);
       }
 
@@ -1155,13 +1194,13 @@
         suggestionBox.innerHTML = `
           <div class="flex items-center justify-between border-b border-indigo-800/50 pb-2">
             <h3 class="text-sm font-bold text-indigo-300 flex items-center gap-2">
-              <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i> Dedykowany Plan Obserwacyjny na Dziś (Top 4)
+              <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i> Dedykowany Plan Obserwacyjny na Dziś (Top 4 - Galaktyki & Mgławice)
             </h3>
             <span class="text-[11px] px-2 py-0.5 rounded bg-indigo-900/60 text-indigo-200 border border-indigo-700/50">
               ${currentScore >= 85 ? '🌟 Warunki Idealne (Tryb Zaawansowany)' : '🎯 Standardowy Plan Obserwacji'}
             </span>
           </div>
-          <p class="text-xs text-slate-400">Obiekty spełniające kryterium <strong class="text-emerald-400">Idealny</strong> przy zachmurzeniu &lt;30%:</p>
+          <p class="text-xs text-slate-400">Rekomendowane mgławice i galaktyki przy zachmurzeniu &lt;30%:</p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
             ${top4Html}
           </div>
@@ -1184,7 +1223,6 @@
       document.getElementById('cnt-cluster').innerText = counts.cluster;
       document.getElementById('cnt-planet').innerText = counts.planet;
 
-      // Filtrowanie listy według wybranego przycisku
       let filteredTargets = validTargets;
       if (activeCategoryFilter === 'galaxy') {
         filteredTargets = validTargets.filter(t => t.cat === 'galaxy');
@@ -1197,7 +1235,7 @@
       }
 
       if (filteredTargets.length === 0) {
-        container.innerHTML += `<p class="text-sm text-slate-400 col-span-2 py-4">Brak obiektów z wybranej kategorii spełniających kryteria horyzontu w tę noc.</p>`;
+        container.innerHTML += `<p class="text-sm text-slate-400 col-span-2 py-4">Brak obiektów z wybranej kategorii spełniających kryteria horyzontu i pogody.</p>`;
         lucide.createIcons();
         return;
       }
@@ -1276,7 +1314,7 @@
               </div>
               
               <div class="space-y-1">
-                ${windowsHtml}
+                ${windowsHtml || '<span class="text-rose-400">Brak okna z zachmurzeniem &lt;30%</span>'}
               </div>
 
               <div class="text-[11px] text-slate-300 flex justify-between pt-1 border-t border-emerald-900/40 mt-1">
@@ -1320,5 +1358,6 @@
 
     window.addEventListener('DOMContentLoaded', initDashboard);
   </script>
+  <!-- END #12 -->
 </body>
 </html>
