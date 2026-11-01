@@ -579,15 +579,40 @@
 
     function getSeestarBaseConfig(cat) {
       if (cat === 'nebula') {
-        return { subExp: '10s', baseTime: '60-90 min', filter: 'Dual-Band LP', notes: 'Mgławica emisyjna. Filtr Dual-Band drastycznie podnosi kontrast.' };
+        return { 
+          subExp: '10s', 
+          baseTime: '60-90 min', 
+          filter: 'Dual-Band LP (Włącz w apce)', 
+          notes: 'Mgławica emisyjna. Włącz filtr Dual-Band w aplikacji Seestar, aby odciąć zaświetlenie i wyciągnąć wodór/tlen.' 
+        };
       } else if (cat === 'reflection_nebula') {
-        return { subExp: '10s', baseTime: '90-120 min', filter: 'UV/IR Cut', notes: 'Mgławica pyłowa/odbiciowa. Filtr Dual-Band wytnie pył!' };
+        return { 
+          subExp: '10s', 
+          baseTime: '90-120 min', 
+          filter: 'UV/IR Cut (Domyślny)', 
+          notes: 'Mgławica pyłowa/odbiciowa. Zostaw filtr domyślny UV/IR Cut (Dual-Band wygasi ciągłe widmo pyłu!).' 
+        };
       } else if (cat === 'galaxy') {
-        return { subExp: '10s', baseTime: '90-120 min', filter: 'UV/IR Cut', notes: 'Obiekt o widmie ciągłym. Wyłącz filtr Dual-Band.' };
+        return { 
+          subExp: '10s', 
+          baseTime: '90-120 min', 
+          filter: 'UV/IR Cut (Domyślny)', 
+          notes: 'Galaktyka (widmo ciągłe). Wyłącz filtr Dual-Band – fotografuj na domyślnym UV/IR Cut.' 
+        };
       } else if (cat === 'planet') {
-        return { subExp: '1s-2s / Video', baseTime: '5-10 min', filter: 'UV/IR Cut', notes: 'Użyj najkrótszych czasów/trybu Planetary, aby zapobiec prześwietleniu tarczy.' };
+        return { 
+          subExp: '1s-2s / Video', 
+          baseTime: '5-10 min', 
+          filter: 'UV/IR Cut (Domyślny)', 
+          notes: 'Użyj trybu Planetary / krótkich czasów, aby zapobiec prześwietleniu tarczy.' 
+        };
       } else {
-        return { subExp: '10s', baseTime: '30-45 min', filter: 'UV/IR Cut', notes: 'Gromada gwiazd. Wystarczy krótka integracja bez filtrów pasmowych.' };
+        return { 
+          subExp: '10s', 
+          baseTime: '30-45 min', 
+          filter: 'UV/IR Cut (Domyślny)', 
+          notes: 'Gromada gwiazd. Wystarczy krótka integracja na filtrze domyślnym UV/IR Cut.' 
+        };
       }
     }
 
@@ -1296,7 +1321,7 @@
 
         if (moonFraction > 0.5 && item.cat !== 'planet') {
           if (item.cat === 'nebula') {
-            dynamicFilter = 'Dual-Band LP';
+            dynamicFilter = 'Dual-Band LP (Włącz w apce)';
             dynamicNotes += ' ⚠️ [Jasny Księżyc]: Konieczny filtr Dual-Band LP!';
           } else if (item.cat === 'galaxy' || item.cat === 'reflection_nebula') {
             dynamicNotes += ' ⚠️ [Jasny Księżyc]: Tło nieba rozświetlone. Zalecane dłuższe naświetlanie.';
