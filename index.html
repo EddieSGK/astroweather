@@ -147,7 +147,7 @@
                 <span class="w-2 h-2 rounded-full bg-emerald-400 mt-1 shrink-0"></span>
                 <div>
                   <span class="font-semibold text-emerald-400">85–100 pkt: Idealne</span>
-                  <p class="text-slate-400 text-[11px]">Brak opadów, czyste niebo. Bezpiecznie na całonocną sesję.</p>
+                  <p class="text-slate-400 text-[11px]">Brak opadów, bardzo czyste niebo (&le;15% chmur). Bezpiecznie na całonocną sesję.</p>
                 </div>
               </div>
 
@@ -171,13 +171,13 @@
                 <span class="w-2 h-2 rounded-full bg-rose-500 mt-1 shrink-0"></span>
                 <div>
                   <span class="font-semibold text-rose-400">0–29 pkt: Słabe / Opad</span>
-                  <p class="text-slate-400 text-[11px]">Duże zachmurzenie LUB opady deszczu. Nie wystawiaj teleskopu!</p>
+                  <p class="text-slate-400 text-[11px]">Duże zachmurzenie LUB JAKIEKOLWIEK opady deszczu. Nie wystawiaj teleskopu!</p>
                 </div>
               </div>
             </div>
 
             <div class="border-t border-slate-800/80 pt-2 text-[10px] text-slate-400 italic">
-              <strong>Jak wyliczamy?</strong> Start od 100 pkt. Wagi: śr. zachmurzenie (-1 pkt/% chmur), <strong>opad &gt;10% lub &gt;0mm (-100 pkt - automatyczna dyskwalifikacja!)</strong>, niska widzialność &lt;10km (-20 pkt).
+              <strong>Jak wyliczamy?</strong> Start od 100 pkt. Wagi: śr. zachmurzenie (-1 pkt/% chmur), <strong>opad &gt;0% lub &gt;0mm (-100 pkt - dyskwalifikacja!)</strong>, niska widzialność &lt;10km (-20 pkt).
             </div>
           </div>
         </div>
@@ -276,7 +276,7 @@
                 <circle cx="110" cy="110" r="46" fill="none" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="3 3"/>
                 <circle cx="110" cy="110" r="22" fill="#020617" stroke="#10b981" stroke-width="1.5" stroke-opacity="0.3"/>
 
-                <!-- Główna siatka celownicza (linie nie wychodzą poza okrąg) -->
+                <!-- Główna siatka celownicza -->
                 <line x1="110" y1="40" x2="110" y2="180" stroke="#334155" stroke-width="2"/>
                 <line x1="40" y1="110" x2="180" y2="110" stroke="#334155" stroke-width="2"/>
                 
@@ -284,24 +284,22 @@
                 <line x1="60" y1="60" x2="160" y2="160" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="3 3"/>
                 <line x1="160" y1="60" x2="60" y2="160" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="3 3"/>
 
-                <!-- Na Pierwszym Planie: Punkt i Maskowany Napis Zenit -->
+                <!-- Zenit -->
                 <circle cx="110" cy="110" r="3.5" fill="#34d399"/>
                 <g>
                   <rect x="74" y="117" width="72" height="13" rx="3" fill="#020617" fill-opacity="0.9" />
                   <text x="110" y="126" text-anchor="middle" font-size="8" font-weight="bold" fill="#34d399">Zenit (&gt;65°)</text>
                 </g>
 
-                <!-- Dwukolorowa Strzałka Północy na zewnątrz głównego okręgu -->
+                <!-- Strzałka Północy -->
                 <polygon points="110,14 103,34 110,28" fill="#ef4444" />
                 <polygon points="110,14 117,34 110,28" fill="#b91c1c" />
 
-                <!-- Oznaczenia kierunków całkowicie na zewnątrz (r > 70) -->
-                <!-- E, S, W -->
+                <!-- Kierunki r > 70 -->
                 <text id="compass-E" x="196" y="114" text-anchor="middle" font-size="12" font-weight="900" class="fill-emerald-400">E</text>
                 <text id="compass-S" x="110" y="198" text-anchor="middle" font-size="12" font-weight="900" class="fill-emerald-400">S</text>
                 <text id="compass-W" x="24" y="114" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">W</text>
 
-                <!-- NE, SE, SW, NW na zewnątrz okręgu -->
                 <text id="compass-NE" x="170" y="52" text-anchor="middle" font-size="10" font-weight="bold" class="fill-emerald-400">NE</text>
                 <text id="compass-SE" x="170" y="174" text-anchor="middle" font-size="10" font-weight="bold" class="fill-emerald-400">SE</text>
                 <text id="compass-SW" x="50" y="174" text-anchor="middle" font-size="10" font-weight="bold" class="fill-slate-600">SW</text>
@@ -347,7 +345,7 @@
               <p id="horizonSubtext" class="text-xs text-slate-400 mt-0.5">Dopasowane do wybranego punktu obserwacji</p>
             </div>
 
-            <!-- Segmented Radio Buttons Toggle -->
+            <!-- Radio Toggle -->
             <div class="inline-flex p-1 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold shrink-0">
               <label class="cursor-pointer">
                 <input type="radio" name="horizonMode" value="my_balcony" class="sr-only peer" checked onchange="updateTargetsFilter()">
@@ -399,7 +397,7 @@
             </button>
           </div>
 
-          <!-- Lista Obiektów (W tym dynamiczny panel rekomendacji Top 4) -->
+          <!-- Lista Obiektów -->
           <div id="targetsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <p class="text-sm text-slate-400 col-span-2">Ładowanie obiektów...</p>
           </div>
@@ -713,7 +711,7 @@
     }
 
     function calculateDirectionWindows(ra, dec, astroStart, astroEnd, mode) {
-      const stepMs = 30 * 60 * 1000; // PRÓBKOWANIE CO 30 MINUT
+      const stepMs = 30 * 60 * 1000; // Próbkowanie co 30 minut
       let startTime = new Date(astroStart.getTime());
       let endTime = new Date(astroEnd.getTime());
 
@@ -728,7 +726,6 @@
 
       let maxVisibleAlt = -999;
       let peakInfo = null;
-      let hasClearSkyWindow = false;
 
       while (currentTime <= endTime) {
         const pos = getHorizontalCoordinates(ra, dec, LAT, currentTime);
@@ -744,18 +741,23 @@
         }
 
         let cloudCover = 0;
-        if (cachedHourlyWeather && cachedHourlyWeather.times) {
-          const curHour = currentTime.getHours();
-          const matchIdx = cachedHourlyWeather.times.findIndex(t => t.getHours() === curHour);
-          if (matchIdx !== -1) {
-            cloudCover = cachedHourlyWeather.clouds[matchIdx];
+        if (cachedHourlyWeather && cachedHourlyWeather.times && cachedHourlyWeather.times.length > 0) {
+          // PRECYZYJNE INTERPOLOWANIE ZACHMURZENIA DO NAJBLIŻSZEJ GODZINY Z API
+          const curMs = currentTime.getTime();
+          let closestIdx = 0;
+          let minDiff = Math.abs(curMs - cachedHourlyWeather.times[0].getTime());
+
+          for (let i = 1; i < cachedHourlyWeather.times.length; i++) {
+            const diff = Math.abs(curMs - cachedHourlyWeather.times[i].getTime());
+            if (diff < minDiff) {
+              minDiff = diff;
+              closestIdx = i;
+            }
           }
+          cloudCover = cachedHourlyWeather.clouds[closestIdx];
         }
 
         if (zone !== null) {
-          if (cloudCover <= 30) {
-            hasClearSkyWindow = true;
-          }
           rawWindows.push({
             zone: zone,
             time: new Date(currentTime.getTime()),
@@ -766,9 +768,12 @@
         currentTime = new Date(currentTime.getTime() + stepMs);
       }
 
-      // PRECYZYJNE GRUPOWANIE CIĄGŁYCH PRZEDZIAŁÓW DLA TEGO SAMEO SEKTORA
+      // GRUPOWANIE W OKNA SEKTOROWE I FILTROWANIE CZYSTEGO NIEBA (<=15% CHMUR)
       let windows = [];
+      let clearSkyWindows = [];
+
       if (rawWindows.length > 0) {
+        // 1. Okna fizycznej dostępności w sektorze
         let currentWindow = {
           zone: rawWindows[0].zone,
           start: rawWindows[0].time,
@@ -777,8 +782,6 @@
 
         for (let i = 1; i < rawWindows.length; i++) {
           const item = rawWindows[i];
-
-          // DZIELIMY OKNO, JEŚLI ZMIENIŁ SIĘ SEKTOR LUB BYŁA PRZERWA W WIDOCZNOŚCI
           if (item.zone === currentWindow.zone) {
             currentWindow.end = new Date(item.time.getTime() + stepMs);
           } else {
@@ -791,9 +794,35 @@
           }
         }
         windows.push(currentWindow);
+
+        // 2. Okna rekomendowanej obserwacji (ZACHMURZENIE <= 15%)
+        let clearSamples = rawWindows.filter(w => w.cloudCover <= 15);
+        if (clearSamples.length > 0) {
+          let curClear = {
+            zone: clearSamples[0].zone,
+            start: clearSamples[0].time,
+            end: clearSamples[0].time
+          };
+
+          for (let i = 1; i < clearSamples.length; i++) {
+            const item = clearSamples[i];
+            const timeDiff = item.time.getTime() - curClear.end.getTime();
+            if (item.zone === curClear.zone && timeDiff <= stepMs) {
+              curClear.end = item.time;
+            } else {
+              clearSkyWindows.push(curClear);
+              curClear = {
+                zone: item.zone,
+                start: item.time,
+                end: item.time
+              };
+            }
+          }
+          clearSkyWindows.push(curClear);
+        }
       }
 
-      return { windows, maxVisibleAlt, peakInfo, hasClearSkyWindow };
+      return { windows, clearSkyWindows, maxVisibleAlt, peakInfo, hasClearSkyWindow: clearSkyWindows.length > 0 };
     }
 
     function updateCompassVisuals(mode) {
@@ -1011,11 +1040,11 @@
 
       const rainAlertBanner = document.getElementById('rainAlertBanner');
       
-      // TWARDE WYMUSZENIE SCORE = 0 PRZY JAKIMKOLWIEK RYZYKU OPADÓW (>10% LUB >0mm)
-      if (maxRainProb > 10 || totalRainMm > 0) {
+      // BEZWZGLĘDNA DYSKWALIFIKACJA PRZY JAKIMKOLWIEK RYZYKU OPADÓW (>0% LUB >0mm)
+      if (maxRainProb > 0 || totalRainMm > 0) {
         score = 0;
         rainAlertBanner.classList.remove('hidden');
-        document.getElementById('rainAlertText').innerText = `Ostrzeżenie! Ryzyko opadu do ${maxRainProb}% (suma: ${totalRainMm.toFixed(1)} mm). NIE WYSTAWIAJ TELESKOPU!`;
+        document.getElementById('rainAlertText').innerText = `Ostrzeżenie! Ryzyko opadu ${maxRainProb}% (suma: ${totalRainMm.toFixed(1)} mm). NIE WYSTAWIAJ TELESKOPU!`;
       } else {
         rainAlertBanner.classList.add('hidden');
       }
@@ -1025,7 +1054,7 @@
       document.getElementById('stargazingScore').innerText = score;
       
       let summary = "Doskonałe warunki! Czyste niebo, brak deszczu.";
-      if (maxRainProb > 10 || totalRainMm > 0) summary = "🛑 ZAKAZ WYSTAWIANIA: Wykryto ryzyko opadów deszczu!";
+      if (maxRainProb > 0 || totalRainMm > 0) summary = "🛑 ZAKAZ WYSTAWIANIA: Wykryto ryzyko opadów deszczu!";
       else if (score < 30) summary = "Słabe warunki - duże zachmurzenie.";
       else if (score < 60) summary = "Umiarkowane warunki - możliwe przelotne chmury.";
       else if (score < 85) summary = "Dobre warunki do obserwacji!";
@@ -1166,7 +1195,7 @@
       const validTargets = [];
 
       fullCatalog.forEach(item => {
-        const { windows, maxVisibleAlt, peakInfo, hasClearSkyWindow } = calculateDirectionWindows(item.ra, item.dec, astroStart, astroEnd, mode);
+        const { windows, clearSkyWindows, maxVisibleAlt, peakInfo, hasClearSkyWindow } = calculateDirectionWindows(item.ra, item.dec, astroStart, astroEnd, mode);
 
         if (windows.length > 0 && maxVisibleAlt > 0) {
           const currentPos = getHorizontalCoordinates(item.ra, item.dec, LAT, midNight);
@@ -1185,6 +1214,7 @@
             currentAzDir: azToMainSector(currentPos.az),
             trajectoryText: `${dirStart} ➔ ${dirMax} ➔ ${dirEnd}`,
             windows: windows,
+            clearSkyWindows: clearSkyWindows,
             peakInfo: peakInfo,
             hasClearSkyWindow: hasClearSkyWindow
           });
@@ -1195,7 +1225,7 @@
 
       const currentScore = parseInt(document.getElementById('stargazingScore').innerText) || 0;
 
-      // REKOMENDACJE TOP 4 (TYLKO BEZPIECZNE OKNA CHMUR <30%)
+      // REKOMENDACJE TOP 4 (TYLKO JEŚLI JEST OKNO CZYSTEGO NIEBA <=15% CHMUR)
       const idealTargets = validTargets.filter(t => 
         t.suit === 'Idealny' && 
         t.maxAlt >= 25 && 
@@ -1211,7 +1241,7 @@
         top4 = idealTargets.sort((a, b) => a.mag - b.mag).slice(0, 4);
       }
 
-      // PANEL TOP 4 RENDEROWANY ZAWSZE (MIMO BRAKU REKOMENDACJI LUB OPADÓW)
+      // PANEL TOP 4 RENDEROWANY ZAWSZE
       const suggestionBox = document.createElement('div');
       suggestionBox.className = "col-span-1 md:col-span-2 mb-2 p-4 rounded-xl bg-gradient-to-r from-indigo-950/90 via-slate-900 to-slate-950 border border-indigo-500/40 shadow-xl space-y-3";
 
@@ -1243,7 +1273,7 @@
             </div>
             <div class="text-right font-mono">
               <span class="text-indigo-300 font-bold block">${item.peakInfo ? formatTime(item.peakInfo.time) : '--:--'} (Max: ${item.maxAlt}°)</span>
-              <span class="text-emerald-400 text-[10px]">Okno: ${item.windows.length > 0 ? formatTime(item.windows[0].start) + ' - ' + formatTime(item.windows[0].end) : 'Brak'}</span>
+              <span class="text-emerald-400 text-[10px]">Zalecane: ${item.clearSkyWindows.length > 0 ? formatTime(item.clearSkyWindows[0].start) + ' - ' + formatTime(item.clearSkyWindows[0].end) : 'Brak'}</span>
             </div>
           </div>
         `).join('');
@@ -1254,27 +1284,27 @@
               <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i> Dedykowany Plan Obserwacyjny na Dziś (Top 4 - Galaktyki & Mgławice)
             </h3>
             <span class="text-[11px] px-2 py-0.5 rounded bg-indigo-900/60 text-indigo-200 border border-indigo-700/50">
-              ${currentScore >= 85 ? '🌟 Warunki Idealne (Tryb Zaawansowany)' : '🎯 Standardowy Plan Obserwacji'}
+              ${currentScore >= 85 ? '🌟 Warunki Idealne' : '🎯 Standardowy Plan Obserwacji'}
             </span>
           </div>
-          <p class="text-xs text-slate-400">Rekomendowane mgławice i galaktyki przy zachmurzeniu &lt;30%:</p>
+          <p class="text-xs text-slate-400">Obiekty spełniające kryterium otwartego horyzontu oraz zachmurzenia &le;15%:</p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
             ${top4Html}
           </div>
         `;
       } else {
-        // BRAK OBIEKTÓW ZE WZGLĘDU NA DUŻE ZACHMURZENIE
+        // BRAK OBIEKTÓW ZE WZGLĘDU NA ZACHMURZENIE (>15%)
         suggestionBox.innerHTML = `
           <div class="flex items-center justify-between border-b border-indigo-800/50 pb-2">
             <h3 class="text-sm font-bold text-indigo-300 flex items-center gap-2">
               <i data-lucide="cloud" class="w-4 h-4 text-amber-400"></i> Rekomendowane Obiekty na Dziś
             </h3>
             <span class="text-[11px] px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800">
-              ⚠️ Brak Rekomendacji (Wysokie Zachmurzenie)
+              ⚠️ Brak Rekomendacji (Zachmurzenie &gt;15%)
             </span>
           </div>
           <p class="text-xs text-slate-400 bg-slate-950/60 p-2.5 rounded-lg border border-slate-800">
-            Brak rekomendowanych obiektów ze względu na zachmurzenie przekraczające 30% w godzinach ich przebywania nad horyzontem. Obiekty teoretycznie dostępne widoczne są na liście poniżej.
+            Brak obiektów posiadających chociaż jedno 30-minutowe okno bardzo czystego nieba (&le;15% chmur) w dostępnych sektorach obserwacyjnych.
           </p>
         `;
       }
@@ -1335,17 +1365,39 @@
 
         const iconSvg = getCategoryIcon(item.cat);
 
+        // Wyświetlanie przedziałów czasowych horyzontu
         let windowsHtml = '';
         item.windows.forEach(w => {
           windowsHtml += `
             <div class="flex items-center justify-between text-xs py-0.5 border-b border-emerald-900/30 last:border-0">
-              <span class="font-bold text-emerald-300 flex items-center gap-1">
+              <span class="font-bold text-slate-300 flex items-center gap-1">
                 <i data-lucide="compass" class="w-3 h-3 text-emerald-400"></i> Sektor ${w.zone}:
               </span>
-              <span class="font-mono font-bold text-emerald-200">${formatTime(w.start)} – ${formatTime(w.end)}</span>
+              <span class="font-mono text-slate-300">${formatTime(w.start)} – ${formatTime(w.end)}</span>
             </div>
           `;
         });
+
+        // Wyświetlanie rekomendowanych okien czystego nieba (<=15%)
+        let clearSkyHtml = '';
+        if (item.clearSkyWindows.length > 0) {
+          item.clearSkyWindows.forEach(cw => {
+            clearSkyHtml += `
+              <div class="flex items-center justify-between text-xs py-0.5 border-b border-emerald-900/30 last:border-0 font-bold text-emerald-300">
+                <span class="flex items-center gap-1">
+                  <i data-lucide="check-circle-2" class="w-3 h-3 text-emerald-400"></i> Sektor ${cw.zone} (&le;15% chmur):
+                </span>
+                <span class="font-mono">${formatTime(cw.start)} – ${formatTime(cw.end)}</span>
+              </div>
+            `;
+          });
+        } else {
+          clearSkyHtml = `
+            <div class="text-[11px] text-amber-400 italic">
+              ⚠️ Brak okna z zachmurzeniem &le;15% (możliwa obserwacja przez dziury w chmurach).
+            </div>
+          `;
+        }
 
         let peakText = '--:--';
         if (item.peakInfo) {
@@ -1380,17 +1432,27 @@
               </div>
             </div>
 
-            <!-- Scalone Przedziały Czasowe Widoczności -->
-            <div class="best-window-box bg-emerald-950/40 border border-emerald-500/40 p-2.5 rounded-lg text-xs space-y-1.5">
-              <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1 mb-1">
-                <i data-lucide="clock" class="w-3.5 h-3.5"></i> Widoczność w Sektorach:
-              </div>
-              
-              <div class="space-y-1">
-                ${windowsHtml}
+            <!-- Okna Widoczności i Rekomendacji -->
+            <div class="best-window-box bg-emerald-950/40 border border-emerald-500/40 p-2.5 rounded-lg text-xs space-y-2">
+              <div>
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
+                  Widoczność w Sektorach (Horyzont):
+                </div>
+                <div class="space-y-0.5">
+                  ${windowsHtml}
+                </div>
               </div>
 
-              <div class="text-[11px] text-slate-300 flex justify-between pt-1 border-t border-emerald-900/40 mt-1">
+              <div class="pt-1 border-t border-emerald-900/40">
+                <div class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-0.5 flex items-center gap-1">
+                  <i data-lucide="sparkles" class="w-3 h-3 text-amber-400"></i> Zalecana Obserwacja (&le;15% chmur):
+                </div>
+                <div class="space-y-0.5">
+                  ${clearSkyHtml}
+                </div>
+              </div>
+
+              <div class="text-[11px] text-slate-300 flex justify-between pt-1 border-t border-emerald-900/40">
                 <span class="text-slate-400">Najwyższy punkt:</span>
                 <span class="font-mono text-emerald-300 font-bold">${peakText}</span>
               </div>
