@@ -333,7 +333,7 @@
     let cachedAstroStart = null;
     let cachedAstroEnd = null;
     let cachedMoonFraction = 0;
-    let cachedHourlyWeather = null;
+    let cachedHourlyWeatherList = []; // Tablica { ms, cloudCover }
     let activeCategoryFilter = 'all';
     let MESSIER_CATALOG = [];
 
@@ -449,12 +449,22 @@
           peakInfo = { time: new Date(currentTime.getTime()), azDir: azToMainSector(pos.az), alt: pos.alt };
         }
 
-        // Precyzyjny odczyt zachmurzenia z mapy hourlyWeatherMap (brak przekłamań stref czasowych)
+        // Precyzyjne dopasowanie po timestampie (szukamy punktu z wykresu najbliższego czasowo)
         let cloudCover = 100;
-        if (cachedHourlyWeather) {
-          const key = `${currentTime.getFullYear()}-${currentTime.getMonth()+1}-${currentTime.getDate()}-${currentTime.getHours()}`;
-          if (cachedHourlyWeather[key] !== undefined) {
-            cloudCover = cachedHourlyWeather[key];
+        if (cachedHourlyWeatherList && cachedHourlyWeatherList.length > 0) {
+          const curMs = currentTime.getTime();
+          let closest = cachedHourlyWeatherList[0];
+          let minDiff = Math.abs(curMs - closest.ms);
+
+          for (let i = 1; i < cachedHourlyWeatherList.length; i++) {
+            const diff = Math.abs(curMs - cachedHourlyWeatherList[i].ms);
+            if (diff < minDiff) {
+              minDiff = diff;
+              closest = cachedHourlyWeatherList[i];
+            }
+          }
+          if (minDiff <= 45 * 60 * 1000) { // Tolerancja max 45 min
+            cloudCover = closest.cloudCover;
           }
         }
 
@@ -572,16 +582,11 @@
     function processWeatherData(data, astroStart, astroEnd, moonFraction) {
       const hourly = data.hourly;
 
-      // Tworzymy bezpośrednią mapę zachmurzenia według lokalnych kluczy czasowych
-      const hourlyWeatherMap = {};
-      for (let i = 0; i < hourly.time.length; i++) {
-        const timeStr = hourly.time[i]; 
-        const dateObj = new Date(timeStr);
-        const key = `${dateObj.getFullYear()}-${dateObj.getMonth()+1}-${dateObj.getDate()}-${dateObj.getHours()}`;
-        hourlyWeatherMap[key] = hourly.cloud_cover[i];
-      }
-      
-      cachedHourlyWeather = hourlyWeatherMap;
+      // Konwersja dat ISO bezpośrednio na timestampy w milisekundach (100% niezawodności)
+      cachedHourlyWeatherList = hourly.time.map((t, idx) => ({
+        ms: new Date(t).getTime(),
+        cloudCover: hourly.cloud_cover[idx]
+      }));
 
       const times = hourly.time.map(t => new Date(t));
       let windowIndices = [];
