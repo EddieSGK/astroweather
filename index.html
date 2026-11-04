@@ -4,115 +4,54 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard Pogodowo-Astronomiczny (Bydgoszcz)</title>
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- SunCalc CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
-    html, body {
-      margin: 0 !important;
-      padding: 0 !important;
-      width: 100% !important;
-      min-height: 100vh !important;
-      background-color: #020617 !important;
-      overflow-x: hidden;
-    }
-
-    body.night-vision {
-      background-color: #050000 !important;
-      color: #ff3333 !important;
-    }
-    body.night-vision .bg-card {
-      background-color: #1a0000 !important;
-      border-color: #550000 !important;
-      color: #ff4d4d !important;
-    }
-    body.night-vision .text-muted {
-      color: #b33d3d !important;
-    }
-    body.night-vision button {
-      border-color: #770000 !important;
-    }
-    body.night-vision .chart-container {
-      filter: invert(15%) sepia(100%) saturate(7000%) hue-rotate(355deg) brightness(90%) contrast(120%);
-    }
-    body.night-vision .best-window-box {
-      background-color: #330000 !important;
-      border-color: #aa0000 !important;
-      color: #ff6666 !important;
-    }
-    body.night-vision .thumb-box {
-      background-color: #2a0000 !important;
-      border-color: #660000 !important;
-      color: #ff4d4d !important;
-    }
-    body.night-vision .legend-box {
-      background-color: #200000 !important;
-      border-color: #550000 !important;
-      color: #ff6666 !important;
-    }
+    html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; min-height: 100vh !important; background-color: #020617 !important; overflow-x: hidden; }
+    body.night-vision { background-color: #050000 !important; color: #ff3333 !important; }
+    body.night-vision .bg-card { background-color: #1a0000 !important; border-color: #550000 !important; color: #ff4d4d !important; }
+    body.night-vision .text-muted { color: #b33d3d !important; }
+    body.night-vision button { border-color: #770000 !important; }
+    body.night-vision .chart-container { filter: invert(15%) sepia(100%) saturate(7000%) hue-rotate(355deg) brightness(90%) contrast(120%); }
+    body.night-vision .best-window-box { background-color: #330000 !important; border-color: #aa0000 !important; color: #ff6666 !important; }
+    body.night-vision .thumb-box { background-color: #2a0000 !important; border-color: #660000 !important; color: #ff4d4d !important; }
+    body.night-vision .legend-box { background-color: #200000 !important; border-color: #550000 !important; color: #ff6666 !important; }
   </style>
 
   <script>
-    window.onload = function() {
-      try {
-        if (window.frameElement) {
-          window.frameElement.style.width = '100%';
-          window.frameElement.style.border = 'none';
-        }
-      } catch (e) {}
-    };
+    window.onload = function() { try { if (window.frameElement) { window.frameElement.style.width = '100%'; window.frameElement.style.border = 'none'; } } catch (e) {} };
   </script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen transition-colors duration-300 font-sans pb-12 w-full">
 
   <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    
-    <!-- HEADER -->
     <header class="flex flex-col md:flex-row justify-between items-center pb-6 mb-6 border-b border-slate-800 gap-4">
       <div>
-        <h1 class="text-3xl font-bold flex items-center gap-2">
-          <i data-lucide="telescope" class="text-indigo-400"></i> AstroWeather Dashboard
-        </h1>
+        <h1 class="text-3xl font-bold flex items-center gap-2"><i data-lucide="telescope" class="text-indigo-400"></i> AstroWeather Dashboard</h1>
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-slate-400 text-sm mt-1">
           <p>Lokalizacja: <span id="locName" class="font-semibold text-slate-200">Bydgoszcz</span> (53.12° N, 18.00° E)</p>
           <span class="text-slate-600 hidden sm:inline">•</span>
-          <p class="flex items-center gap-1.5 font-medium text-indigo-300">
-            <i data-lucide="calendar" class="w-4 h-4 text-indigo-400"></i>
-            <span id="currentDate">Ładowanie daty...</span>
-          </p>
+          <p class="flex items-center gap-1.5 font-medium text-indigo-300"><i data-lucide="calendar" class="w-4 h-4 text-indigo-400"></i><span id="currentDate">Ładowanie daty...</span></p>
         </div>
       </div>
-
       <div class="flex items-center gap-3">
         <button id="nightToggle" onclick="toggleNightVision()" class="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-700 hover:border-red-500 rounded-lg text-sm font-medium transition-all">
-          <i data-lucide="eye" class="text-red-500"></i>
-          <span>Tryb Czerwony</span>
+          <i data-lucide="eye" class="text-red-500"></i><span>Tryb Czerwony</span>
         </button>
-
         <button onclick="initDashboard()" class="p-2 bg-slate-900 border border-slate-700 hover:border-indigo-500 rounded-lg transition-all" title="Odśwież dane">
           <i data-lucide="refresh-cw" class="w-5 h-5 text-indigo-400"></i>
         </button>
       </div>
     </header>
 
-    <!-- Main Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-      <!-- Left Column -->
       <div class="space-y-6">
         
-        <!-- STARGAZING INDEX -->
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-          <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2">
-            <i data-lucide="sparkles" class="text-amber-400"></i> Warunki Obserwacyjne
-          </h2>
-
+          <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2"><i data-lucide="sparkles" class="text-amber-400"></i> Warunki Obserwacyjne</h2>
           <div class="flex items-end gap-3 my-2">
             <span id="stargazingScore" class="text-5xl font-black text-indigo-400">--</span>
             <span class="text-slate-400 mb-1 text-lg">/ 100</span>
@@ -120,83 +59,35 @@
           <p id="stargazingSummary" class="text-sm font-medium text-slate-200">Pobieranie danych meteorologicznych...</p>
 
           <div id="rainAlertBanner" class="hidden bg-rose-950/80 border border-rose-600/80 rounded-xl p-3 text-xs text-rose-200 flex items-center gap-2 font-semibold">
-            <i data-lucide="cloud-rain" class="w-5 h-5 text-rose-400 shrink-0"></i>
-            <span id="rainAlertText">Uwaga! Prognozowane opady deszczu w nocy.</span>
+            <i data-lucide="cloud-rain" class="w-5 h-5 text-rose-400 shrink-0"></i><span>Uwaga! Prognozowane opady deszczu w nocy.</span>
           </div>
-
           <div id="dewAlertBanner" class="hidden bg-amber-950/80 border border-amber-600/80 rounded-xl p-3 text-xs text-amber-200 flex items-center gap-2 font-semibold">
-            <i data-lucide="thermometer-snowflake" class="w-5 h-5 text-amber-400 shrink-0"></i>
-            <span id="dewAlertText">Wykryto wysokie ryzyko rosy! Włącz grzałkę obiektywu w Seestarze (Anti-Dew).</span>
+            <i data-lucide="thermometer-snowflake" class="w-5 h-5 text-amber-400 shrink-0"></i><span>Wykryto wysokie ryzyko rosy! Włącz grzałkę obiektywu (Anti-Dew).</span>
           </div>
 
           <div class="legend-box bg-slate-950/80 border border-slate-800/80 rounded-xl p-3.5 text-xs space-y-3 pt-3">
-            <p class="font-bold text-slate-300 border-b border-slate-800 pb-1.5 flex items-center gap-1.5">
-              <i data-lucide="info" class="w-3.5 h-3.5 text-indigo-400"></i> Skala oceny warunków:
-            </p>
-
+            <p class="font-bold text-slate-300 border-b border-slate-800 pb-1.5 flex items-center gap-1.5"><i data-lucide="info" class="w-3.5 h-3.5 text-indigo-400"></i> Skala oceny warunków:</p>
             <div class="space-y-2">
-              <div class="flex items-start gap-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 mt-1 shrink-0"></span>
-                <div>
-                  <span class="font-semibold text-emerald-400">85–100 pkt: Idealne</span>
-                  <p class="text-slate-400 text-[11px]">Brak opadów, czyste niebo (&le;15% chmur).</p>
-                </div>
-              </div>
-              <div class="flex items-start gap-2">
-                <span class="w-2 h-2 rounded-full bg-cyan-400 mt-1 shrink-0"></span>
-                <div>
-                  <span class="font-semibold text-cyan-400">60–84 pkt: Dobre</span>
-                  <p class="text-slate-400 text-[11px]">Słabe chmury/Księżyc. Brak ryzyka deszczu.</p>
-                </div>
-              </div>
-              <div class="flex items-start gap-2">
-                <span class="w-2 h-2 rounded-full bg-amber-400 mt-1 shrink-0"></span>
-                <div>
-                  <span class="font-semibold text-amber-400">30–59 pkt: Umiarkowane</span>
-                  <p class="text-slate-400 text-[11px]">Zachmurzenie lub ryzyko rosy.</p>
-                </div>
-              </div>
-              <div class="flex items-start gap-2">
-                <span class="w-2 h-2 rounded-full bg-rose-500 mt-1 shrink-0"></span>
-                <div>
-                  <span class="font-semibold text-rose-400">0–29 pkt: Słabe / Opad</span>
-                  <p class="text-slate-400 text-[11px]">Duże zachmurzenie lub jakiekolwiek opady.</p>
-                </div>
-              </div>
+              <div class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400 mt-1 shrink-0"></span><div><span class="font-semibold text-emerald-400">85–100 pkt: Idealne</span><p class="text-slate-400 text-[11px]">Brak opadów, czyste niebo (&le;15% chmur).</p></div></div>
+              <div class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-cyan-400 mt-1 shrink-0"></span><div><span class="font-semibold text-cyan-400">60–84 pkt: Dobre</span><p class="text-slate-400 text-[11px]">Słabe chmury/Księżyc. Brak ryzyka deszczu.</p></div></div>
+              <div class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-amber-400 mt-1 shrink-0"></span><div><span class="font-semibold text-amber-400">30–59 pkt: Umiarkowane</span><p class="text-slate-400 text-[11px]">Zachmurzenie lub ryzyko rosy.</p></div></div>
+              <div class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-rose-500 mt-1 shrink-0"></span><div><span class="font-semibold text-rose-400">0–29 pkt: Słabe / Opad</span><p class="text-slate-400 text-[11px]">Duże zachmurzenie lub jakiekolwiek opady.</p></div></div>
             </div>
           </div>
         </div>
 
-        <!-- DEW POINT -->
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-          <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-3">
-            <i data-lucide="droplets" class="text-cyan-400"></i> Temperatura & Wilgotność (Roszenie)
-          </h2>
+          <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-3"><i data-lucide="droplets" class="text-cyan-400"></i> Temperatura & Wilgotność (Roszenie)</h2>
           <div class="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p class="text-muted text-xs text-slate-400">Średnia Temp. (Noc)</p>
-              <p id="avgTemp" class="font-bold text-slate-200">-- °C</p>
-            </div>
-            <div>
-              <p class="text-muted text-xs text-slate-400">Średni Punkt Rosy</p>
-              <p id="avgDewPoint" class="font-bold text-cyan-300">-- °C</p>
-            </div>
-            <div>
-              <p class="text-muted text-xs text-slate-400">Wilgotność Względna</p>
-              <p id="avgHumidity" class="font-bold text-slate-200">-- %</p>
-            </div>
-            <div>
-              <p class="text-muted text-xs text-slate-400">Zalecenie Grzałki</p>
-              <p id="heaterStatus" class="font-bold text-emerald-400">Wyłączona</p>
-            </div>
+            <div><p class="text-muted text-xs text-slate-400">Średnia Temp. (Noc)</p><p id="avgTemp" class="font-bold text-slate-200">-- °C</p></div>
+            <div><p class="text-muted text-xs text-slate-400">Średni Punkt Rosy</p><p id="avgDewPoint" class="font-bold text-cyan-300">-- °C</p></div>
+            <div><p class="text-muted text-xs text-slate-400">Wilgotność Względna</p><p id="avgHumidity" class="font-bold text-slate-200">-- %</p></div>
+            <div><p class="text-muted text-xs text-slate-400">Zalecenie Grzałki</p><p id="heaterStatus" class="font-bold text-emerald-400">Wyłączona</p></div>
           </div>
         </div>
 
-        <!-- SUN & MOON -->
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-          <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-3">
-            <i data-lucide="sun" class="text-amber-400"></i> Słońce & Zmierzch
-          </h2>
+          <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-3"><i data-lucide="sun" class="text-amber-400"></i> Słońce & Zmierzch</h2>
           <div class="grid grid-cols-2 gap-4 text-sm">
             <div><p class="text-muted text-xs text-slate-400">Wschód Słońca</p><p id="sunriseTime" class="font-bold text-slate-200">--:--</p></div>
             <div><p class="text-muted text-xs text-slate-400">Zachód Słońca</p><p id="sunsetTime" class="font-bold text-slate-200">--:--</p></div>
@@ -206,9 +97,7 @@
         </div>
 
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-          <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-3">
-            <i data-lucide="moon" class="text-blue-300"></i> Księżyc
-          </h2>
+          <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-3"><i data-lucide="moon" class="text-blue-300"></i> Księżyc</h2>
           <div class="grid grid-cols-2 gap-4 text-sm">
             <div><p class="text-muted text-xs text-slate-400">Wschód Księżyca</p><p id="moonriseTime" class="font-bold text-slate-200">--:--</p></div>
             <div><p class="text-muted text-xs text-slate-400">Zachód Księżyca</p><p id="moonsetTime" class="font-bold text-slate-200">--:--</p></div>
@@ -217,11 +106,8 @@
           </div>
         </div>
 
-        <!-- COMPASS -->
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-          <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-3">
-            <i data-lucide="compass" class="text-emerald-400"></i> Róża Wiatrów (Kierunki)
-          </h2>
+          <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-3"><i data-lucide="compass" class="text-emerald-400"></i> Róża Wiatrów (Kierunki)</h2>
           <div class="flex flex-col items-center justify-center p-2">
             <div class="relative w-64 h-64 flex items-center justify-center">
               <svg viewBox="0 0 220 220" class="w-full h-full overflow-visible">
@@ -231,10 +117,7 @@
                 <line x1="110" y1="40" x2="110" y2="180" stroke="#334155" stroke-width="2"/>
                 <line x1="40" y1="110" x2="180" y2="110" stroke="#334155" stroke-width="2"/>
                 <circle cx="110" cy="110" r="3.5" fill="#34d399"/>
-                <g>
-                  <rect x="74" y="117" width="72" height="13" rx="3" fill="#020617" fill-opacity="0.9" />
-                  <text x="110" y="126" text-anchor="middle" font-size="8" font-weight="bold" fill="#34d399">Zenit (&gt;65°)</text>
-                </g>
+                <g><rect x="74" y="117" width="72" height="13" rx="3" fill="#020617" fill-opacity="0.9" /><text x="110" y="126" text-anchor="middle" font-size="8" font-weight="bold" fill="#34d399">Zenit (&gt;65°)</text></g>
                 <polygon points="110,14 103,34 110,28" fill="#ef4444" />
                 <polygon points="110,14 117,34 110,28" fill="#b91c1c" />
                 <text id="compass-E" x="196" y="114" text-anchor="middle" font-size="12" font-weight="900" class="fill-emerald-400">E</text>
@@ -249,66 +132,34 @@
             <div id="compassLegend" class="mt-3 grid grid-cols-1 gap-2 text-[11px] w-full pt-2 border-t border-slate-800"></div>
           </div>
         </div>
-
       </div>
 
-      <!-- Right Column -->
       <div class="lg:col-span-2 space-y-6">
-
-        <!-- CHART -->
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
             <div>
-              <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2">
-                <i data-lucide="cloud-rain" class="text-cyan-400"></i> Zachmurzenie, Temp. i Punkt Rosy w Noc Astronomiczną
-              </h2>
+              <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2"><i data-lucide="cloud-rain" class="text-cyan-400"></i> Zachmurzenie, Temp. i Punkt Rosy w Noc Astronomiczną</h2>
               <p id="chartSubtext" class="text-xs text-slate-400 mt-1">Niebieska linia: Zachmurzenie (%) | Fioletowe słupki: Opad (%) | Czerwona/Morska linia: Temp vs Roszenie (°C)</p>
             </div>
           </div>
-          <div class="chart-container relative h-64 w-full">
-            <canvas id="cloudChart"></canvas>
-          </div>
+          <div class="chart-container relative h-64 w-full"><canvas id="cloudChart"></canvas></div>
         </div>
 
-        <!-- TARGETS SECTION -->
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
           <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-4">
             <div>
-              <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2">
-                <i data-lucide="target" class="text-emerald-400"></i> Widoczne Dziś Obiekty (Messier M1-M110 & Planety)
-              </h2>
+              <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2"><i data-lucide="target" class="text-emerald-400"></i> Widoczne Dziś Obiekty (Messier M1-M110 & Planety)</h2>
               <p id="horizonSubtext" class="text-xs text-slate-400 mt-0.5">Dopasowane do punktu obserwacji</p>
             </div>
-
             <div class="inline-flex p-1 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold shrink-0">
-              <label class="cursor-pointer">
-                <input type="radio" name="horizonMode" value="my_balcony" class="sr-only peer" checked onchange="updateTargetsFilter()">
-                <span class="px-3 py-1.5 rounded-lg text-slate-400 peer-checked:bg-emerald-600 peer-checked:text-white transition-all flex items-center gap-1">
-                  <i data-lucide="home" class="w-3.5 h-3.5"></i> Mój balkon
-                </span>
-              </label>
-
-              <label class="cursor-pointer">
-                <input type="radio" name="horizonMode" value="grzes_garden" class="sr-only peer" onchange="updateTargetsFilter()">
-                <span class="px-3 py-1.5 rounded-lg text-slate-400 peer-checked:bg-emerald-600 peer-checked:text-white transition-all flex items-center gap-1">
-                  <i data-lucide="trees" class="w-3.5 h-3.5"></i> Ogródek Grzesia
-                </span>
-              </label>
-
-              <label class="cursor-pointer">
-                <input type="radio" name="horizonMode" value="all_objects" class="sr-only peer" onchange="updateTargetsFilter()">
-                <span class="px-3 py-1.5 rounded-lg text-slate-400 peer-checked:bg-indigo-600 peer-checked:text-white transition-all flex items-center gap-1">
-                  <i data-lucide="globe" class="w-3.5 h-3.5"></i> Wszystkie obiekty
-                </span>
-              </label>
+              <label class="cursor-pointer"><input type="radio" name="horizonMode" value="my_balcony" class="sr-only peer" checked onchange="updateTargetsFilter()"><span class="px-3 py-1.5 rounded-lg text-slate-400 peer-checked:bg-emerald-600 peer-checked:text-white transition-all flex items-center gap-1"><i data-lucide="home" class="w-3.5 h-3.5"></i> Mój balkon</span></label>
+              <label class="cursor-pointer"><input type="radio" name="horizonMode" value="grzes_garden" class="sr-only peer" onchange="updateTargetsFilter()"><span class="px-3 py-1.5 rounded-lg text-slate-400 peer-checked:bg-emerald-600 peer-checked:text-white transition-all flex items-center gap-1"><i data-lucide="trees" class="w-3.5 h-3.5"></i> Ogródek Grzesia</span></label>
+              <label class="cursor-pointer"><input type="radio" name="horizonMode" value="all_objects" class="sr-only peer" onchange="updateTargetsFilter()"><span class="px-3 py-1.5 rounded-lg text-slate-400 peer-checked:bg-indigo-600 peer-checked:text-white transition-all flex items-center gap-1"><i data-lucide="globe" class="w-3.5 h-3.5"></i> Wszystkie obiekty</span></label>
             </div>
           </div>
 
-          <!-- Category Buttons -->
           <div class="flex flex-wrap items-center gap-2 mb-5 pb-3 border-b border-slate-800/60">
-            <span class="text-xs font-semibold text-slate-400 mr-1 flex items-center gap-1">
-              <i data-lucide="filter" class="w-3.5 h-3.5 text-indigo-400"></i> Typ:
-            </span>
+            <span class="text-xs font-semibold text-slate-400 mr-1 flex items-center gap-1"><i data-lucide="filter" class="w-3.5 h-3.5 text-indigo-400"></i> Typ:</span>
             <button onclick="setCategoryFilter('all')" id="catBtn-all" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-indigo-600 text-white border-indigo-500 shadow">Wszystkie (<span id="cnt-all">0</span>)</button>
             <button onclick="setCategoryFilter('galaxy')" id="catBtn-galaxy" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">Galaktyki (<span id="cnt-galaxy">0</span>)</button>
             <button onclick="setCategoryFilter('nebula')" id="catBtn-nebula" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">Mgławice (<span id="cnt-nebula">0</span>)</button>
@@ -320,9 +171,7 @@
             <p class="text-sm text-slate-400 col-span-2">Ładowanie obiektów z bazy JSON...</p>
           </div>
         </div>
-
       </div>
-
     </div>
   </div>
 
@@ -337,10 +186,18 @@
     let activeCategoryFilter = 'all';
     let MESSIER_CATALOG = [];
 
-    // Pomocnicza funkcja gwarantująca poprawny numer (unikamy NaN)
-    const safeNum = (v, defaultVal = 0) => {
-      const n = Number(v);
-      return isNaN(n) ? defaultVal : n;
+    // Niezłomna funkcja zapobiegająca 'NaN' przy dzieleniu pustych tablic
+    const safeAvg = (arr, round = false) => {
+      if (!arr || arr.length === 0) return 0;
+      const valid = arr.filter(v => typeof v === 'number' && !isNaN(v));
+      if (valid.length === 0) return 0;
+      const sum = valid.reduce((a, b) => a + b, 0);
+      const val = sum / valid.length;
+      return round ? Math.round(val) : val;
+    };
+    const safeSum = (arr) => {
+      if (!arr || arr.length === 0) return 0;
+      return arr.reduce((a, b) => a + (isNaN(Number(b)) ? 0 : Number(b)), 0);
     };
 
     async function loadMessierCatalog() {
@@ -442,7 +299,6 @@
 
       for (let i = 0; i < hourlyWeatherArray.length; i++) {
         const item = hourlyWeatherArray[i];
-
         const pos = getHorizontalCoordinates(ra, dec, LAT, item.time);
         const zone = getSectorZoneName(pos.az, pos.alt, mode);
 
@@ -456,10 +312,7 @@
         if (isIdeal) {
           const startTime = item.time;
           let endTime = new Date(item.time.getTime() + 60 * 60 * 1000);
-          
-          if (astroEnd && endTime > astroEnd) {
-            endTime = new Date(astroEnd.getTime());
-          }
+          if (astroEnd && endTime > astroEnd) endTime = new Date(astroEnd.getTime());
 
           if (!activeWindow) {
             activeWindow = { zone, start: startTime, end: endTime };
@@ -477,10 +330,7 @@
         }
       }
 
-      if (activeWindow) {
-        clearSkyWindows.push(activeWindow);
-      }
-
+      if (activeWindow) clearSkyWindows.push(activeWindow);
       return { clearSkyWindows, maxVisibleAlt, peakInfo, hasClearSkyWindow: clearSkyWindows.length > 0 };
     }
 
@@ -513,27 +363,46 @@
 
       await loadMessierCatalog();
 
-      const sunTimes = SunCalc.getTimes(now, LAT, LON);
-      const moonTimes = SunCalc.getMoonTimes(now, LAT, LON);
-      const moonIllum = SunCalc.getMoonIllumination(now);
+      // KLUCZOWY FIX: Niezawodne wyliczanie dat na przełomie dni (gdy sprawdzamy po północy vs wieczorem)
+      const noon = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+      let startDay = new Date(now);
+      let endDay = new Date(now);
 
-      document.getElementById('sunriseTime').innerText = formatTime(sunTimes.sunrise);
-      document.getElementById('sunsetTime').innerText = formatTime(sunTimes.sunset);
-      
-      let astroStart = sunTimes.night || sunTimes.nauticalDusk || new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0);
-      let astroEnd = sunTimes.nightEnd || sunTimes.nauticalDawn || new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 5, 0, 0);
+      if (now < noon) {
+        // Jeśli sprawdzamy rano lub po północy - noc ZACZĘŁA SIĘ wczoraj!
+        startDay.setDate(startDay.getDate() - 1);
+      } else {
+        // Jeśli sprawdzamy po południu - noc SKOŃCZY SIĘ jutro!
+        endDay.setDate(endDay.getDate() + 1);
+      }
+
+      const startTimes = SunCalc.getTimes(startDay, LAT, LON);
+      const endTimes = SunCalc.getTimes(endDay, LAT, LON);
+
+      let astroStart = startTimes.night || startTimes.nauticalDusk || new Date(startDay.getFullYear(), startDay.getMonth(), startDay.getDate(), 18, 0, 0);
+      let astroEnd = endTimes.nightEnd || endTimes.nauticalDawn || new Date(endDay.getFullYear(), endDay.getMonth(), endDay.getDate(), 5, 0, 0);
+
+      // Awaryjny sztywny zapas, żeby daty w skrypcie NIGDY nie zwróciły Invalid Date
+      if (isNaN(astroStart.getTime())) astroStart = new Date(startDay.getFullYear(), startDay.getMonth(), startDay.getDate(), 18, 0, 0);
+      if (isNaN(astroEnd.getTime())) astroEnd = new Date(endDay.getFullYear(), endDay.getMonth(), endDay.getDate(), 5, 0, 0);
 
       cachedAstroStart = astroStart;
       cachedAstroEnd = astroEnd;
+
+      // Wyliczanie parametrów dla widoku pobocznego
+      const currentSunTimes = SunCalc.getTimes(now, LAT, LON);
+      const moonTimes = SunCalc.getMoonTimes(now, LAT, LON);
+      const moonIllum = SunCalc.getMoonIllumination(now);
       cachedMoonFraction = moonIllum.fraction;
 
+      document.getElementById('sunriseTime').innerText = formatTime(currentSunTimes.sunrise);
+      document.getElementById('sunsetTime').innerText = formatTime(currentSunTimes.sunset);
       document.getElementById('astronauticalDusk').innerText = formatTime(astroStart);
       document.getElementById('astronauticalDawn').innerText = formatTime(astroEnd);
-
       document.getElementById('moonriseTime').innerText = moonTimes.rise ? formatTime(moonTimes.rise) : 'Brak';
       document.getElementById('moonsetTime').innerText = moonTimes.set ? formatTime(moonTimes.set) : 'Brak';
-      document.getElementById('moonIllum').innerText = Math.round(safeNum(moonIllum.fraction) * 100) + '%';
-      document.getElementById('moonPhase').innerText = 'Faza ' + Math.round(safeNum(moonIllum.fraction) * 100) + '%';
+      document.getElementById('moonIllum').innerText = Math.round(moonIllum.fraction * 100) + '%';
+      document.getElementById('moonPhase').innerText = 'Faza ' + Math.round(moonIllum.fraction * 100) + '%';
 
       try {
         const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=cloud_cover,precipitation_probability,precipitation,visibility,dew_point_2m,temperature_2m,relative_humidity_2m&timezone=auto`);
@@ -557,12 +426,12 @@
           if (tDate.getTime() >= startMs && tDate.getTime() <= endMs) {
             cachedHourlyData.push({
               time: tDate,
-              cloudCover: safeNum(hourly.cloud_cover ? hourly.cloud_cover[i] : 100),
-              rainProb: safeNum(hourly.precipitation_probability ? hourly.precipitation_probability[i] : 0),
-              rainMm: safeNum(hourly.precipitation ? hourly.precipitation[i] : 0),
-              temp: safeNum(hourly.temperature_2m ? hourly.temperature_2m[i] : 0),
-              dewPoint: safeNum(hourly.dew_point_2m ? hourly.dew_point_2m[i] : 0),
-              humidity: safeNum(hourly.relative_humidity_2m ? hourly.relative_humidity_2m[i] : 0)
+              cloudCover: isNaN(Number(hourly.cloud_cover[i])) ? 100 : Number(hourly.cloud_cover[i]),
+              rainProb: isNaN(Number(hourly.precipitation_probability[i])) ? 0 : Number(hourly.precipitation_probability[i]),
+              rainMm: isNaN(Number(hourly.precipitation[i])) ? 0 : Number(hourly.precipitation[i]),
+              temp: isNaN(Number(hourly.temperature_2m[i])) ? 0 : Number(hourly.temperature_2m[i]),
+              dewPoint: isNaN(Number(hourly.dew_point_2m[i])) ? 0 : Number(hourly.dew_point_2m[i]),
+              humidity: isNaN(Number(hourly.relative_humidity_2m[i])) ? 0 : Number(hourly.relative_humidity_2m[i])
             });
           }
         }
@@ -574,13 +443,13 @@
       const temps = cachedHourlyData.map(d => d.temp);
       const dewPoints = cachedHourlyData.map(d => d.dewPoint);
 
-      const avgCloud = clouds.length > 0 ? clouds.reduce((a, b) => a + b, 0) / clouds.length : 100;
-      const maxRainProb = rainProbs.length > 0 ? Math.max(...rainProbs) : 0;
-      const totalRainMm = cachedHourlyData.length > 0 ? cachedHourlyData.reduce((acc, d) => acc + d.rainMm, 0) : 0;
+      const avgCloud = cachedHourlyData.length > 0 ? safeAvg(clouds, true) : 100;
+      const maxRainProb = cachedHourlyData.length > 0 ? Math.max(...rainProbs) : 0;
+      const totalRainMm = cachedHourlyData.length > 0 ? safeSum(cachedHourlyData.map(d => d.rainMm)) : 0;
 
-      document.getElementById('avgTemp').innerText = temps.length > 0 ? `${(temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1)} °C` : '-- °C';
-      document.getElementById('avgDewPoint').innerText = dewPoints.length > 0 ? `${(dewPoints.reduce((a, b) => a + b, 0) / dewPoints.length).toFixed(1)} °C` : '-- °C';
-      document.getElementById('avgHumidity').innerText = cachedHourlyData.length > 0 ? `${Math.round(cachedHourlyData.reduce((acc, d) => acc + d.humidity, 0) / cachedHourlyData.length)} %` : '-- %';
+      document.getElementById('avgTemp').innerText = cachedHourlyData.length > 0 ? `${safeAvg(temps).toFixed(1)} °C` : '-- °C';
+      document.getElementById('avgDewPoint').innerText = cachedHourlyData.length > 0 ? `${safeAvg(dewPoints).toFixed(1)} °C` : '-- °C';
+      document.getElementById('avgHumidity').innerText = cachedHourlyData.length > 0 ? `${Math.round(safeAvg(cachedHourlyData.map(d => d.humidity)))} %` : '-- %';
 
       let score = 100 - avgCloud;
       const rainAlertBanner = document.getElementById('rainAlertBanner');
@@ -591,7 +460,7 @@
         rainAlertBanner.classList.add('hidden');
       }
 
-      document.getElementById('stargazingScore').innerText = Math.max(0, Math.min(100, Math.round(safeNum(score))));
+      document.getElementById('stargazingScore').innerText = Math.max(0, Math.min(100, Math.round(score)));
       document.getElementById('stargazingSummary').innerText = score === 0 ? "🛑 Wykryto opady deszczu!" : (score >= 85 ? "Czyste niebo!" : "Zachmurzenie umiarkowane/duże.");
 
       renderCloudChart(labels, clouds, rainProbs, temps, dewPoints);
@@ -650,7 +519,7 @@
       const suggestionBox = document.createElement('div');
       suggestionBox.className = "col-span-1 md:col-span-2 mb-2 p-4 rounded-xl bg-gradient-to-r from-indigo-950/90 via-slate-900 to-slate-950 border border-indigo-500/40 shadow-xl space-y-3";
 
-      if (currentScore === 0) {
+      if (currentScore === 0 && cachedHourlyData.length > 0) {
         suggestionBox.innerHTML = `<div class="flex justify-between border-b border-rose-800/50 pb-2"><h3 class="text-sm font-bold text-rose-300">Rekomendowane Obiekty na Dziś</h3><span class="text-[11px] px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800 font-bold">🛑 Wykryto Ryzyko Opadów</span></div><p class="text-xs text-rose-200">Sesja odwołana – opady deszczu w nocy.</p>`;
       } else if (top4.length > 0) {
         let top4Html = top4.map(item => `
