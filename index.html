@@ -186,7 +186,6 @@
     let activeCategoryFilter = 'all';
     let MESSIER_CATALOG = [];
 
-    // Niezłomna funkcja zapobiegająca 'NaN' przy dzieleniu pustych tablic
     const safeAvg = (arr, round = false) => {
       if (!arr || arr.length === 0) return 0;
       const valid = arr.filter(v => typeof v === 'number' && !isNaN(v));
@@ -290,9 +289,10 @@
       let clearSkyWindows = [];
       let maxVisibleAlt = -999;
       let peakInfo = null;
+      let isEverVisibleInZone = false;
 
       if (!hourlyWeatherArray || hourlyWeatherArray.length === 0) {
-        return { clearSkyWindows: [], maxVisibleAlt: -999, peakInfo: null, hasClearSkyWindow: false };
+        return { clearSkyWindows: [], maxVisibleAlt: -999, peakInfo: null, hasClearSkyWindow: false, isEverVisibleInZone: false };
       }
 
       let activeWindow = null;
@@ -302,9 +302,13 @@
         const pos = getHorizontalCoordinates(ra, dec, LAT, item.time);
         const zone = getSectorZoneName(pos.az, pos.alt, mode);
 
-        if (pos.alt > maxVisibleAlt) {
-          maxVisibleAlt = pos.alt;
-          peakInfo = { time: item.time, azDir: azToMainSector(pos.az), alt: pos.alt };
+        if (zone !== null) {
+          isEverVisibleInZone = true;
+          // Aktualizujemy szczyt TYLKO gdy obiekt jest w fizycznym polu widzenia
+          if (pos.alt > maxVisibleAlt) {
+            maxVisibleAlt = pos.alt;
+            peakInfo = { time: item.time, azDir: azToMainSector(pos.az), alt: pos.alt };
+          }
         }
 
         const isIdeal = (zone !== null) && (item.cloudCover <= 15) && (astroEnd ? item.time < astroEnd : true);
@@ -331,7 +335,7 @@
       }
 
       if (activeWindow) clearSkyWindows.push(activeWindow);
-      return { clearSkyWindows, maxVisibleAlt, peakInfo, hasClearSkyWindow: clearSkyWindows.length > 0 };
+      return { clearSkyWindows, maxVisibleAlt, peakInfo, hasClearSkyWindow: clearSkyWindows.length > 0, isEverVisibleInZone };
     }
 
     function updateCompassVisuals(mode) {
@@ -363,16 +367,13 @@
 
       await loadMessierCatalog();
 
-      // KLUCZOWY FIX: Niezawodne wyliczanie dat na przełomie dni (gdy sprawdzamy po północy vs wieczorem)
       const noon = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
       let startDay = new Date(now);
       let endDay = new Date(now);
 
       if (now < noon) {
-        // Jeśli sprawdzamy rano lub po północy - noc ZACZĘŁA SIĘ wczoraj!
         startDay.setDate(startDay.getDate() - 1);
       } else {
-        // Jeśli sprawdzamy po południu - noc SKOŃCZY SIĘ jutro!
         endDay.setDate(endDay.getDate() + 1);
       }
 
@@ -382,14 +383,12 @@
       let astroStart = startTimes.night || startTimes.nauticalDusk || new Date(startDay.getFullYear(), startDay.getMonth(), startDay.getDate(), 18, 0, 0);
       let astroEnd = endTimes.nightEnd || endTimes.nauticalDawn || new Date(endDay.getFullYear(), endDay.getMonth(), endDay.getDate(), 5, 0, 0);
 
-      // Awaryjny sztywny zapas, żeby daty w skrypcie NIGDY nie zwróciły Invalid Date
       if (isNaN(astroStart.getTime())) astroStart = new Date(startDay.getFullYear(), startDay.getMonth(), startDay.getDate(), 18, 0, 0);
       if (isNaN(astroEnd.getTime())) astroEnd = new Date(endDay.getFullYear(), endDay.getMonth(), endDay.getDate(), 5, 0, 0);
 
       cachedAstroStart = astroStart;
       cachedAstroEnd = astroEnd;
 
-      // Wyliczanie parametrów dla widoku pobocznego
       const currentSunTimes = SunCalc.getTimes(now, LAT, LON);
       const moonTimes = SunCalc.getMoonTimes(now, LAT, LON);
       const moonIllum = SunCalc.getMoonIllumination(now);
@@ -502,8 +501,10 @@
 
       const validTargets = [];
       fullCatalog.forEach(item => {
-        const { clearSkyWindows, maxVisibleAlt, peakInfo, hasClearSkyWindow } = calculateDirectionWindows(item.ra, item.dec, mode, cachedHourlyData, astroEnd);
-        if (maxVisibleAlt > 0) {
+        const { clearSkyWindows, maxVisibleAlt, peakInfo, hasClearSkyWindow, isEverVisibleInZone } = calculateDirectionWindows(item.ra, item.dec, mode, cachedHourlyData, astroEnd);
+        
+        // KLUCZOWY FILTR: Dodajemy tylko te, które fizycznie wejdą w widoczność dla wybranej lokacji
+        if (isEverVisibleInZone) {
           const currentPos = getHorizontalCoordinates(item.ra, item.dec, LAT, midNight);
           validTargets.push({ ...item, maxAlt: maxVisibleAlt, currentAlt: currentPos.alt, currentAzDir: azToMainSector(currentPos.az), clearSkyWindows, peakInfo, hasClearSkyWindow });
         }
