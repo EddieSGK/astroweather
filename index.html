@@ -233,12 +233,38 @@
       return { ra: (eclipticLon / 15 + 24) % 24, dec: 23.44 * Math.sin(eclipticLon * rad) };
     }
 
-    function getSeestarBaseConfig(cat) {
-      if (cat === 'nebula') return { subExp: '10s', baseTime: '60-90 min', filter: 'Dual-Band LP (Włącz w apce)', notes: 'Mgławica emisyjna. Włącz filtr Dual-Band w aplikacji Seestar.' };
-      if (cat === 'reflection_nebula') return { subExp: '10s', baseTime: '90-120 min', filter: 'UV/IR Cut (Domyślny)', notes: 'Mgławica pyłowa/odbiciowa. Zostaw filtr domyślny UV/IR Cut.' };
-      if (cat === 'galaxy') return { subExp: '10s', baseTime: '90-120 min', filter: 'UV/IR Cut (Domyślny)', notes: 'Galaktyka. Wyłącz filtr Dual-Band – fotografuj na domyślnym UV/IR Cut.' };
-      if (cat === 'planet') return { subExp: '1s-2s / Video', baseTime: '5-10 min', filter: 'UV/IR Cut (Domyślny)', notes: 'Użyj trybu Planetary / krótkich czasów.' };
-      return { subExp: '10s', baseTime: '30-45 min', filter: 'UV/IR Cut (Domyślny)', notes: 'Gromada gwiazd. Wystarczy krótka integracja na filtrze UV/IR Cut.' };
+    // Dynamiczne wyznaczanie rekomendacji i trudności dla Seestara S30 Pro
+    function getSeestarRecommendation(item) {
+      if (item.cat === 'planet') {
+        return { suit: 'Idealny', badgeClass: 'bg-emerald-950 text-emerald-300 border-emerald-800', subExp: '1s–2s / Video', baseTime: '5–10 min', filter: 'UV/IR Cut (Domyślny)', notes: 'Użyj trybu Planetary / krótkich czasów do nagrania tarcz planetarnych.' };
+      }
+      
+      const mag = Number(item.mag) || 8.0;
+      let suit = 'Dobry';
+      let badgeClass = 'bg-cyan-950 text-cyan-300 border-cyan-800';
+
+      if (mag <= 7.0) {
+        suit = 'Idealny';
+        badgeClass = 'bg-emerald-950 text-emerald-300 border-emerald-800';
+      } else if (mag >= 10.5) {
+        suit = 'Trudny';
+        badgeClass = 'bg-rose-950 text-rose-300 border-rose-800';
+      } else if (mag >= 9.0) {
+        suit = 'Umiarkowany';
+        badgeClass = 'bg-amber-950 text-amber-300 border-amber-800';
+      }
+
+      if (item.cat === 'nebula') {
+        return { suit, badgeClass, subExp: '10s', baseTime: '60–90 min', filter: 'Dual-Band LP (Włącz w apce)', notes: 'Mgławica emisyjna. Włącz filtr Dual-Band w aplikacji Seestar dla lepszego kontrastu.' };
+      }
+      if (item.cat === 'reflection_nebula') {
+        return { suit, badgeClass, subExp: '10s', baseTime: '90–120 min', filter: 'UV/IR Cut (Domyślny)', notes: 'Mgławica pyłowa/odbiciowa. Zostaw filtr domyślny UV/IR Cut (filtr Dual-Band tłumi światło odbite).' };
+      }
+      if (item.cat === 'galaxy') {
+        return { suit, badgeClass, subExp: '10s', baseTime: '90–120 min', filter: 'UV/IR Cut (Domyślny)', notes: 'Galaktyka. Wyłącz filtr Dual-Band – fotografuj na domyślnym filtrze UV/IR Cut.' };
+      }
+      // Gromady (globular / open_cluster)
+      return { suit, badgeClass, subExp: '10s', baseTime: '30–45 min', filter: 'UV/IR Cut (Domyślny)', notes: 'Gromada gwiazd. Wystarczy krótsza integracja na standardowym filtrze UV/IR Cut.' };
     }
 
     function getCategoryIcon(cat) {
@@ -304,7 +330,6 @@
 
         if (zone !== null) {
           isEverVisibleInZone = true;
-          // Aktualizujemy szczyt TYLKO gdy obiekt jest w fizycznym polu widzenia
           if (pos.alt > maxVisibleAlt) {
             maxVisibleAlt = pos.alt;
             peakInfo = { time: item.time, azDir: azToMainSector(pos.az), alt: pos.alt };
@@ -503,7 +528,6 @@
       fullCatalog.forEach(item => {
         const { clearSkyWindows, maxVisibleAlt, peakInfo, hasClearSkyWindow, isEverVisibleInZone } = calculateDirectionWindows(item.ra, item.dec, mode, cachedHourlyData, astroEnd);
         
-        // KLUCZOWY FILTR: Dodajemy tylko te, które fizycznie wejdą w widoczność dla wybranej lokacji
         if (isEverVisibleInZone) {
           const currentPos = getHorizontalCoordinates(item.ra, item.dec, LAT, midNight);
           validTargets.push({ ...item, maxAlt: maxVisibleAlt, currentAlt: currentPos.alt, currentAzDir: azToMainSector(currentPos.az), clearSkyWindows, peakInfo, hasClearSkyWindow });
@@ -544,7 +568,7 @@
       let filteredTargets = activeCategoryFilter === 'all' ? validTargets : validTargets.filter(t => t.cat === activeCategoryFilter || (activeCategoryFilter === 'nebula' && t.cat === 'reflection_nebula') || (activeCategoryFilter === 'cluster' && t.cat === 'globular'));
 
       filteredTargets.forEach(item => {
-        const seestarBase = getSeestarBaseConfig(item.cat);
+        const seestarRec = getSeestarRecommendation(item);
         let clearSkyHtml = (item.clearSkyWindows && item.clearSkyWindows.length > 0) ? item.clearSkyWindows.map(cw => `<div class="flex justify-between text-xs py-0.5 font-bold text-emerald-300"><span>Sektor ${cw.zone} (&le;15% chmur):</span><span class="font-mono">${formatTime(cw.start)} – ${formatTime(cw.end)}</span></div>`).join('') : `<div class="text-[11px] text-amber-400 italic">⚠️ Brak okna &le;15% chmur.</div>`;
 
         container.innerHTML += `
@@ -552,17 +576,32 @@
             <div class="flex gap-3 items-center">
               <div class="thumb-box w-12 h-12 rounded-lg border border-slate-700/80 bg-slate-900/90 flex items-center justify-center shrink-0 shadow-inner">${getCategoryIcon(item.cat)}</div>
               <div class="flex-1 min-w-0">
-                <div class="flex justify-between items-start"><h3 class="font-bold text-slate-100 text-sm truncate">${item.name}</h3><span class="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800">${item.currentAzDir} (${item.currentAlt}°)</span></div>
+                <div class="flex justify-between items-start">
+                  <h3 class="font-bold text-slate-100 text-sm truncate">${item.name}</h3>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${seestarRec.badgeClass}">${seestarRec.suit}</span>
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800">${item.currentAzDir} (${item.currentAlt}°)</span>
+                  </div>
+                </div>
                 <p class="text-xs text-slate-400">${item.type} • Mag: ${item.mag}</p>
               </div>
             </div>
+            
             <div class="best-window-box bg-emerald-950/40 border border-emerald-500/40 p-2.5 rounded-lg text-xs space-y-2">
               <div><div class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-0.5">Zalecana Obserwacja (&le;15% chmur):</div>${clearSkyHtml}</div>
               <div class="text-[11px] text-slate-300 flex justify-between pt-1 border-t border-emerald-900/40"><span>Najwyższy punkt:</span><span class="font-mono text-emerald-300 font-bold">${item.peakInfo ? formatTime(item.peakInfo.time) + ' (' + item.peakInfo.alt + '°)' : '--:--'}</span></div>
             </div>
+
             <div class="pt-2 border-t border-slate-800/80 space-y-1 text-xs">
-              <div class="flex justify-between font-mono text-emerald-400 font-semibold"><span>Seestar S30 Pro:</span><span>${seestarBase.filter}</span></div>
-              <p class="text-[11px] text-slate-400 italic bg-slate-900/50 p-2 rounded border border-slate-800">${seestarBase.notes}</p>
+              <div class="flex justify-between font-mono text-emerald-400 font-semibold">
+                <span>Seestar S30 Pro:</span>
+                <span class="text-indigo-300">Ekspozycja: ${seestarRec.subExp} | Czas: ${seestarRec.baseTime}</span>
+              </div>
+              <div class="flex justify-between text-[11px] text-slate-300 font-mono">
+                <span>Zalecany filtr:</span>
+                <span class="text-cyan-300 font-bold">${seestarRec.filter}</span>
+              </div>
+              <p class="text-[11px] text-slate-400 italic bg-slate-900/50 p-2 rounded border border-slate-800">${seestarRec.notes}</p>
             </div>
           </div>`;
       });
