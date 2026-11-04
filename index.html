@@ -423,29 +423,19 @@
       }
     }
 
-    // BEZPOŚREDNIE PRZELICZANIE PO TABLICY GODZIN Z WYKRESU DLA NOCY ASTRONOMICZNEJ
     function calculateDirectionWindows(ra, dec, mode, hourlyWeatherArray, astroEnd) {
       let clearSkyWindows = [];
       let maxVisibleAlt = -999;
       let peakInfo = null;
 
       if (!hourlyWeatherArray || hourlyWeatherArray.length === 0) {
-        return { windows: [], clearSkyWindows: [], maxVisibleAlt: -999, peakInfo: null, hasClearSkyWindow: false };
+        return { clearSkyWindows: [], maxVisibleAlt: -999, peakInfo: null, hasClearSkyWindow: false };
       }
 
       let activeWindow = null;
 
       for (let i = 0; i < hourlyWeatherArray.length; i++) {
-        const item = hourlyWeatherArray[i]; // { time: Date, cloudCover: number }
-
-        // Ścisłe odrzucenie godzin przypadających po świcie astronomicznym!
-        if (astroEnd && item.time >= astroEnd) {
-          if (activeWindow) {
-            clearSkyWindows.push(activeWindow);
-            activeWindow = null;
-          }
-          break;
-        }
+        const item = hourlyWeatherArray[i];
 
         const pos = getHorizontalCoordinates(ra, dec, LAT, item.time);
         const zone = getSectorZoneName(pos.az, pos.alt, mode);
@@ -455,14 +445,12 @@
           peakInfo = { time: item.time, azDir: azToMainSector(pos.az), alt: pos.alt };
         }
 
-        // WARUNEK: Obiekt w widocznym sektorze ORAZ zachmurzenie <= 15%
-        const isIdeal = (zone !== null) && (item.cloudCover <= 15);
+        const isIdeal = (zone !== null) && (item.cloudCover <= 15) && (astroEnd ? item.time < astroEnd : true);
 
         if (isIdeal) {
           const startTime = item.time;
           let endTime = new Date(item.time.getTime() + 60 * 60 * 1000);
           
-          // Przycinamy koniec okna dokładnie do świtu astronomicznego
           if (astroEnd && endTime > astroEnd) {
             endTime = new Date(astroEnd.getTime());
           }
@@ -476,12 +464,15 @@
             activeWindow = { zone, start: startTime, end: endTime };
           }
         } else {
-          // Zachmurzenie > 15% lub poza horyzontem -> ZAMYKAMY OKNO
           if (activeWindow) {
             clearSkyWindows.push(activeWindow);
             activeWindow = null;
           }
         }
+      }
+
+      if (activeWindow) {
+        clearSkyWindows.push(activeWindow);
       }
 
       return { clearSkyWindows, maxVisibleAlt, peakInfo, hasClearSkyWindow: clearSkyWindows.length > 0 };
@@ -550,11 +541,14 @@
     function processWeatherData(data, astroStart, astroEnd, moonFraction) {
       const hourly = data.hourly;
 
-      // Budowanie tablicy WYŁĄCZNIE dla godzin w granicach nocy astronomicznej (astroStart do astroEnd)
+      // POBIERAMY CAŁĄ NOC ASTRONOMICZNĄ (Z TOLERANCJĄ GODZINY DLA WYKRESU)
       cachedHourlyData = [];
+      const startMs = astroStart.getTime() - 1800000;
+      const endMs = astroEnd.getTime() + 3600000;
+
       for (let i = 0; i < hourly.time.length; i++) {
         const tDate = new Date(hourly.time[i]);
-        if (tDate >= new Date(astroStart.getTime() - 1800000) && tDate < astroEnd) {
+        if (tDate.getTime() >= startMs && tDate.getTime() <= endMs) {
           cachedHourlyData.push({
             time: tDate,
             cloudCover: hourly.cloud_cover[i],
@@ -573,13 +567,13 @@
       const temps = cachedHourlyData.map(d => d.temp);
       const dewPoints = cachedHourlyData.map(d => d.dewPoint);
 
-      const avgCloud = clouds.reduce((a, b) => a + b, 0) / clouds.length;
-      const maxRainProb = Math.max(...rainProbs);
-      const totalRainMm = cachedHourlyData.map(d => d.rainMm).reduce((a, b) => a + b, 0);
+      const avgCloud = clouds.length > 0 ? clouds.reduce((a, b) => a + b, 0) / clouds.length : 100;
+      const maxRainProb = rainProbs.length > 0 ? Math.max(...rainProbs) : 0;
+      const totalRainMm = cachedHourlyData.length > 0 ? cachedHourlyData.map(d => d.rainMm).reduce((a, b) => a + b, 0) : 0;
 
-      document.getElementById('avgTemp').innerText = `${(temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1)} °C`;
-      document.getElementById('avgDewPoint').innerText = `${(dewPoints.reduce((a, b) => a + b, 0) / dewPoints.length).toFixed(1)} °C`;
-      document.getElementById('avgHumidity').innerText = `${Math.round(cachedHourlyData.map(d => d.humidity).reduce((a, b) => a + b, 0) / cachedHourlyData.length)} %`;
+      document.getElementById('avgTemp').innerText = temps.length > 0 ? `${(temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1)} °C` : '-- °C';
+      document.getElementById('avgDewPoint').innerText = dewPoints.length > 0 ? `${(dewPoints.reduce((a, b) => a + b, 0) / dewPoints.length).toFixed(1)} °C` : '-- °C';
+      document.getElementById('avgHumidity').innerText = cachedHourlyData.length > 0 ? `${Math.round(cachedHourlyData.map(d => d.humidity).reduce((a, b) => a + b, 0) / cachedHourlyData.length)} %` : '-- %';
 
       let score = 100 - avgCloud;
       const rainAlertBanner = document.getElementById('rainAlertBanner');
@@ -642,7 +636,6 @@
       validTargets.sort((a, b) => b.maxAlt - a.maxAlt);
       const currentScore = parseInt(document.getElementById('stargazingScore').innerText) || 0;
 
-      // REKOMENDACJE TOP 4 STRYSKTNIE DLA OBIEKTÓW Z CZYSTYM NIEBEM (<=15% CHMUR)
       const idealTargets = validTargets.filter(t => t.maxAlt >= 25 && t.cat !== 'planet' && t.hasClearSkyWindow === true && t.clearSkyWindows && t.clearSkyWindows.length > 0);
       let top4 = idealTargets.slice(0, 4);
 
