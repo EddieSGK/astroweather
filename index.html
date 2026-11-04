@@ -233,7 +233,6 @@
       return { ra: (eclipticLon / 15 + 24) % 24, dec: 23.44 * Math.sin(eclipticLon * rad) };
     }
 
-    // Dynamiczne wyznaczanie rekomendacji i trudności dla Seestara S30 Pro
     function getSeestarRecommendation(item) {
       if (item.cat === 'planet') {
         return { suit: 'Idealny', badgeClass: 'bg-emerald-950 text-emerald-300 border-emerald-800', subExp: '1s–2s / Video', baseTime: '5–10 min', filter: 'UV/IR Cut (Domyślny)', notes: 'Użyj trybu Planetary / krótkich czasów do nagrania tarcz planetarnych.' };
@@ -263,7 +262,6 @@
       if (item.cat === 'galaxy') {
         return { suit, badgeClass, subExp: '10s', baseTime: '90–120 min', filter: 'UV/IR Cut (Domyślny)', notes: 'Galaktyka. Wyłącz filtr Dual-Band – fotografuj na domyślnym filtrze UV/IR Cut.' };
       }
-      // Gromady (globular / open_cluster)
       return { suit, badgeClass, subExp: '10s', baseTime: '30–45 min', filter: 'UV/IR Cut (Domyślny)', notes: 'Gromada gwiazd. Wystarczy krótsza integracja na standardowym filtrze UV/IR Cut.' };
     }
 
@@ -471,9 +469,28 @@
       const maxRainProb = cachedHourlyData.length > 0 ? Math.max(...rainProbs) : 0;
       const totalRainMm = cachedHourlyData.length > 0 ? safeSum(cachedHourlyData.map(d => d.rainMm)) : 0;
 
-      document.getElementById('avgTemp').innerText = cachedHourlyData.length > 0 ? `${safeAvg(temps).toFixed(1)} °C` : '-- °C';
-      document.getElementById('avgDewPoint').innerText = cachedHourlyData.length > 0 ? `${safeAvg(dewPoints).toFixed(1)} °C` : '-- °C';
-      document.getElementById('avgHumidity').innerText = cachedHourlyData.length > 0 ? `${Math.round(safeAvg(cachedHourlyData.map(d => d.humidity)))} %` : '-- %';
+      const avgTempVal = safeAvg(temps);
+      const avgDewVal = safeAvg(dewPoints);
+      const avgHumVal = safeAvg(cachedHourlyData.map(d => d.humidity));
+
+      document.getElementById('avgTemp').innerText = cachedHourlyData.length > 0 ? `${avgTempVal.toFixed(1)} °C` : '-- °C';
+      document.getElementById('avgDewPoint').innerText = cachedHourlyData.length > 0 ? `${avgDewVal.toFixed(1)} °C` : '-- °C';
+      document.getElementById('avgHumidity').innerText = cachedHourlyData.length > 0 ? `${Math.round(avgHumVal)} %` : '-- %';
+
+      // --- DEDYKOWANA LOGIKA STATUSU GRZAŁKI (ANTI-DEW) ---
+      const dewDiff = avgTempVal - avgDewVal;
+      const heaterElem = document.getElementById('heaterStatus');
+      const dewAlertBanner = document.getElementById('dewAlertBanner');
+
+      if (cachedHourlyData.length > 0 && (dewDiff <= 3.0 || avgHumVal >= 80)) {
+        heaterElem.innerText = "WŁĄCZONA (Anti-Dew)";
+        heaterElem.className = "font-bold text-amber-400 flex items-center gap-1 animate-pulse";
+        dewAlertBanner.classList.remove('hidden');
+      } else {
+        heaterElem.innerText = "Wyłączona";
+        heaterElem.className = "font-bold text-emerald-400";
+        dewAlertBanner.classList.add('hidden');
+      }
 
       let score = 100 - avgCloud;
       const rainAlertBanner = document.getElementById('rainAlertBanner');
