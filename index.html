@@ -4,9 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard Pogodowo-Astronomiczny (Bydgoszcz)</title>
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SunCalc CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
+  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
@@ -445,16 +449,15 @@
           peakInfo = { time: new Date(currentTime.getTime()), azDir: azToMainSector(pos.az), alt: pos.alt };
         }
 
-        let cloudCover = 0;
+        let cloudCover = 100;
         if (cachedHourlyWeather && cachedHourlyWeather.times && cachedHourlyWeather.times.length > 0) {
-          const curMs = currentTime.getTime();
-          let closestIdx = 0;
-          let minDiff = Math.abs(curMs - cachedHourlyWeather.times[0].getTime());
-          for (let i = 1; i < cachedHourlyWeather.times.length; i++) {
-            const diff = Math.abs(curMs - cachedHourlyWeather.times[i].getTime());
-            if (diff < minDiff) { minDiff = diff; closestIdx = i; }
+          const curHour = currentTime.getHours();
+          const curDay = currentTime.getDate();
+          
+          const matchIdx = cachedHourlyWeather.times.findIndex(t => t.getHours() === curHour && t.getDate() === curDay);
+          if (matchIdx !== -1) {
+            cloudCover = cachedHourlyWeather.clouds[matchIdx];
           }
-          cloudCover = cachedHourlyWeather.clouds[closestIdx];
         }
 
         if (zone !== null) rawWindows.push({ zone, time: new Date(currentTime.getTime()), cloudCover });
@@ -473,17 +476,26 @@
         }
         windows.push(currentWindow);
 
-        // STRYKTNE FILTROWANIE ZACHMURZENIA <= 15%
+        // FILTROWANIE ZACHMURZENIA <= 15% DLA ZALECANYCH OKIEN
         let clearSamples = rawWindows.filter(w => w.cloudCover <= 15);
         if (clearSamples.length > 0) {
-          let curClear = { zone: clearSamples[0].zone, start: clearSamples[0].time, end: clearSamples[0].time };
+          let curClear = { 
+            zone: clearSamples[0].zone, 
+            start: clearSamples[0].time, 
+            end: new Date(clearSamples[0].time.getTime() + stepMs) 
+          };
+
           for (let i = 1; i < clearSamples.length; i++) {
             const item = clearSamples[i];
-            if (item.zone === curClear.zone && (item.time.getTime() - curClear.end.getTime()) <= stepMs) {
-              curClear.end = item.time;
+            if (item.zone === curClear.zone && (item.time.getTime() - (curClear.end.getTime() - stepMs)) <= stepMs) {
+              curClear.end = new Date(item.time.getTime() + stepMs);
             } else {
               clearSkyWindows.push(curClear);
-              curClear = { zone: item.zone, start: item.time, end: item.time };
+              curClear = { 
+                zone: item.zone, 
+                start: item.time, 
+                end: new Date(item.time.getTime() + stepMs) 
+              };
             }
           }
           clearSkyWindows.push(curClear);
@@ -640,7 +652,7 @@
       validTargets.sort((a, b) => b.maxAlt - a.maxAlt);
       const currentScore = parseInt(document.getElementById('stargazingScore').innerText) || 0;
 
-      // REKOMENDACJE TOP 4 STRYKTNIE DLA OBIEKTÓW Z CZYSZTYM NIEBEM (<=15% CHMUR)
+      // REKOMENDACJE TOP 4 DLA OBIEKTÓW Z CZYSTYM NIEBEM (<=15% CHMUR)
       const idealTargets = validTargets.filter(t => t.maxAlt >= 25 && t.cat !== 'planet' && t.hasClearSkyWindow === true && t.clearSkyWindows && t.clearSkyWindows.length > 0);
       let top4 = idealTargets.slice(0, 4);
 
