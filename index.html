@@ -449,18 +449,18 @@
           peakInfo = { time: new Date(currentTime.getTime()), azDir: azToMainSector(pos.az), alt: pos.alt };
         }
 
+        // Precyzyjny odczyt zachmurzenia z mapy hourlyWeatherMap (brak przekłamań stref czasowych)
         let cloudCover = 100;
-        if (cachedHourlyWeather && cachedHourlyWeather.times && cachedHourlyWeather.times.length > 0) {
-          const curHour = currentTime.getHours();
-          const curDay = currentTime.getDate();
-          
-          const matchIdx = cachedHourlyWeather.times.findIndex(t => t.getHours() === curHour && t.getDate() === curDay);
-          if (matchIdx !== -1) {
-            cloudCover = cachedHourlyWeather.clouds[matchIdx];
+        if (cachedHourlyWeather) {
+          const key = `${currentTime.getFullYear()}-${currentTime.getMonth()+1}-${currentTime.getDate()}-${currentTime.getHours()}`;
+          if (cachedHourlyWeather[key] !== undefined) {
+            cloudCover = cachedHourlyWeather[key];
           }
         }
 
-        if (zone !== null) rawWindows.push({ zone, time: new Date(currentTime.getTime()), cloudCover });
+        if (zone !== null) {
+          rawWindows.push({ zone, time: new Date(currentTime.getTime()), cloudCover });
+        }
         currentTime = new Date(currentTime.getTime() + stepMs);
       }
 
@@ -471,8 +471,12 @@
         let currentWindow = { zone: rawWindows[0].zone, start: rawWindows[0].time, end: new Date(rawWindows[0].time.getTime() + stepMs) };
         for (let i = 1; i < rawWindows.length; i++) {
           const item = rawWindows[i];
-          if (item.zone === currentWindow.zone) { currentWindow.end = new Date(item.time.getTime() + stepMs); } 
-          else { windows.push(currentWindow); currentWindow = { zone: item.zone, start: item.time, end: new Date(item.time.getTime() + stepMs) }; }
+          if (item.zone === currentWindow.zone) { 
+            currentWindow.end = new Date(item.time.getTime() + stepMs); 
+          } else { 
+            windows.push(currentWindow); 
+            currentWindow = { zone: item.zone, start: item.time, end: new Date(item.time.getTime() + stepMs) }; 
+          }
         }
         windows.push(currentWindow);
 
@@ -567,12 +571,24 @@
 
     function processWeatherData(data, astroStart, astroEnd, moonFraction) {
       const hourly = data.hourly;
-      const times = hourly.time.map(t => new Date(t));
-      cachedHourlyWeather = { times, clouds: hourly.cloud_cover };
 
+      // Tworzymy bezpośrednią mapę zachmurzenia według lokalnych kluczy czasowych
+      const hourlyWeatherMap = {};
+      for (let i = 0; i < hourly.time.length; i++) {
+        const timeStr = hourly.time[i]; 
+        const dateObj = new Date(timeStr);
+        const key = `${dateObj.getFullYear()}-${dateObj.getMonth()+1}-${dateObj.getDate()}-${dateObj.getHours()}`;
+        hourlyWeatherMap[key] = hourly.cloud_cover[i];
+      }
+      
+      cachedHourlyWeather = hourlyWeatherMap;
+
+      const times = hourly.time.map(t => new Date(t));
       let windowIndices = [];
       for (let i = 0; i < times.length; i++) {
-        if (times[i] >= new Date(astroStart.getTime() - 1800000) && times[i] <= new Date(astroEnd.getTime() + 1800000)) windowIndices.push(i);
+        if (times[i] >= new Date(astroStart.getTime() - 1800000) && times[i] <= new Date(astroEnd.getTime() + 1800000)) {
+          windowIndices.push(i);
+        }
       }
       if (windowIndices.length === 0) windowIndices = [18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5];
 
@@ -652,7 +668,7 @@
       validTargets.sort((a, b) => b.maxAlt - a.maxAlt);
       const currentScore = parseInt(document.getElementById('stargazingScore').innerText) || 0;
 
-      // REKOMENDACJE TOP 4 DLA OBIEKTÓW Z CZYSTYM NIEBEM (<=15% CHMUR)
+      // REKOMENDACJE TOP 4 STRYKTNIE DLA OBIEKTÓW Z CZYSTYM NIEBEM (<=15% CHMUR)
       const idealTargets = validTargets.filter(t => t.maxAlt >= 25 && t.cat !== 'planet' && t.hasClearSkyWindow === true && t.clearSkyWindows && t.clearSkyWindows.length > 0);
       let top4 = idealTargets.slice(0, 4);
 
