@@ -333,11 +333,10 @@
     let cachedAstroStart = null;
     let cachedAstroEnd = null;
     let cachedMoonFraction = 0;
-    let cachedHourlyWeatherList = []; // Tablica { ms, cloudCover }
+    let cachedHourlyWeatherList = []; 
     let activeCategoryFilter = 'all';
     let MESSIER_CATALOG = [];
 
-    // Pobieranie bazy Messiera z pliku messier.json
     async function loadMessierCatalog() {
       try {
         const response = await fetch('messier.json');
@@ -449,7 +448,7 @@
           peakInfo = { time: new Date(currentTime.getTime()), azDir: azToMainSector(pos.az), alt: pos.alt };
         }
 
-        // Precyzyjne dopasowanie po timestampie (szukamy punktu z wykresu najbliższego czasowo)
+        // Dopasowanie pogody wyłącznie po bliskości czasowej z ISO z Open-Meteo
         let cloudCover = 100;
         if (cachedHourlyWeatherList && cachedHourlyWeatherList.length > 0) {
           const curMs = currentTime.getTime();
@@ -463,7 +462,7 @@
               closest = cachedHourlyWeatherList[i];
             }
           }
-          if (minDiff <= 45 * 60 * 1000) { // Tolerancja max 45 min
+          if (minDiff <= 40 * 60 * 1000) {
             cloudCover = closest.cloudCover;
           }
         }
@@ -478,6 +477,7 @@
       let clearSkyWindows = [];
 
       if (rawWindows.length > 0) {
+        // 1. Wszystkie okna w sektorach
         let currentWindow = { zone: rawWindows[0].zone, start: rawWindows[0].time, end: new Date(rawWindows[0].time.getTime() + stepMs) };
         for (let i = 1; i < rawWindows.length; i++) {
           const item = rawWindows[i];
@@ -490,7 +490,7 @@
         }
         windows.push(currentWindow);
 
-        // FILTROWANIE ZACHMURZENIA <= 15% DLA ZALECANYCH OKIEN
+        // 2. STRYKTNE OKNA CZYSZTEGO NIEBA (<= 15% CHMUR DLA DANEJ PRÓBKI I DANEJ STREFY)
         let clearSamples = rawWindows.filter(w => w.cloudCover <= 15);
         if (clearSamples.length > 0) {
           let curClear = { 
@@ -501,7 +501,9 @@
 
           for (let i = 1; i < clearSamples.length; i++) {
             const item = clearSamples[i];
-            if (item.zone === curClear.zone && (item.time.getTime() - (curClear.end.getTime() - stepMs)) <= stepMs) {
+            // Musi zgadzać się SEKTOR oraz CZAS musi być ciągły
+            const isContinuous = (item.time.getTime() - (curClear.end.getTime() - stepMs)) <= stepMs;
+            if (item.zone === curClear.zone && isContinuous) {
               curClear.end = new Date(item.time.getTime() + stepMs);
             } else {
               clearSkyWindows.push(curClear);
@@ -582,7 +584,7 @@
     function processWeatherData(data, astroStart, astroEnd, moonFraction) {
       const hourly = data.hourly;
 
-      // Konwersja dat ISO bezpośrednio na timestampy w milisekundach (100% niezawodności)
+      // Zapisujemy timestampy z ISO w UTC/Local z Open-Meteo
       cachedHourlyWeatherList = hourly.time.map((t, idx) => ({
         ms: new Date(t).getTime(),
         cloudCover: hourly.cloud_cover[idx]
@@ -673,7 +675,7 @@
       validTargets.sort((a, b) => b.maxAlt - a.maxAlt);
       const currentScore = parseInt(document.getElementById('stargazingScore').innerText) || 0;
 
-      // REKOMENDACJE TOP 4 STRYKTNIE DLA OBIEKTÓW Z CZYSTYM NIEBEM (<=15% CHMUR)
+      // REKOMENDACJE TOP 4 DLA OBIEKTÓW Z CZYSTYM NIEBEM (<=15% CHMUR)
       const idealTargets = validTargets.filter(t => t.maxAlt >= 25 && t.cat !== 'planet' && t.hasClearSkyWindow === true && t.clearSkyWindows && t.clearSkyWindows.length > 0);
       let top4 = idealTargets.slice(0, 4);
 
