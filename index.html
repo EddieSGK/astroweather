@@ -337,6 +337,12 @@
     let activeCategoryFilter = 'all';
     let MESSIER_CATALOG = [];
 
+    // Pomocnicza funkcja gwarantująca poprawny numer (unikamy NaN)
+    const safeNum = (v, defaultVal = 0) => {
+      const n = Number(v);
+      return isNaN(n) ? defaultVal : n;
+    };
+
     async function loadMessierCatalog() {
       try {
         const response = await fetch('messier.json');
@@ -526,8 +532,8 @@
 
       document.getElementById('moonriseTime').innerText = moonTimes.rise ? formatTime(moonTimes.rise) : 'Brak';
       document.getElementById('moonsetTime').innerText = moonTimes.set ? formatTime(moonTimes.set) : 'Brak';
-      document.getElementById('moonIllum').innerText = Math.round(moonIllum.fraction * 100) + '%';
-      document.getElementById('moonPhase').innerText = 'Faza ' + Math.round(moonIllum.fraction * 100) + '%';
+      document.getElementById('moonIllum').innerText = Math.round(safeNum(moonIllum.fraction) * 100) + '%';
+      document.getElementById('moonPhase').innerText = 'Faza ' + Math.round(safeNum(moonIllum.fraction) * 100) + '%';
 
       try {
         const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=cloud_cover,precipitation_probability,precipitation,visibility,dew_point_2m,temperature_2m,relative_humidity_2m&timezone=auto`);
@@ -539,25 +545,26 @@
     }
 
     function processWeatherData(data, astroStart, astroEnd, moonFraction) {
-      const hourly = data.hourly;
-
-      // POBIERAMY CAŁĄ NOC ASTRONOMICZNĄ (Z TOLERANCJĄ GODZINY DLA WYKRESU)
+      const hourly = data ? data.hourly : null;
       cachedHourlyData = [];
-      const startMs = astroStart.getTime() - 1800000;
-      const endMs = astroEnd.getTime() + 3600000;
 
-      for (let i = 0; i < hourly.time.length; i++) {
-        const tDate = new Date(hourly.time[i]);
-        if (tDate.getTime() >= startMs && tDate.getTime() <= endMs) {
-          cachedHourlyData.push({
-            time: tDate,
-            cloudCover: hourly.cloud_cover[i],
-            rainProb: hourly.precipitation_probability ? hourly.precipitation_probability[i] : 0,
-            rainMm: hourly.precipitation ? hourly.precipitation[i] : 0,
-            temp: hourly.temperature_2m[i],
-            dewPoint: hourly.dew_point_2m[i],
-            humidity: hourly.relative_humidity_2m[i]
-          });
+      if (hourly && hourly.time && hourly.time.length > 0) {
+        const startMs = astroStart.getTime() - 1800000;
+        const endMs = astroEnd.getTime() + 3600000;
+
+        for (let i = 0; i < hourly.time.length; i++) {
+          const tDate = new Date(hourly.time[i]);
+          if (tDate.getTime() >= startMs && tDate.getTime() <= endMs) {
+            cachedHourlyData.push({
+              time: tDate,
+              cloudCover: safeNum(hourly.cloud_cover ? hourly.cloud_cover[i] : 100),
+              rainProb: safeNum(hourly.precipitation_probability ? hourly.precipitation_probability[i] : 0),
+              rainMm: safeNum(hourly.precipitation ? hourly.precipitation[i] : 0),
+              temp: safeNum(hourly.temperature_2m ? hourly.temperature_2m[i] : 0),
+              dewPoint: safeNum(hourly.dew_point_2m ? hourly.dew_point_2m[i] : 0),
+              humidity: safeNum(hourly.relative_humidity_2m ? hourly.relative_humidity_2m[i] : 0)
+            });
+          }
         }
       }
 
@@ -569,11 +576,11 @@
 
       const avgCloud = clouds.length > 0 ? clouds.reduce((a, b) => a + b, 0) / clouds.length : 100;
       const maxRainProb = rainProbs.length > 0 ? Math.max(...rainProbs) : 0;
-      const totalRainMm = cachedHourlyData.length > 0 ? cachedHourlyData.map(d => d.rainMm).reduce((a, b) => a + b, 0) : 0;
+      const totalRainMm = cachedHourlyData.length > 0 ? cachedHourlyData.reduce((acc, d) => acc + d.rainMm, 0) : 0;
 
       document.getElementById('avgTemp').innerText = temps.length > 0 ? `${(temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1)} °C` : '-- °C';
       document.getElementById('avgDewPoint').innerText = dewPoints.length > 0 ? `${(dewPoints.reduce((a, b) => a + b, 0) / dewPoints.length).toFixed(1)} °C` : '-- °C';
-      document.getElementById('avgHumidity').innerText = cachedHourlyData.length > 0 ? `${Math.round(cachedHourlyData.map(d => d.humidity).reduce((a, b) => a + b, 0) / cachedHourlyData.length)} %` : '-- %';
+      document.getElementById('avgHumidity').innerText = cachedHourlyData.length > 0 ? `${Math.round(cachedHourlyData.reduce((acc, d) => acc + d.humidity, 0) / cachedHourlyData.length)} %` : '-- %';
 
       let score = 100 - avgCloud;
       const rainAlertBanner = document.getElementById('rainAlertBanner');
@@ -584,7 +591,7 @@
         rainAlertBanner.classList.add('hidden');
       }
 
-      document.getElementById('stargazingScore').innerText = Math.max(0, Math.min(100, Math.round(score)));
+      document.getElementById('stargazingScore').innerText = Math.max(0, Math.min(100, Math.round(safeNum(score))));
       document.getElementById('stargazingSummary').innerText = score === 0 ? "🛑 Wykryto opady deszczu!" : (score >= 85 ? "Czyste niebo!" : "Zachmurzenie umiarkowane/duże.");
 
       renderCloudChart(labels, clouds, rainProbs, temps, dewPoints);
@@ -634,7 +641,8 @@
       });
 
       validTargets.sort((a, b) => b.maxAlt - a.maxAlt);
-      const currentScore = parseInt(document.getElementById('stargazingScore').innerText) || 0;
+      const currentScoreText = document.getElementById('stargazingScore').innerText;
+      const currentScore = (currentScoreText === '--' || currentScoreText === 'NaN') ? 0 : parseInt(currentScoreText);
 
       const idealTargets = validTargets.filter(t => t.maxAlt >= 25 && t.cat !== 'planet' && t.hasClearSkyWindow === true && t.clearSkyWindows && t.clearSkyWindows.length > 0);
       let top4 = idealTargets.slice(0, 4);
