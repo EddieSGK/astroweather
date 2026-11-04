@@ -333,7 +333,7 @@
     let cachedAstroStart = null;
     let cachedAstroEnd = null;
     let cachedMoonFraction = 0;
-    let cachedHourlyWeatherList = []; 
+    let cachedHourlyData = []; // Główny magazynek: [{ time: Date, cloudCover: number }]
     let activeCategoryFilter = 'all';
     let MESSIER_CATALOG = [];
 
@@ -423,102 +423,57 @@
       }
     }
 
-    function calculateDirectionWindows(ra, dec, astroStart, astroEnd, mode) {
-      const stepMs = 30 * 60 * 1000;
-      let startTime = new Date(astroStart.getTime());
-      let endTime = new Date(astroEnd.getTime());
-
-      if (isNaN(startTime.getTime()) || isNaN(endTime.getTime()) || startTime >= endTime) {
-        const now = new Date();
-        startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0);
-        endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 5, 0, 0);
-      }
-
-      let currentTime = new Date(startTime.getTime());
-      let rawWindows = [];
+    // BEZPOŚREDNIE PRZELICZANIE PO TABLICY GODZIN Z WYKRESU (BEZ MATERIAŁU DO BŁĘDÓW)
+    function calculateDirectionWindows(ra, dec, mode, hourlyWeatherArray) {
+      let clearSkyWindows = [];
       let maxVisibleAlt = -999;
       let peakInfo = null;
 
-      while (currentTime <= endTime) {
-        const pos = getHorizontalCoordinates(ra, dec, LAT, currentTime);
+      if (!hourlyWeatherArray || hourlyWeatherArray.length === 0) {
+        return { windows: [], clearSkyWindows: [], maxVisibleAlt: -999, peakInfo: null, hasClearSkyWindow: false };
+      }
+
+      let activeWindow = null;
+
+      for (let i = 0; i < hourlyWeatherArray.length; i++) {
+        const item = hourlyWeatherArray[i]; // { time: Date, cloudCover: number }
+        const pos = getHorizontalCoordinates(ra, dec, LAT, item.time);
         const zone = getSectorZoneName(pos.az, pos.alt, mode);
 
         if (pos.alt > maxVisibleAlt) {
           maxVisibleAlt = pos.alt;
-          peakInfo = { time: new Date(currentTime.getTime()), azDir: azToMainSector(pos.az), alt: pos.alt };
+          peakInfo = { time: item.time, azDir: azToMainSector(pos.az), alt: pos.alt };
         }
 
-        // Dopasowanie pogody wyłącznie po bliskości czasowej z ISO z Open-Meteo
-        let cloudCover = 100;
-        if (cachedHourlyWeatherList && cachedHourlyWeatherList.length > 0) {
-          const curMs = currentTime.getTime();
-          let closest = cachedHourlyWeatherList[0];
-          let minDiff = Math.abs(curMs - closest.ms);
+        // WARUNEK: Obiekt w widocznym sektorze ORAZ zachmurzenie <= 15%
+        const isIdeal = (zone !== null) && (item.cloudCover <= 15);
 
-          for (let i = 1; i < cachedHourlyWeatherList.length; i++) {
-            const diff = Math.abs(curMs - cachedHourlyWeatherList[i].ms);
-            if (diff < minDiff) {
-              minDiff = diff;
-              closest = cachedHourlyWeatherList[i];
-            }
+        if (isIdeal) {
+          const startTime = item.time;
+          const endTime = new Date(item.time.getTime() + 60 * 60 * 1000); // okno 1h na próbkę
+
+          if (!activeWindow) {
+            activeWindow = { zone, start: startTime, end: endTime };
+          } else if (activeWindow.zone === zone && (startTime.getTime() <= activeWindow.end.getTime())) {
+            activeWindow.end = endTime;
+          } else {
+            clearSkyWindows.push(activeWindow);
+            activeWindow = { zone, start: startTime, end: endTime };
           }
-          if (minDiff <= 40 * 60 * 1000) {
-            cloudCover = closest.cloudCover;
+        } else {
+          // Zachmurzenie > 15% lub poza sektorem -> NATYCHMIAST ZAMYKAMY OKNO!
+          if (activeWindow) {
+            clearSkyWindows.push(activeWindow);
+            activeWindow = null;
           }
-        }
-
-        if (zone !== null) {
-          rawWindows.push({ zone, time: new Date(currentTime.getTime()), cloudCover });
-        }
-        currentTime = new Date(currentTime.getTime() + stepMs);
-      }
-
-      let windows = [];
-      let clearSkyWindows = [];
-
-      if (rawWindows.length > 0) {
-        // 1. Wszystkie okna w sektorach
-        let currentWindow = { zone: rawWindows[0].zone, start: rawWindows[0].time, end: new Date(rawWindows[0].time.getTime() + stepMs) };
-        for (let i = 1; i < rawWindows.length; i++) {
-          const item = rawWindows[i];
-          if (item.zone === currentWindow.zone) { 
-            currentWindow.end = new Date(item.time.getTime() + stepMs); 
-          } else { 
-            windows.push(currentWindow); 
-            currentWindow = { zone: item.zone, start: item.time, end: new Date(item.time.getTime() + stepMs) }; 
-          }
-        }
-        windows.push(currentWindow);
-
-        // 2. STRYKTNE OKNA CZYSZTEGO NIEBA (<= 15% CHMUR DLA DANEJ PRÓBKI I DANEJ STREFY)
-        let clearSamples = rawWindows.filter(w => w.cloudCover <= 15);
-        if (clearSamples.length > 0) {
-          let curClear = { 
-            zone: clearSamples[0].zone, 
-            start: clearSamples[0].time, 
-            end: new Date(clearSamples[0].time.getTime() + stepMs) 
-          };
-
-          for (let i = 1; i < clearSamples.length; i++) {
-            const item = clearSamples[i];
-            // Musi zgadzać się SEKTOR oraz CZAS musi być ciągły
-            const isContinuous = (item.time.getTime() - (curClear.end.getTime() - stepMs)) <= stepMs;
-            if (item.zone === curClear.zone && isContinuous) {
-              curClear.end = new Date(item.time.getTime() + stepMs);
-            } else {
-              clearSkyWindows.push(curClear);
-              curClear = { 
-                zone: item.zone, 
-                start: item.time, 
-                end: new Date(item.time.getTime() + stepMs) 
-              };
-            }
-          }
-          clearSkyWindows.push(curClear);
         }
       }
 
-      return { windows, clearSkyWindows, maxVisibleAlt, peakInfo, hasClearSkyWindow: clearSkyWindows.length > 0 };
+      if (activeWindow) {
+        clearSkyWindows.push(activeWindow);
+      }
+
+      return { clearSkyWindows, maxVisibleAlt, peakInfo, hasClearSkyWindow: clearSkyWindows.length > 0 };
     }
 
     function updateCompassVisuals(mode) {
@@ -584,35 +539,36 @@
     function processWeatherData(data, astroStart, astroEnd, moonFraction) {
       const hourly = data.hourly;
 
-      // Zapisujemy timestampy z ISO w UTC/Local z Open-Meteo
-      cachedHourlyWeatherList = hourly.time.map((t, idx) => ({
-        ms: new Date(t).getTime(),
-        cloudCover: hourly.cloud_cover[idx]
-      }));
-
-      const times = hourly.time.map(t => new Date(t));
-      let windowIndices = [];
-      for (let i = 0; i < times.length; i++) {
-        if (times[i] >= new Date(astroStart.getTime() - 1800000) && times[i] <= new Date(astroEnd.getTime() + 1800000)) {
-          windowIndices.push(i);
+      // Tworzymy tablicę obiektów pogodowych z pełną synchronizacją wykresu
+      cachedHourlyData = [];
+      for (let i = 0; i < hourly.time.length; i++) {
+        const tDate = new Date(hourly.time[i]);
+        if (tDate >= new Date(astroStart.getTime() - 1800000) && tDate <= new Date(astroEnd.getTime() + 1800000)) {
+          cachedHourlyData.push({
+            time: tDate,
+            cloudCover: hourly.cloud_cover[i],
+            rainProb: hourly.precipitation_probability ? hourly.precipitation_probability[i] : 0,
+            rainMm: hourly.precipitation ? hourly.precipitation[i] : 0,
+            temp: hourly.temperature_2m[i],
+            dewPoint: hourly.dew_point_2m[i],
+            humidity: hourly.relative_humidity_2m[i]
+          });
         }
       }
-      if (windowIndices.length === 0) windowIndices = [18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5];
 
-      const labels = windowIndices.map(i => times[i].getHours().toString().padStart(2, '0') + ':00');
-      const clouds = windowIndices.map(i => hourly.cloud_cover[i]);
-      const rainProbs = windowIndices.map(i => hourly.precipitation_probability ? hourly.precipitation_probability[i] : 0);
-      const rainMms = windowIndices.map(i => hourly.precipitation ? hourly.precipitation[i] : 0);
-      const temps = windowIndices.map(i => hourly.temperature_2m[i]);
-      const dewPoints = windowIndices.map(i => hourly.dew_point_2m[i]);
+      const labels = cachedHourlyData.map(d => d.time.getHours().toString().padStart(2, '0') + ':00');
+      const clouds = cachedHourlyData.map(d => d.cloudCover);
+      const rainProbs = cachedHourlyData.map(d => d.rainProb);
+      const temps = cachedHourlyData.map(d => d.temp);
+      const dewPoints = cachedHourlyData.map(d => d.dewPoint);
 
       const avgCloud = clouds.reduce((a, b) => a + b, 0) / clouds.length;
       const maxRainProb = Math.max(...rainProbs);
-      const totalRainMm = rainMms.reduce((a, b) => a + b, 0);
+      const totalRainMm = cachedHourlyData.map(d => d.rainMm).reduce((a, b) => a + b, 0);
 
       document.getElementById('avgTemp').innerText = `${(temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1)} °C`;
       document.getElementById('avgDewPoint').innerText = `${(dewPoints.reduce((a, b) => a + b, 0) / dewPoints.length).toFixed(1)} °C`;
-      document.getElementById('avgHumidity').innerText = `${Math.round(hourly.relative_humidity_2m.reduce((a, b) => a + b, 0) / hourly.relative_humidity_2m.length)} %`;
+      document.getElementById('avgHumidity').innerText = `${Math.round(cachedHourlyData.map(d => d.humidity).reduce((a, b) => a + b, 0) / cachedHourlyData.length)} %`;
 
       let score = 100 - avgCloud;
       const rainAlertBanner = document.getElementById('rainAlertBanner');
@@ -665,17 +621,17 @@
 
       const validTargets = [];
       fullCatalog.forEach(item => {
-        const { windows, clearSkyWindows, maxVisibleAlt, peakInfo, hasClearSkyWindow } = calculateDirectionWindows(item.ra, item.dec, astroStart, astroEnd, mode);
-        if (windows.length > 0 && maxVisibleAlt > 0) {
+        const { clearSkyWindows, maxVisibleAlt, peakInfo, hasClearSkyWindow } = calculateDirectionWindows(item.ra, item.dec, mode, cachedHourlyData);
+        if (maxVisibleAlt > 0) {
           const currentPos = getHorizontalCoordinates(item.ra, item.dec, LAT, midNight);
-          validTargets.push({ ...item, maxAlt: maxVisibleAlt, currentAlt: currentPos.alt, currentAzDir: azToMainSector(currentPos.az), windows, clearSkyWindows, peakInfo, hasClearSkyWindow });
+          validTargets.push({ ...item, maxAlt: maxVisibleAlt, currentAlt: currentPos.alt, currentAzDir: azToMainSector(currentPos.az), clearSkyWindows, peakInfo, hasClearSkyWindow });
         }
       });
 
       validTargets.sort((a, b) => b.maxAlt - a.maxAlt);
       const currentScore = parseInt(document.getElementById('stargazingScore').innerText) || 0;
 
-      // REKOMENDACJE TOP 4 DLA OBIEKTÓW Z CZYSTYM NIEBEM (<=15% CHMUR)
+      // REKOMENDACJE TOP 4 STRYKTNIE DLA OBIEKTÓW Z CZYSTYM NIEBEM (<=15% CHMUR)
       const idealTargets = validTargets.filter(t => t.maxAlt >= 25 && t.cat !== 'planet' && t.hasClearSkyWindow === true && t.clearSkyWindows && t.clearSkyWindows.length > 0);
       let top4 = idealTargets.slice(0, 4);
 
@@ -692,7 +648,7 @@
           </div>`).join('');
         suggestionBox.innerHTML = `<div class="flex justify-between border-b border-indigo-800/50 pb-2"><h3 class="text-sm font-bold text-indigo-300">Dedykowany Plan Obserwacyjny (Top 4 - Czyste Niebo &le;15%)</h3></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">${top4Html}</div>`;
       } else {
-        suggestionBox.innerHTML = `<div class="flex justify-between border-b border-indigo-800/50 pb-2"><h3 class="text-sm font-bold text-indigo-300">Rekomendowane Obiekty na Dziś</h3><span class="text-[11px] px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800">⚠️ Brak Rekomendacji (Zachmurzenie >15%)</span></div><p class="text-xs text-slate-400">Brak obiektów z oknem czystego nieba (&le;15% chmur) w otwartych sektorach.</p>`;
+        suggestionBox.innerHTML = `<div class="flex justify-between border-b border-indigo-800/50 pb-2"><h3 class="text-sm font-bold text-indigo-300">Rekomendowane Obiekty na Dziś</h3><span class="text-[11px] px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800">⚠️ Brak Rekomendacji (Zachmurzenie >15%)</span></div><p class="text-xs text-slate-400">Brak obiektów z oknem czystego nieba (&le;15% chmur) w otwartych sektorach.</p me-2 shadow font-medium font-sans border-0 font-normal">`;
       }
 
       container.appendChild(suggestionBox);
