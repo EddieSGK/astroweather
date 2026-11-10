@@ -390,35 +390,25 @@
 
       await loadMessierCatalog();
 
-      const noon = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
-      let startDay = new Date(now);
-      let endDay = new Date(now);
+      // Zawsze wyliczamy dzisiejszy zmierzch i JUTRZEJSZY świt
+      const todaySun = SunCalc.getTimes(now, LAT, LON);
+      
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowSun = SunCalc.getTimes(tomorrow, LAT, LON);
 
-      if (now < noon) {
-        startDay.setDate(startDay.getDate() - 1);
-      } else {
-        endDay.setDate(endDay.getDate() + 1);
-      }
-
-      const startTimes = SunCalc.getTimes(startDay, LAT, LON);
-      const endTimes = SunCalc.getTimes(endDay, LAT, LON);
-
-      let astroStart = startTimes.night || startTimes.nauticalDusk || new Date(startDay.getFullYear(), startDay.getMonth(), startDay.getDate(), 18, 0, 0);
-      let astroEnd = endTimes.nightEnd || endTimes.nauticalDawn || new Date(endDay.getFullYear(), endDay.getMonth(), endDay.getDate(), 5, 0, 0);
-
-      if (isNaN(astroStart.getTime())) astroStart = new Date(startDay.getFullYear(), startDay.getMonth(), startDay.getDate(), 18, 0, 0);
-      if (isNaN(astroEnd.getTime())) astroEnd = new Date(endDay.getFullYear(), endDay.getMonth(), endDay.getDate(), 5, 0, 0);
+      let astroStart = todaySun.night || todaySun.nauticalDusk || new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0);
+      let astroEnd = tomorrowSun.nightEnd || tomorrowSun.nauticalDawn || new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 5, 0, 0);
 
       cachedAstroStart = astroStart;
       cachedAstroEnd = astroEnd;
 
-      const currentSunTimes = SunCalc.getTimes(now, LAT, LON);
       const moonTimes = SunCalc.getMoonTimes(now, LAT, LON);
       const moonIllum = SunCalc.getMoonIllumination(now);
       cachedMoonFraction = moonIllum.fraction;
 
-      document.getElementById('sunriseTime').innerText = formatTime(currentSunTimes.sunrise);
-      document.getElementById('sunsetTime').innerText = formatTime(currentSunTimes.sunset);
+      document.getElementById('sunriseTime').innerText = formatTime(todaySun.sunrise);
+      document.getElementById('sunsetTime').innerText = formatTime(todaySun.sunset);
       document.getElementById('astronauticalDusk').innerText = formatTime(astroStart);
       document.getElementById('astronauticalDawn').innerText = formatTime(astroEnd);
       document.getElementById('moonriseTime').innerText = moonTimes.rise ? formatTime(moonTimes.rise) : 'Brak';
@@ -440,12 +430,14 @@
       cachedHourlyData = [];
 
       if (hourly && hourly.time && hourly.time.length > 0) {
-        const startMs = astroStart.getTime() - 1800000;
-        const endMs = astroEnd.getTime() + 3600000;
+        const startMs = astroStart.getTime();
+        const endMs = astroEnd.getTime();
 
         for (let i = 0; i < hourly.time.length; i++) {
           const tDate = new Date(hourly.time[i]);
-          if (tDate.getTime() >= startMs && tDate.getTime() <= endMs) {
+          const tMs = tDate.getTime();
+
+          if (tMs >= startMs - 1800000 && tMs <= endMs + 1800000) {
             cachedHourlyData.push({
               time: tDate,
               cloudCover: isNaN(Number(hourly.cloud_cover[i])) ? 100 : Number(hourly.cloud_cover[i]),
@@ -465,10 +457,6 @@
       const temps = cachedHourlyData.map(d => d.temp);
       const dewPoints = cachedHourlyData.map(d => d.dewPoint);
 
-      const avgCloud = cachedHourlyData.length > 0 ? safeAvg(clouds, true) : 100;
-      const maxRainProb = cachedHourlyData.length > 0 ? Math.max(...rainProbs) : 0;
-      const totalRainMm = cachedHourlyData.length > 0 ? safeSum(cachedHourlyData.map(d => d.rainMm)) : 0;
-
       const avgTempVal = safeAvg(temps);
       const avgDewVal = safeAvg(dewPoints);
       const avgHumVal = safeAvg(cachedHourlyData.map(d => d.humidity));
@@ -477,7 +465,6 @@
       document.getElementById('avgDewPoint').innerText = cachedHourlyData.length > 0 ? `${avgDewVal.toFixed(1)} °C` : '-- °C';
       document.getElementById('avgHumidity').innerText = cachedHourlyData.length > 0 ? `${Math.round(avgHumVal)} %` : '-- %';
 
-      // --- DEDYKOWANA LOGIKA STATUSU GRZAŁKI (ANTI-DEW) ---
       const dewDiff = avgTempVal - avgDewVal;
       const heaterElem = document.getElementById('heaterStatus');
       const dewAlertBanner = document.getElementById('dewAlertBanner');
@@ -491,6 +478,10 @@
         heaterElem.className = "font-bold text-emerald-400";
         dewAlertBanner.classList.add('hidden');
       }
+
+      const avgCloud = cachedHourlyData.length > 0 ? safeAvg(clouds, true) : 100;
+      const maxRainProb = cachedHourlyData.length > 0 ? Math.max(...rainProbs) : 0;
+      const totalRainMm = cachedHourlyData.length > 0 ? safeSum(cachedHourlyData.map(d => d.rainMm)) : 0;
 
       let score = 100 - avgCloud;
       const rainAlertBanner = document.getElementById('rainAlertBanner');
@@ -564,11 +555,23 @@
       if (currentScore === 0 && cachedHourlyData.length > 0) {
         suggestionBox.innerHTML = `<div class="flex justify-between border-b border-rose-800/50 pb-2"><h3 class="text-sm font-bold text-rose-300">Rekomendowane Obiekty na Dziś</h3><span class="text-[11px] px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800 font-bold">🛑 Wykryto Ryzyko Opadów</span></div><p class="text-xs text-rose-200">Sesja odwołana – opady deszczu w nocy.</p>`;
       } else if (top4.length > 0) {
-        let top4Html = top4.map(item => `
-          <div class="flex justify-between p-2.5 bg-slate-950/80 border border-indigo-900/40 rounded-lg text-xs">
-            <div><span class="font-bold text-slate-100 block">${item.name}</span><span class="text-slate-400 text-[11px]">${item.type} (Mag: ${item.mag})</span></div>
-            <div class="text-right font-mono"><span class="text-indigo-300 font-bold block">${item.peakInfo ? formatTime(item.peakInfo.time) : '--:--'} (Max: ${item.maxAlt}°)</span><span class="text-emerald-400 text-[10px]">Zalecane: ${formatTime(item.clearSkyWindows[0].start)} - ${formatTime(item.clearSkyWindows[0].end)}</span></div>
-          </div>`).join('');
+        let top4Html = top4.map(item => {
+          const seestarRec = getSeestarRecommendation(item);
+          return `
+          <div class="flex justify-between items-center p-2.5 bg-slate-950/80 border border-indigo-900/40 rounded-lg text-xs">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-slate-100">${item.name}</span>
+                <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border ${seestarRec.badgeClass}">${seestarRec.suit}</span>
+              </div>
+              <span class="text-slate-400 text-[11px]">${item.type} (Mag: ${item.mag})</span>
+            </div>
+            <div class="text-right font-mono">
+              <span class="text-indigo-300 font-bold block">${item.peakInfo ? formatTime(item.peakInfo.time) : '--:--'} (Max: ${item.maxAlt}°)</span>
+              <span class="text-emerald-400 text-[10px]">Zalecane: ${formatTime(item.clearSkyWindows[0].start)} - ${formatTime(item.clearSkyWindows[0].end)}</span>
+            </div>
+          </div>`;
+        }).join('');
         suggestionBox.innerHTML = `<div class="flex justify-between border-b border-indigo-800/50 pb-2"><h3 class="text-sm font-bold text-indigo-300">Dedykowany Plan Obserwacyjny (Top 4 - Czyste Niebo &le;15%)</h3></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">${top4Html}</div>`;
       } else {
         suggestionBox.innerHTML = `<div class="flex justify-between border-b border-indigo-800/50 pb-2"><h3 class="text-sm font-bold text-indigo-300">Rekomendowane Obiekty na Dziś</h3><span class="text-[11px] px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800">⚠️ Brak Rekomendacji (Zachmurzenie >15%)</span></div><p class="text-xs text-slate-400">Brak obiektów z oknem czystego nieba (&le;15% chmur) w otwartych sektorach.</p>`;
