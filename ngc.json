@@ -1,75 +1,497 @@
-import json
-
-# Starannie wyselekcjonowana lista ~60 najlepszych, najjaśniejszych i największych obiektów NGC (bez "ziarenek maku")
-# Idealnych dla szerokiego/średniego pola ZWO Seestar S30 Pro (ogniskowa ~150mm, szerokość pola ok. 1.5° x 2.6° lub w trybie mozaiki)
-# Widocznych z półkuli północnej (Bydgoszcz, Dec > -30°)
-
-ngc_objects = [
-    # --- WIELKIE MGŁAWICE EMISYJNE I POZOSTAŁOŚCI PO SUPERNOWYCH ---
-    {"id": "NGC 7000", "name": "NGC 7000 (Mgławica Ameryka Północna)", "type": "Emission Nebula", "mag": 4.0, "ra": 20.98, "dec": 44.33, "cat": "nebula"},
-    {"id": "NGC 6960", "name": "NGC 6960 (Miotła Wiedźmy - Veil Zach.)", "type": "Supernova Remnant", "mag": 7.0, "ra": 20.76, "dec": 30.71, "cat": "nebula"},
-    {"id": "NGC 6992", "name": "NGC 6992 (Veil Wschodni)", "type": "Supernova Remnant", "mag": 7.0, "ra": 20.94, "dec": 31.72, "cat": "nebula"},
-    {"id": "NGC 2244", "name": "NGC 2244 / 2237 (Mgławica Rozeta)", "type": "Emission Nebula", "mag": 4.8, "ra": 6.53, "dec": 4.95, "cat": "nebula"},
-    {"id": "NGC 1499", "name": "NGC 1499 (Mgławica Kalifornia)", "type": "Emission Nebula", "mag": 5.0, "ra": 4.05, "dec": 36.42, "cat": "nebula"},
-    {"id": "NGC 281", "name": "NGC 281 (Mgławica Pacman)", "type": "Emission Nebula", "mag": 7.4, "ra": 0.88, "dec": 56.63, "cat": "nebula"},
-    {"id": "NGC 7635", "name": "NGC 7635 (Mgławica Bańka)", "type": "Emission Nebula", "mag": 8.5, "ra": 23.34, "dec": 61.20, "cat": "nebula"},
-    {"id": "NGC 6888", "name": "NGC 6888 (Mgławica Półksiężyc)", "type": "Emission Nebula", "mag": 7.4, "ra": 20.20, "dec": 38.35, "cat": "nebula"},
-    {"id": "NGC 7380", "name": "NGC 7380 (Mgławica Czarodziej)", "type": "Emission Nebula", "mag": 7.2, "ra": 22.78, "dec": 58.13, "cat": "nebula"},
-    {"id": "NGC 7822", "name": "NGC 7822 (Znak Zapytania)", "type": "Emission Nebula", "mag": 8.0, "ra": 0.06, "dec": 67.15, "cat": "nebula"},
-    {"id": "NGC 2174", "name": "NGC 2174 (Głowa Małpy)", "type": "Emission Nebula", "mag": 6.8, "ra": 6.16, "dec": 20.50, "cat": "nebula"},
-    {"id": "NGC 2264", "name": "NGC 2264 (Choinka i Stożek)", "type": "Emission Nebula", "mag": 3.9, "ra": 6.68, "dec": 9.88, "cat": "nebula"},
-    {"id": "NGC 2359", "name": "NGC 2359 (Hełm Thora)", "type": "Emission Nebula", "mag": 8.5, "ra": 7.31, "dec": -13.20, "cat": "nebula"},
-    {"id": "NGC 2024", "name": "NGC 2024 (Mgławica Płomień)", "type": "Emission Nebula", "mag": 7.2, "ra": 5.69, "dec": -1.85, "cat": "nebula"},
-    {"id": "NGC 1977", "name": "NGC 1977 (Biegnący Człowiek)", "type": "Reflection Nebula", "mag": 7.0, "ra": 5.59, "dec": -4.87, "cat": "reflection_nebula"},
-    {"id": "NGC 7023", "name": "NGC 7023 (Mgławica Irys)", "type": "Reflection Nebula", "mag": 6.8, "ra": 21.03, "dec": 68.17, "cat": "reflection_nebula"},
-    {"id": "NGC 1333", "name": "NGC 1333 (Mgławica w Perseuszu)", "type": "Reflection Nebula", "mag": 8.5, "ra": 3.49, "dec": 31.36, "cat": "reflection_nebula"},
-    {"id": "NGC 2070", "name": "NGC 2068 / M78 Okolice (Barnard Loop)", "type": "Reflection Nebula", "mag": 8.0, "ra": 5.78, "dec": 0.08, "cat": "reflection_nebula"},
-    {"id": "NGC 896", "name": "NGC 896 (Głowa Ryby - część Serca)", "type": "Emission Nebula", "mag": 8.0, "ra": 2.42, "dec": 61.98, "cat": "nebula"},
-    {"id": "NGC 6188", "name": "NGC 6820 (Mgławica w Lisku)", "type": "Emission Nebula", "mag": 8.2, "ra": 19.71, "dec": 23.30, "cat": "nebula"},
-
-    # --- DUŻE MGŁAWICE PLANETARNE ---
-    {"id": "NGC 7293", "name": "NGC 7293 (Mgławica Ślimak / Helix)", "type": "Planetary Nebula", "mag": 7.6, "ra": 22.49, "dec": -20.84, "cat": "nebula"},
-    {"id": "NGC 6543", "name": "NGC 6543 (Kocie Oko)", "type": "Planetary Nebula", "mag": 8.1, "ra": 17.98, "dec": 66.63, "cat": "nebula"},
-    {"id": "NGC 2392", "name": "NGC 2392 (Mgławica Eskimos)", "type": "Planetary Nebula", "mag": 9.1, "ra": 7.49, "dec": 20.91, "cat": "nebula"},
-    {"id": "NGC 3242", "name": "NGC 3242 (Duch Jowisza)", "type": "Planetary Nebula", "mag": 7.7, "ra": 10.41, "dec": -18.64, "cat": "nebula"},
-    {"id": "NGC 6826", "name": "NGC 6826 (Mrugająca Planetarna)", "type": "Planetary Nebula", "mag": 8.8, "ra": 19.75, "dec": 50.52, "cat": "nebula"},
-    {"id": "NGC 7009", "name": "NGC 7009 (Mgławica Saturn)", "type": "Planetary Nebula", "mag": 8.0, "ra": 21.07, "dec": -11.36, "cat": "nebula"},
-
-    # --- NAJWIĘKSZE I NAJJAŚNIEJSZE GALAKTYKI NGC ---
-    {"id": "NGC 253", "name": "NGC 253 (Galaktyka Rzeźbiarza / Srebrna Moneta)", "type": "Spiral Galaxy", "mag": 7.2, "ra": 0.79, "dec": -25.29, "cat": "galaxy"},
-    {"id": "NGC 2403", "name": "NGC 2403 (Galaktyka w Żyrafie)", "type": "Spiral Galaxy", "mag": 8.5, "ra": 7.61, "dec": 65.60, "cat": "galaxy"},
-    {"id": "NGC 2903", "name": "NGC 2903 (Galaktyka w Lwie)", "type": "Spiral Galaxy", "mag": 8.9, "ra": 9.54, "dec": 21.50, "cat": "galaxy"},
-    {"id": "NGC 4565", "name": "NGC 4565 (Galaktyka Igła)", "type": "Spiral Galaxy", "mag": 9.6, "ra": 12.61, "dec": 25.99, "cat": "galaxy"},
-    {"id": "NGC 891", "name": "NGC 891 (Galaktyka Srebrna Drzazga)", "type": "Spiral Galaxy", "mag": 9.9, "ra": 2.38, "dec": 42.35, "cat": "galaxy"},
-    {"id": "NGC 7331", "name": "NGC 7331 (Grupa Deer Lick w Pegazie)", "type": "Spiral Galaxy", "mag": 9.5, "ra": 22.62, "dec": 34.42, "cat": "galaxy"},
-    {"id": "NGC 4631", "name": "NGC 4631 (Galaktyka Wieloryb)", "type": "Spiral Galaxy", "mag": 9.2, "ra": 12.70, "dec": 32.54, "cat": "galaxy"},
-    {"id": "NGC 4656", "name": "NGC 4656 (Kij Hokejowy)", "type": "Irregular Galaxy", "mag": 10.1, "ra": 12.73, "dec": 32.17, "cat": "galaxy"},
-    {"id": "NGC 3628", "name": "NGC 3628 (Hamburger - Triplet Lwa)", "type": "Spiral Galaxy", "mag": 9.5, "ra": 11.34, "dec": 13.59, "cat": "galaxy"},
-    {"id": "NGC 4490", "name": "NGC 4490 (Galaktyka Kokon)", "type": "Spiral Galaxy", "mag": 9.8, "ra": 12.51, "dec": 41.64, "cat": "galaxy"},
-    {"id": "NGC 5907", "name": "NGC 5907 (Galaktyka Drzazga w Smoku)", "type": "Spiral Galaxy", "mag": 10.3, "ra": 15.26, "dec": 56.33, "cat": "galaxy"},
-    {"id": "NGC 6946", "name": "NGC 6946 (Galaktyka Fajerwerk)", "type": "Spiral Galaxy", "mag": 9.0, "ra": 20.58, "dec": 60.15, "cat": "galaxy"},
-    {"id": "NGC 4244", "name": "NGC 4244 (Srebrna Igła w Psach Gończych)", "type": "Spiral Galaxy", "mag": 10.2, "ra": 12.29, "dec": 37.81, "cat": "galaxy"},
-    {"id": "NGC 4038", "name": "NGC 4038 / 4039 (Galaktyki Czułki)", "type": "Interacting Galaxies", "mag": 10.3, "ra": 12.03, "dec": -18.87, "cat": "galaxy"},
-    {"id": "NGC 3077", "name": "NGC 3077 (Towarzyszka M81/M82)", "type": "Elliptical Galaxy", "mag": 9.9, "ra": 10.05, "dec": 68.73, "cat": "galaxy"},
-    {"id": "NGC 2683", "name": "NGC 2683 (Galaktyka UFO w Rysiu)", "type": "Spiral Galaxy", "mag": 9.7, "ra": 8.88, "dec": 33.42, "cat": "galaxy"},
-
-    # --- SPEKTAKULARNE GROMADY OTWARTE I KULISTE NGC ---
-    {"id": "NGC 869", "name": "NGC 869 (Podwójna Gromada h Persei)", "type": "Open Cluster", "mag": 4.3, "ra": 2.32, "dec": 57.13, "cat": "open_cluster"},
-    {"id": "NGC 884", "name": "NGC 884 (Podwójna Gromada χ Persei)", "type": "Open Cluster", "mag": 4.4, "ra": 2.37, "dec": 57.15, "cat": "open_cluster"},
-    {"id": "NGC 457", "name": "NGC 457 (Gromada Sowa / E.T.)", "type": "Open Cluster", "mag": 6.4, "ra": 1.33, "dec": 58.29, "cat": "open_cluster"},
-    {"id": "NGC 7789", "name": "NGC 7789 (Róża Karoliny)", "type": "Open Cluster", "mag": 6.7, "ra": 23.96, "dec": 56.71, "cat": "open_cluster"},
-    {"id": "NGC 663", "name": "NGC 663 (Gromada w Kasjopei)", "type": "Open Cluster", "mag": 7.1, "ra": 1.77, "dec": 61.22, "cat": "open_cluster"},
-    {"id": "NGC 752", "name": "NGC 752 (Gromada w Andromedzie)", "type": "Open Cluster", "mag": 5.7, "ra": 1.96, "dec": 37.68, "cat": "open_cluster"},
-    {"id": "NGC 2244-C", "name": "NGC 2232 (Gromada w Jednorożcu)", "type": "Open Cluster", "mag": 4.2, "ra": 6.47, "dec": -4.75, "cat": "open_cluster"},
-    {"id": "NGC 2169", "name": "NGC 2169 (Gromada '37' w Orionie)", "type": "Open Cluster", "mag": 5.9, "ra": 6.14, "dec": 13.95, "cat": "open_cluster"},
-    {"id": "NGC 1981", "name": "NGC 1981 (Gromada nad Mieczem Oriona)", "type": "Open Cluster", "mag": 4.2, "ra": 5.59, "dec": -4.43, "cat": "open_cluster"},
-    {"id": "NGC 6934", "name": "NGC 6934 (Gromada Kulista w Delfinie)", "type": "Globular Cluster", "mag": 8.9, "ra": 20.57, "dec": 7.40, "cat": "globular"},
-    {"id": "NGC 7006", "name": "NGC 7006 (Odległa Gromada w Delfinie)", "type": "Globular Cluster", "mag": 10.6, "ra": 21.02, "dec": 16.19, "cat": "globular"},
-    {"id": "NGC 2419", "name": "NGC 2419 (Międzygalaktyczny Wędrowiec)", "type": "Globular Cluster", "mag": 10.4, "ra": 7.64, "dec": 38.88, "cat": "globular"},
-    {"id": "NGC 6229", "name": "NGC 6229 (Gromada Kulista w Herkulesie)", "type": "Globular Cluster", "mag": 9.4, "ra": 16.78, "dec": 47.53, "cat": "globular"}
+[
+  {
+    "id": "NGC 7000",
+    "name": "NGC 7000 (Mgławica Ameryka Północna)",
+    "type": "Emission Nebula",
+    "mag": 4.0,
+    "ra": 20.98,
+    "dec": 44.33,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 6960",
+    "name": "NGC 6960 (Miotła Wiedźmy - Veil Zach.)",
+    "type": "Supernova Remnant",
+    "mag": 7.0,
+    "ra": 20.76,
+    "dec": 30.71,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 6992",
+    "name": "NGC 6992 (Veil Wschodni)",
+    "type": "Supernova Remnant",
+    "mag": 7.0,
+    "ra": 20.94,
+    "dec": 31.72,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 2244",
+    "name": "NGC 2244 / 2237 (Mgławica Rozeta)",
+    "type": "Emission Nebula",
+    "mag": 4.8,
+    "ra": 6.53,
+    "dec": 4.95,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 1499",
+    "name": "NGC 1499 (Mgławica Kalifornia)",
+    "type": "Emission Nebula",
+    "mag": 5.0,
+    "ra": 4.05,
+    "dec": 36.42,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 281",
+    "name": "NGC 281 (Mgławica Pacman)",
+    "type": "Emission Nebula",
+    "mag": 7.4,
+    "ra": 0.88,
+    "dec": 56.63,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 7635",
+    "name": "NGC 7635 (Mgławica Bańka)",
+    "type": "Emission Nebula",
+    "mag": 8.5,
+    "ra": 23.34,
+    "dec": 61.2,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 6888",
+    "name": "NGC 6888 (Mgławica Półksiężyc)",
+    "type": "Emission Nebula",
+    "mag": 7.4,
+    "ra": 20.2,
+    "dec": 38.35,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 7380",
+    "name": "NGC 7380 (Mgławica Czarodziej)",
+    "type": "Emission Nebula",
+    "mag": 7.2,
+    "ra": 22.78,
+    "dec": 58.13,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 7822",
+    "name": "NGC 7822 (Znak Zapytania)",
+    "type": "Emission Nebula",
+    "mag": 8.0,
+    "ra": 0.06,
+    "dec": 67.15,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 2174",
+    "name": "NGC 2174 (Głowa Małpy)",
+    "type": "Emission Nebula",
+    "mag": 6.8,
+    "ra": 6.16,
+    "dec": 20.5,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 2264",
+    "name": "NGC 2264 (Choinka i Stożek)",
+    "type": "Emission Nebula",
+    "mag": 3.9,
+    "ra": 6.68,
+    "dec": 9.88,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 2359",
+    "name": "NGC 2359 (Hełm Thora)",
+    "type": "Emission Nebula",
+    "mag": 8.5,
+    "ra": 7.31,
+    "dec": -13.2,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 2024",
+    "name": "NGC 2024 (Mgławica Płomień)",
+    "type": "Emission Nebula",
+    "mag": 7.2,
+    "ra": 5.69,
+    "dec": -1.85,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 1977",
+    "name": "NGC 1977 (Biegnący Człowiek)",
+    "type": "Reflection Nebula",
+    "mag": 7.0,
+    "ra": 5.59,
+    "dec": -4.87,
+    "cat": "reflection_nebula"
+  },
+  {
+    "id": "NGC 7023",
+    "name": "NGC 7023 (Mgławica Irys)",
+    "type": "Reflection Nebula",
+    "mag": 6.8,
+    "ra": 21.03,
+    "dec": 68.17,
+    "cat": "reflection_nebula"
+  },
+  {
+    "id": "NGC 1333",
+    "name": "NGC 1333 (Mgławica w Perseuszu)",
+    "type": "Reflection Nebula",
+    "mag": 8.5,
+    "ra": 3.49,
+    "dec": 31.36,
+    "cat": "reflection_nebula"
+  },
+  {
+    "id": "NGC 2070",
+    "name": "NGC 2068 / M78 Okolice (Barnard Loop)",
+    "type": "Reflection Nebula",
+    "mag": 8.0,
+    "ra": 5.78,
+    "dec": 0.08,
+    "cat": "reflection_nebula"
+  },
+  {
+    "id": "NGC 896",
+    "name": "NGC 896 (Głowa Ryby - część Serca)",
+    "type": "Emission Nebula",
+    "mag": 8.0,
+    "ra": 2.42,
+    "dec": 61.98,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 6188",
+    "name": "NGC 6820 (Mgławica w Lisku)",
+    "type": "Emission Nebula",
+    "mag": 8.2,
+    "ra": 19.71,
+    "dec": 23.3,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 7293",
+    "name": "NGC 7293 (Mgławica Ślimak / Helix)",
+    "type": "Planetary Nebula",
+    "mag": 7.6,
+    "ra": 22.49,
+    "dec": -20.84,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 6543",
+    "name": "NGC 6543 (Kocie Oko)",
+    "type": "Planetary Nebula",
+    "mag": 8.1,
+    "ra": 17.98,
+    "dec": 66.63,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 2392",
+    "name": "NGC 2392 (Mgławica Eskimos)",
+    "type": "Planetary Nebula",
+    "mag": 9.1,
+    "ra": 7.49,
+    "dec": 20.91,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 3242",
+    "name": "NGC 3242 (Duch Jowisza)",
+    "type": "Planetary Nebula",
+    "mag": 7.7,
+    "ra": 10.41,
+    "dec": -18.64,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 6826",
+    "name": "NGC 6826 (Mrugająca Planetarna)",
+    "type": "Planetary Nebula",
+    "mag": 8.8,
+    "ra": 19.75,
+    "dec": 50.52,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 7009",
+    "name": "NGC 7009 (Mgławica Saturn)",
+    "type": "Planetary Nebula",
+    "mag": 8.0,
+    "ra": 21.07,
+    "dec": -11.36,
+    "cat": "nebula"
+  },
+  {
+    "id": "NGC 253",
+    "name": "NGC 253 (Galaktyka Rzeźbiarza / Srebrna Moneta)",
+    "type": "Spiral Galaxy",
+    "mag": 7.2,
+    "ra": 0.79,
+    "dec": -25.29,
+    "cat": "galaxy"
+  },
+  {
+    "id": "NGC 2403",
+    "name": "NGC 2403 (Galaktyka w Żyrafie)",
+    "type": "Spiral Galaxy",
+    "mag": 8.5,
+    "ra": 7.61,
+    "dec": 65.6,
+    "cat": "galaxy"
+  },
+  {
+    "id": "NGC 2903",
+    "name": "NGC 2903 (Galaktyka w Lwie)",
+    "type": "Spiral Galaxy",
+    "mag": 8.9,
+    "ra": 9.54,
+    "dec": 21.5,
+    "cat": "galaxy"
+  },
+  {
+    "id": "NGC 4565",
+    "name": "NGC 4565 (Galaktyka Igła)",
+    "type": "Spiral Galaxy",
+    "mag": 9.6,
+    "ra": 12.61,
+    "dec": 25.99,
+    "cat": "galaxy"
+  },
+  {
+    "id": "NGC 891",
+    "name": "NGC 891 (Galaktyka Srebrna Drzazga)",
+    "type": "Spiral Galaxy",
+    "mag": 9.9,
+    "ra": 2.38,
+    "dec": 42.35,
+    "cat": "galaxy"
+  },
+  {
+    "id": "NGC 7331",
+    "name": "NGC 7331 (Grupa Deer Lick w Pegazie)",
+    "type": "Spiral Galaxy",
+    "mag": 9.5,
+    "ra": 22.62,
+    "dec": 34.42,
+    "cat": "galaxy"
+  },
+  {
+    "id": "NGC 4631",
+    "name": "NGC 4631 (Galaktyka Wieloryb)",
+    "type": "Spiral Galaxy",
+    "mag": 9.2,
+    "ra": 12.7,
+    "dec": 32.54,
+    "cat": "galaxy"
+  },
+  {
+    "id": "NGC 4656",
+    "name": "NGC 4656 (Kij Hokejowy)",
+    "type": "Irregular Galaxy",
+    "mag": 10.1,
+    "ra": 12.73,
+    "dec": 32.17,
+    "cat": "galaxy"
+  },
+  {
+    "id": "NGC 3628",
+    "name": "NGC 3628 (Hamburger - Triplet Lwa)",
+    "type": "Spiral Galaxy",
+    "mag": 9.5,
+    "ra": 11.34,
+    "dec": 13.59,
+    "cat": "galaxy"
+  },
+  {
+    "id": "NGC 4490",
+    "name": "NGC 4490 (Galaktyka Kokon)",
+    "type": "Spiral Galaxy",
+    "mag": 9.8,
+    "ra": 12.51,
+    "dec": 41.64,
+    "cat": "galaxy"
+  },
+  {
+    "id": "NGC 5907",
+    "name": "NGC 5907 (Galaktyka Drzazga w Smoku)",
+    "type": "Spiral Galaxy",
+    "mag": 10.3,
+    "ra": 15.26,
+    "dec": 56.33,
+    "cat": "galaxy"
+  },
+  {
+    "id": "NGC 6946",
+    "name": "NGC 6946 (Galaktyka Fajerwerk)",
+    "type": "Spiral Galaxy",
+    "mag": 9.0,
+    "ra": 20.58,
+    "dec": 60.15,
+    "cat": "galaxy"
+  },
+  {
+    "id": "NGC 4244",
+    "name": "NGC 4244 (Srebrna Igła w Psach Gończych)",
+    "type": "Spiral Galaxy",
+    "mag": 10.2,
+    "ra": 12.29,
+    "dec": 37.81,
+    "cat": "galaxy"
+  },
+  {
+    "id": "NGC 4038",
+    "name": "NGC 4038 / 4039 (Galaktyki Czułki)",
+    "type": "Interacting Galaxies",
+    "mag": 10.3,
+    "ra": 12.03,
+    "dec": -18.87,
+    "cat": "galaxy"
+  },
+  {
+    "id": "NGC 3077",
+    "name": "NGC 3077 (Towarzyszka M81/M82)",
+    "type": "Elliptical Galaxy",
+    "mag": 9.9,
+    "ra": 10.05,
+    "dec": 68.73,
+    "cat": "galaxy"
+  },
+  {
+    "id": "NGC 2683",
+    "name": "NGC 2683 (Galaktyka UFO w Rysiu)",
+    "type": "Spiral Galaxy",
+    "mag": 9.7,
+    "ra": 8.88,
+    "dec": 33.42,
+    "cat": "galaxy"
+  },
+  {
+    "id": "NGC 869",
+    "name": "NGC 869 (Podwójna Gromada h Persei)",
+    "type": "Open Cluster",
+    "mag": 4.3,
+    "ra": 2.32,
+    "dec": 57.13,
+    "cat": "open_cluster"
+  },
+  {
+    "id": "NGC 884",
+    "name": "NGC 884 (Podwójna Gromada χ Persei)",
+    "type": "Open Cluster",
+    "mag": 4.4,
+    "ra": 2.37,
+    "dec": 57.15,
+    "cat": "open_cluster"
+  },
+  {
+    "id": "NGC 457",
+    "name": "NGC 457 (Gromada Sowa / E.T.)",
+    "type": "Open Cluster",
+    "mag": 6.4,
+    "ra": 1.33,
+    "dec": 58.29,
+    "cat": "open_cluster"
+  },
+  {
+    "id": "NGC 7789",
+    "name": "NGC 7789 (Róża Karoliny)",
+    "type": "Open Cluster",
+    "mag": 6.7,
+    "ra": 23.96,
+    "dec": 56.71,
+    "cat": "open_cluster"
+  },
+  {
+    "id": "NGC 663",
+    "name": "NGC 663 (Gromada w Kasjopei)",
+    "type": "Open Cluster",
+    "mag": 7.1,
+    "ra": 1.77,
+    "dec": 61.22,
+    "cat": "open_cluster"
+  },
+  {
+    "id": "NGC 752",
+    "name": "NGC 752 (Gromada w Andromedzie)",
+    "type": "Open Cluster",
+    "mag": 5.7,
+    "ra": 1.96,
+    "dec": 37.68,
+    "cat": "open_cluster"
+  },
+  {
+    "id": "NGC 2244-C",
+    "name": "NGC 2232 (Gromada w Jednorożcu)",
+    "type": "Open Cluster",
+    "mag": 4.2,
+    "ra": 6.47,
+    "dec": -4.75,
+    "cat": "open_cluster"
+  },
+  {
+    "id": "NGC 2169",
+    "name": "NGC 2169 (Gromada '37' w Orionie)",
+    "type": "Open Cluster",
+    "mag": 5.9,
+    "ra": 6.14,
+    "dec": 13.95,
+    "cat": "open_cluster"
+  },
+  {
+    "id": "NGC 1981",
+    "name": "NGC 1981 (Gromada nad Mieczem Oriona)",
+    "type": "Open Cluster",
+    "mag": 4.2,
+    "ra": 5.59,
+    "dec": -4.43,
+    "cat": "open_cluster"
+  },
+  {
+    "id": "NGC 6934",
+    "name": "NGC 6934 (Gromada Kulista w Delfinie)",
+    "type": "Globular Cluster",
+    "mag": 8.9,
+    "ra": 20.57,
+    "dec": 7.4,
+    "cat": "globular"
+  },
+  {
+    "id": "NGC 7006",
+    "name": "NGC 7006 (Odległa Gromada w Delfinie)",
+    "type": "Globular Cluster",
+    "mag": 10.6,
+    "ra": 21.02,
+    "dec": 16.19,
+    "cat": "globular"
+  },
+  {
+    "id": "NGC 2419",
+    "name": "NGC 2419 (Międzygalaktyczny Wędrowiec)",
+    "type": "Globular Cluster",
+    "mag": 10.4,
+    "ra": 7.64,
+    "dec": 38.88,
+    "cat": "globular"
+  },
+  {
+    "id": "NGC 6229",
+    "name": "NGC 6229 (Gromada Kulista w Herkulesie)",
+    "type": "Globular Cluster",
+    "mag": 9.4,
+    "ra": 16.78,
+    "dec": 47.53,
+    "cat": "globular"
+  }
 ]
-
-with open("ngc.json", "w", encoding="utf-8") as f:
-    json.dump(ngc_objects, f, ensure_ascii=False, indent=2)
-
-print(f"Wygenerowano plik ngc.json zawierający {len(ngc_objects)} starannie wyselekcjonowanych dużych i jasnych obiektów NGC.")
