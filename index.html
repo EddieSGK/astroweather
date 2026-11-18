@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+html_content = """<!DOCTYPE html>
 <html lang="pl" class="h-full">
 <head>
   <meta charset="UTF-8">
@@ -148,7 +148,7 @@
         <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
           <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-4">
             <div>
-              <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2"><i data-lucide="target" class="text-emerald-400"></i> Widoczne Dziś Obiekty (Messier M1-M110 & Planety)</h2>
+              <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2"><i data-lucide="target" class="text-emerald-400"></i> Widoczne Dziś Obiekty (Messier, NGC & Planety)</h2>
               <p id="horizonSubtext" class="text-xs text-slate-400 mt-0.5">Dopasowane do punktu obserwacji</p>
             </div>
             <div class="inline-flex p-1 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold shrink-0">
@@ -158,6 +158,15 @@
             </div>
           </div>
 
+          <!-- PRZEŁĄCZNIK KATALOGÓW (MESSIER / NGC / WSZYSTKIE) -->
+          <div class="flex flex-wrap items-center gap-2 mb-3 pb-3 border-b border-slate-800/60">
+            <span class="text-xs font-semibold text-slate-400 mr-1 flex items-center gap-1"><i data-lucide="book-open" class="w-3.5 h-3.5 text-emerald-400"></i> Katalog:</span>
+            <button onclick="setCatalogFilter('all')" id="catSrcBtn-all" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-emerald-600 text-white border-emerald-500 shadow">Wszystkie (Messier + NGC)</button>
+            <button onclick="setCatalogFilter('messier')" id="catSrcBtn-messier" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">Tylko Messier (M1–M110)</button>
+            <button onclick="setCatalogFilter('ngc')" id="catSrcBtn-ngc" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">Tylko NGC (Top Seestar)</button>
+          </div>
+
+          <!-- FILTR TYPU OBIEKTU -->
           <div class="flex flex-wrap items-center gap-2 mb-5 pb-3 border-b border-slate-800/60">
             <span class="text-xs font-semibold text-slate-400 mr-1 flex items-center gap-1"><i data-lucide="filter" class="w-3.5 h-3.5 text-indigo-400"></i> Typ:</span>
             <button onclick="setCategoryFilter('all')" id="catBtn-all" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-indigo-600 text-white border-indigo-500 shadow">Wszystkie (<span id="cnt-all">0</span>)</button>
@@ -168,7 +177,7 @@
           </div>
 
           <div id="targetsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <p class="text-sm text-slate-400 col-span-2">Ładowanie obiektów z bazy JSON...</p>
+            <p class="text-sm text-slate-400 col-span-2">Ładowanie obiektów z baz JSON...</p>
           </div>
         </div>
       </div>
@@ -184,7 +193,9 @@
     let cachedMoonFraction = 0;
     let cachedHourlyData = []; 
     let activeCategoryFilter = 'all';
+    let activeCatalogFilter = 'all';
     let MESSIER_CATALOG = [];
+    let NGC_CATALOG = [];
 
     const safeAvg = (arr, round = false) => {
       if (!arr || arr.length === 0) return 0;
@@ -199,12 +210,22 @@
       return arr.reduce((a, b) => a + (isNaN(Number(b)) ? 0 : Number(b)), 0);
     };
 
-    async function loadMessierCatalog() {
+    async function loadCatalogs() {
       try {
-        const response = await fetch('messier.json');
-        MESSIER_CATALOG = await response.json();
+        const [resMessier, resNgc] = await Promise.all([
+          fetch('messier.json').catch(() => null),
+          fetch('ngc.json').catch(() => null)
+        ]);
+        if (resMessier && resMessier.ok) {
+          const mData = await resMessier.json();
+          MESSIER_CATALOG = mData.map(item => ({ ...item, catalogSource: 'messier' }));
+        }
+        if (resNgc && resNgc.ok) {
+          const nData = await resNgc.json();
+          NGC_CATALOG = nData.map(item => ({ ...item, catalogSource: 'ngc' }));
+        }
       } catch (err) {
-        console.error("Błąd ładowania pliku messier.json:", err);
+        console.error("Błąd ładowania plików katalogów JSON:", err);
       }
     }
 
@@ -242,13 +263,13 @@
       let suit = 'Dobry';
       let badgeClass = 'bg-cyan-950 text-cyan-300 border-cyan-800';
 
-      if (mag <= 7.0) {
+      if (mag <= 7.5) {
         suit = 'Idealny';
         badgeClass = 'bg-emerald-950 text-emerald-300 border-emerald-800';
       } else if (mag >= 10.5) {
         suit = 'Trudny';
         badgeClass = 'bg-rose-950 text-rose-300 border-rose-800';
-      } else if (mag >= 9.0) {
+      } else if (mag >= 9.2) {
         suit = 'Umiarkowany';
         badgeClass = 'bg-amber-950 text-amber-300 border-amber-800';
       }
@@ -372,6 +393,15 @@
       }
     }
 
+    function setCatalogFilter(src) {
+      activeCatalogFilter = src;
+      ['all', 'messier', 'ngc'].forEach(s => {
+        const btn = document.getElementById(`catSrcBtn-${s}`);
+        if (btn) btn.className = s === src ? "px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-emerald-600 text-white border-emerald-500 shadow" : "px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700";
+      });
+      updateTargetsFilter();
+    }
+
     function setCategoryFilter(cat) {
       activeCategoryFilter = cat;
       ['all', 'galaxy', 'nebula', 'cluster', 'planet'].forEach(c => {
@@ -388,21 +418,29 @@
       const now = new Date();
       updateDateDisplay(now);
 
-      await loadMessierCatalog();
+      await loadCatalogs();
 
-      // Zawsze wyliczamy dzisiejszy zmierzch i JUTRZEJSZY świt
-      const todaySun = SunCalc.getTimes(now, LAT, LON);
-      
-      const tomorrow = new Date(now);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowSun = SunCalc.getTimes(tomorrow, LAT, LON);
+      // Zawsze wyliczamy dzisiejszy zmierzch i JUTRZEJSZY świt (lub wczorajszy zmierzch jeśli otwarto przed świtem)
+      const noon = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+      let startDay = new Date(now);
+      let endDay = new Date(now);
 
-      let astroStart = todaySun.night || todaySun.nauticalDusk || new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0);
-      let astroEnd = tomorrowSun.nightEnd || tomorrowSun.nauticalDawn || new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 5, 0, 0);
+      if (now < noon) {
+        startDay.setDate(startDay.getDate() - 1);
+      } else {
+        endDay.setDate(endDay.getDate() + 1);
+      }
+
+      const startSun = SunCalc.getTimes(startDay, LAT, LON);
+      const endSun = SunCalc.getTimes(endDay, LAT, LON);
+
+      let astroStart = startSun.night || startSun.nauticalDusk || new Date(startDay.getFullYear(), startDay.getMonth(), startDay.getDate(), 18, 0, 0);
+      let astroEnd = endSun.nightEnd || endSun.nauticalDawn || new Date(endDay.getFullYear(), endDay.getMonth(), endDay.getDate(), 5, 0, 0);
 
       cachedAstroStart = astroStart;
       cachedAstroEnd = astroEnd;
 
+      const todaySun = SunCalc.getTimes(now, LAT, LON);
       const moonTimes = SunCalc.getMoonTimes(now, LAT, LON);
       const moonIllum = SunCalc.getMoonIllumination(now);
       cachedMoonFraction = moonIllum.fraction;
@@ -525,12 +563,23 @@
       updateCompassVisuals(mode);
 
       const midNight = new Date((astroStart.getTime() + astroEnd.getTime()) / 2);
-      let fullCatalog = [...MESSIER_CATALOG];
+      
+      // Łączenie katalogów zgodnie z wybranym filtrem źródła
+      let fullCatalog = [];
+      if (activeCatalogFilter === 'all' || activeCatalogFilter === 'messier') {
+        fullCatalog = fullCatalog.concat(MESSIER_CATALOG);
+      }
+      if (activeCatalogFilter === 'all' || activeCatalogFilter === 'ngc') {
+        fullCatalog = fullCatalog.concat(NGC_CATALOG);
+      }
 
-      ['Jupiter', 'Saturn', 'Mars'].forEach(pName => {
-        const coords = getPlanetCoordinates(pName, midNight);
-        if (coords) fullCatalog.push({ id: pName, name: `Planeta ${pName}`, type: 'Planet', mag: -2.0, ra: coords.ra, dec: coords.dec, cat: 'planet', suit: 'Idealny' });
-      });
+      // Planety dodajemy przy widoku "Wszystkie" lub "Messier"
+      if (activeCatalogFilter === 'all' || activeCatalogFilter === 'messier') {
+        ['Jupiter', 'Saturn', 'Mars'].forEach(pName => {
+          const coords = getPlanetCoordinates(pName, midNight);
+          if (coords) fullCatalog.push({ id: pName, name: `Planeta ${pName}`, type: 'Planet', mag: -2.0, ra: coords.ra, dec: coords.dec, cat: 'planet', suit: 'Idealny', catalogSource: 'planet' });
+        });
+      }
 
       const validTargets = [];
       fullCatalog.forEach(item => {
@@ -542,10 +591,12 @@
         }
       });
 
+      // Sortowanie od najwyżej położonych w oknie obserwacyjnym
       validTargets.sort((a, b) => b.maxAlt - a.maxAlt);
       const currentScoreText = document.getElementById('stargazingScore').innerText;
       const currentScore = (currentScoreText === '--' || currentScoreText === 'NaN') ? 0 : parseInt(currentScoreText);
 
+      // Rekomendowane TOP 4: tylko te, które są widoczne z lokacji, mają >25° wys. i czyste niebo <=15%
       const idealTargets = validTargets.filter(t => t.maxAlt >= 25 && t.cat !== 'planet' && t.hasClearSkyWindow === true && t.clearSkyWindows && t.clearSkyWindows.length > 0);
       let top4 = idealTargets.slice(0, 4);
 
@@ -557,16 +608,18 @@
       } else if (top4.length > 0) {
         let top4Html = top4.map(item => {
           const seestarRec = getSeestarRecommendation(item);
+          const catTag = item.catalogSource === 'ngc' ? '<span class="text-[9px] px-1 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800">NGC</span>' : '';
           return `
           <div class="flex justify-between items-center p-2.5 bg-slate-950/80 border border-indigo-900/40 rounded-lg text-xs">
             <div>
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="font-bold text-slate-100">${item.name}</span>
+                ${catTag}
                 <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border ${seestarRec.badgeClass}">${seestarRec.suit}</span>
               </div>
               <span class="text-slate-400 text-[11px]">${item.type} (Mag: ${item.mag})</span>
             </div>
-            <div class="text-right font-mono">
+            <div class="text-right font-mono shrink-0 ml-2">
               <span class="text-indigo-300 font-bold block">${item.peakInfo ? formatTime(item.peakInfo.time) : '--:--'} (Max: ${item.maxAlt}°)</span>
               <span class="text-emerald-400 text-[10px]">Zalecane: ${formatTime(item.clearSkyWindows[0].start)} - ${formatTime(item.clearSkyWindows[0].end)}</span>
             </div>
@@ -574,7 +627,7 @@
         }).join('');
         suggestionBox.innerHTML = `<div class="flex justify-between border-b border-indigo-800/50 pb-2"><h3 class="text-sm font-bold text-indigo-300">Dedykowany Plan Obserwacyjny (Top 4 - Czyste Niebo &le;15%)</h3></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">${top4Html}</div>`;
       } else {
-        suggestionBox.innerHTML = `<div class="flex justify-between border-b border-indigo-800/50 pb-2"><h3 class="text-sm font-bold text-indigo-300">Rekomendowane Obiekty na Dziś</h3><span class="text-[11px] px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800">⚠️ Brak Rekomendacji (Zachmurzenie >15%)</span></div><p class="text-xs text-slate-400">Brak obiektów z oknem czystego nieba (&le;15% chmur) w otwartych sektorach.</p>`;
+        suggestionBox.innerHTML = `<div class="flex justify-between border-b border-indigo-800/50 pb-2"><h3 class="text-sm font-bold text-indigo-300">Rekomendowane Obiekty na Dziś</h3><span class="text-[11px] px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800">⚠️ Brak Rekomendacji (Zachmurzenie >15%)</span></div><p class="text-xs text-slate-400">Brak obiektów z oknem czystego nieba (&le;15% chmur) w otwartych sektorach dla wybranego katalogu.</p>`;
       }
 
       container.appendChild(suggestionBox);
@@ -589,6 +642,7 @@
 
       filteredTargets.forEach(item => {
         const seestarRec = getSeestarRecommendation(item);
+        const catBadge = item.catalogSource === 'ngc' ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800">NGC</span>` : '';
         let clearSkyHtml = (item.clearSkyWindows && item.clearSkyWindows.length > 0) ? item.clearSkyWindows.map(cw => `<div class="flex justify-between text-xs py-0.5 font-bold text-emerald-300"><span>Sektor ${cw.zone} (&le;15% chmur):</span><span class="font-mono">${formatTime(cw.start)} – ${formatTime(cw.end)}</span></div>`).join('') : `<div class="text-[11px] text-amber-400 italic">⚠️ Brak okna &le;15% chmur.</div>`;
 
         container.innerHTML += `
@@ -596,9 +650,10 @@
             <div class="flex gap-3 items-center">
               <div class="thumb-box w-12 h-12 rounded-lg border border-slate-700/80 bg-slate-900/90 flex items-center justify-center shrink-0 shadow-inner">${getCategoryIcon(item.cat)}</div>
               <div class="flex-1 min-w-0">
-                <div class="flex justify-between items-start">
-                  <h3 class="font-bold text-slate-100 text-sm truncate">${item.name}</h3>
-                  <div class="flex items-center gap-1.5">
+                <div class="flex justify-between items-start gap-1">
+                  <h3 class="font-bold text-slate-100 text-sm truncate" title="${item.name}">${item.name}</h3>
+                  <div class="flex items-center gap-1 shrink-0">
+                    ${catBadge}
                     <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${seestarRec.badgeClass}">${seestarRec.suit}</span>
                     <span class="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800">${item.currentAzDir} (${item.currentAlt}°)</span>
                   </div>
@@ -632,3 +687,9 @@
   </script>
 </body>
 </html>
+"""
+
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print("Wygenerowano zaktualizowany plik index.html z obsługą katalogu NGC.")
