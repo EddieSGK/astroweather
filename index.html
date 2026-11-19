@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Pogodowo-Astronomiczny (Bydgoszcz)</title>
+  <title>Dashboard Pogodowo-Astronomiczny (Bydgoszcz) — JWST Telemetry</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
-    html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; min-height: 100vh !important; background-color: #020617 !important; overflow-x: hidden; }
+    html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; min-height: 100vh !important; background-color: #050505 !important; overflow-x: hidden; }
     body.night-vision { background-color: #050000 !important; color: #ff3333 !important; }
     body.night-vision .bg-card { background-color: #1a0000 !important; border-color: #550000 !important; color: #ff4d4d !important; }
     body.night-vision .text-muted { color: #b33d3d !important; }
@@ -25,24 +25,27 @@
     window.onload = function() { try { if (window.frameElement) { window.frameElement.style.width = '100%'; window.frameElement.style.border = 'none'; } } catch (e) {} };
   </script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen transition-colors duration-300 font-sans pb-12 w-full">
+<body class="bg-[#050505] text-zinc-100 min-h-screen transition-colors duration-300 font-sans pb-12 w-full">
 
   <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <header class="flex flex-col md:flex-row justify-between items-center pb-6 mb-6 border-b border-slate-800 gap-4">
+    <header class="flex flex-col md:flex-row justify-between items-center pb-6 mb-6 border-b border-zinc-800/80 gap-4">
       <div>
-        <h1 class="text-3xl font-bold flex items-center gap-2"><i data-lucide="telescope" class="text-indigo-400"></i> AstroWeather Dashboard</h1>
-        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-slate-400 text-sm mt-1">
-          <p>Lokalizacja: <span id="locName" class="font-semibold text-slate-200">Bydgoszcz</span> (53.12° N, 18.00° E)</p>
-          <span class="text-slate-600 hidden sm:inline">•</span>
-          <p class="flex items-center gap-1.5 font-medium text-indigo-300"><i data-lucide="calendar" class="w-4 h-4 text-indigo-400"></i><span id="currentDate">Ładowanie daty...</span></p>
+        <h1 class="text-3xl font-bold flex items-center gap-2.5 tracking-tight text-zinc-100">
+          <i data-lucide="telescope" class="text-amber-400"></i> 
+          AstroWeather <span class="text-xs font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30">JWST Telemetry</span>
+        </h1>
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-zinc-400 text-sm mt-1.5">
+          <p>Lokalizacja: <span id="locName" class="font-semibold text-zinc-200">Bydgoszcz</span> (53.12° N, 18.00° E)</p>
+          <span class="text-zinc-700 hidden sm:inline">•</span>
+          <p class="flex items-center gap-1.5 font-medium text-amber-300"><i data-lucide="calendar" class="w-4 h-4 text-amber-400"></i><span id="currentDate">Ładowanie daty...</span></p>
         </div>
       </div>
       <div class="flex items-center gap-3">
-        <button id="nightToggle" onclick="toggleNightVision()" class="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-700 hover:border-red-500 rounded-lg text-sm font-medium transition-all">
+        <button id="nightToggle" onclick="toggleNightVision()" class="flex items-center gap-2 px-4 py-2 bg-[#111114] border border-zinc-800 hover:border-red-500 rounded-lg text-sm font-medium transition-all text-zinc-200">
           <i data-lucide="eye" class="text-red-500"></i><span>Tryb Czerwony</span>
         </button>
-        <button onclick="initDashboard()" class="p-2 bg-slate-900 border border-slate-700 hover:border-indigo-500 rounded-lg transition-all" title="Odśwież dane">
-          <i data-lucide="refresh-cw" class="w-5 h-5 text-indigo-400"></i>
+        <button onclick="initDashboard()" class="p-2 bg-[#111114] border border-zinc-800 hover:border-amber-500 rounded-lg transition-all" title="Odśwież dane">
+          <i data-lucide="refresh-cw" class="w-5 h-5 text-amber-400"></i>
         </button>
       </div>
     </header>
@@ -50,132 +53,132 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="space-y-6">
         
-        <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-          <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2"><i data-lucide="sparkles" class="text-amber-400"></i> Warunki Obserwacyjne</h2>
+        <div class="bg-card bg-[#111114] border border-zinc-800/90 rounded-xl p-6 shadow-2xl space-y-4">
+          <h2 class="text-sm font-mono uppercase tracking-wider text-zinc-400 flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i> Warunki Obserwacyjne</h2>
           <div class="flex items-end gap-3 my-2">
-            <span id="stargazingScore" class="text-5xl font-black text-indigo-400">--</span>
-            <span class="text-slate-400 mb-1 text-lg">/ 100</span>
+            <span id="stargazingScore" class="text-5xl font-black text-amber-400 tracking-tight">--</span>
+            <span class="text-zinc-500 mb-1 text-lg font-mono">/ 100</span>
           </div>
-          <p id="stargazingSummary" class="text-sm font-medium text-slate-200">Pobieranie danych meteorologicznych...</p>
+          <p id="stargazingSummary" class="text-sm font-medium text-zinc-200">Pobieranie danych meteorologicznych...</p>
 
-          <div id="rainAlertBanner" class="hidden bg-rose-950/80 border border-rose-600/80 rounded-xl p-3 text-xs text-rose-200 flex items-center gap-2 font-semibold">
+          <div id="rainAlertBanner" class="hidden bg-rose-950/70 border border-rose-500/60 rounded-lg p-3 text-xs text-rose-200 flex items-center gap-2 font-semibold">
             <i data-lucide="cloud-rain" class="w-5 h-5 text-rose-400 shrink-0"></i><span>Uwaga! Prognozowane opady deszczu w nocy.</span>
           </div>
-          <div id="dewAlertBanner" class="hidden bg-amber-950/80 border border-amber-600/80 rounded-xl p-3 text-xs text-amber-200 flex items-center gap-2 font-semibold">
+          <div id="dewAlertBanner" class="hidden bg-amber-950/70 border border-amber-500/60 rounded-lg p-3 text-xs text-amber-200 flex items-center gap-2 font-semibold">
             <i data-lucide="thermometer-snowflake" class="w-5 h-5 text-amber-400 shrink-0"></i><span>Wykryto wysokie ryzyko rosy! Włącz grzałkę obiektywu (Anti-Dew).</span>
           </div>
 
-          <div class="legend-box bg-slate-950/80 border border-slate-800/80 rounded-xl p-3.5 text-xs space-y-3 pt-3">
-            <p class="font-bold text-slate-300 border-b border-slate-800 pb-1.5 flex items-center gap-1.5"><i data-lucide="info" class="w-3.5 h-3.5 text-indigo-400"></i> Skala oceny warunków:</p>
+          <div class="legend-box bg-black/60 border border-zinc-800/90 rounded-lg p-3.5 text-xs space-y-3 pt-3">
+            <p class="font-bold text-zinc-300 border-b border-zinc-800 pb-1.5 flex items-center gap-1.5"><i data-lucide="info" class="w-3.5 h-3.5 text-amber-400"></i> Skala oceny warunków:</p>
             <div class="space-y-2">
-              <div class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400 mt-1 shrink-0"></span><div><span class="font-semibold text-emerald-400">85–100 pkt: Idealne</span><p class="text-slate-400 text-[11px]">Brak opadów, czyste niebo (&le;15% chmur).</p></div></div>
-              <div class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-cyan-400 mt-1 shrink-0"></span><div><span class="font-semibold text-cyan-400">60–84 pkt: Dobre</span><p class="text-slate-400 text-[11px]">Słabe chmury/Księżyc. Brak ryzyka deszczu.</p></div></div>
-              <div class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-amber-400 mt-1 shrink-0"></span><div><span class="font-semibold text-amber-400">30–59 pkt: Umiarkowane</span><p class="text-slate-400 text-[11px]">Zachmurzenie lub ryzyko rosy.</p></div></div>
-              <div class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-rose-500 mt-1 shrink-0"></span><div><span class="font-semibold text-rose-400">0–29 pkt: Słabe / Opad</span><p class="text-slate-400 text-[11px]">Duże zachmurzenie lub jakiekolwiek opady.</p></div></div>
+              <div class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400 mt-1 shrink-0"></span><div><span class="font-semibold text-emerald-400">85–100 pkt: Idealne</span><p class="text-zinc-500 text-[11px]">Brak opadów, czyste niebo (&le;15% chmur).</p></div></div>
+              <div class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-amber-400 mt-1 shrink-0"></span><div><span class="font-semibold text-amber-400">60–84 pkt: Dobre</span><p class="text-zinc-500 text-[11px]">Słabe chmury/Księżyc. Brak ryzyka deszczu.</p></div></div>
+              <div class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-orange-400 mt-1 shrink-0"></span><div><span class="font-semibold text-orange-400">30–59 pkt: Umiarkowane</span><p class="text-zinc-500 text-[11px]">Zachmurzenie lub ryzyko rosy.</p></div></div>
+              <div class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-rose-500 mt-1 shrink-0"></span><div><span class="font-semibold text-rose-400">0–29 pkt: Słabe / Opad</span><p class="text-zinc-500 text-[11px]">Duże zachmurzenie lub jakiekolwiek opady.</p></div></div>
             </div>
           </div>
         </div>
 
-        <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-          <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-3"><i data-lucide="droplets" class="text-cyan-400"></i> Temperatura & Wilgotność (Roszenie)</h2>
+        <div class="bg-card bg-[#111114] border border-zinc-800/90 rounded-xl p-6 shadow-2xl space-y-4">
+          <h2 class="text-sm font-mono uppercase tracking-wider text-zinc-400 flex items-center gap-2 border-b border-zinc-800 pb-3"><i data-lucide="droplets" class="text-amber-400 w-4 h-4"></i> Temperatura & Wilgotność (Roszenie)</h2>
           <div class="grid grid-cols-2 gap-4 text-sm">
-            <div><p class="text-muted text-xs text-slate-400">Średnia Temp. (Noc)</p><p id="avgTemp" class="font-bold text-slate-200">-- °C</p></div>
-            <div><p class="text-muted text-xs text-slate-400">Średni Punkt Rosy</p><p id="avgDewPoint" class="font-bold text-cyan-300">-- °C</p></div>
-            <div><p class="text-muted text-xs text-slate-400">Wilgotność Względna</p><p id="avgHumidity" class="font-bold text-slate-200">-- %</p></div>
-            <div><p class="text-muted text-xs text-slate-400">Zalecenie Grzałki</p><p id="heaterStatus" class="font-bold text-emerald-400">Wyłączona</p></div>
+            <div><p class="text-muted text-xs text-zinc-500">Średnia Temp. (Noc)</p><p id="avgTemp" class="font-bold text-zinc-100 font-mono">-- °C</p></div>
+            <div><p class="text-muted text-xs text-zinc-500">Średni Punkt Rosy</p><p id="avgDewPoint" class="font-bold text-amber-300 font-mono">-- °C</p></div>
+            <div><p class="text-muted text-xs text-zinc-500">Wilgotność Względna</p><p id="avgHumidity" class="font-bold text-zinc-100 font-mono">-- %</p></div>
+            <div><p class="text-muted text-xs text-zinc-500">Zalecenie Grzałki</p><p id="heaterStatus" class="font-bold text-emerald-400">Wyłączona</p></div>
           </div>
         </div>
 
-        <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-          <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-3"><i data-lucide="sun" class="text-amber-400"></i> Słońce & Zmierzch</h2>
+        <div class="bg-card bg-[#111114] border border-zinc-800/90 rounded-xl p-6 shadow-2xl space-y-4">
+          <h2 class="text-sm font-mono uppercase tracking-wider text-zinc-400 flex items-center gap-2 border-b border-zinc-800 pb-3"><i data-lucide="sun" class="text-amber-400 w-4 h-4"></i> Słońce & Zmierzch</h2>
           <div class="grid grid-cols-2 gap-4 text-sm">
-            <div><p class="text-muted text-xs text-slate-400">Wschód Słońca</p><p id="sunriseTime" class="font-bold text-slate-200">--:--</p></div>
-            <div><p class="text-muted text-xs text-slate-400">Zachód Słońca</p><p id="sunsetTime" class="font-bold text-slate-200">--:--</p></div>
-            <div><p class="text-muted text-xs text-slate-400">Zmierzch Astr.</p><p id="astronauticalDusk" class="font-bold text-indigo-300">--:--</p></div>
-            <div><p class="text-muted text-xs text-slate-400">Świt Astr.</p><p id="astronauticalDawn" class="font-bold text-indigo-300">--:--</p></div>
+            <div><p class="text-muted text-xs text-zinc-500">Wschód Słońca</p><p id="sunriseTime" class="font-bold text-zinc-100 font-mono">--:--</p></div>
+            <div><p class="text-muted text-xs text-zinc-500">Zachód Słońca</p><p id="sunsetTime" class="font-bold text-zinc-100 font-mono">--:--</p></div>
+            <div><p class="text-muted text-xs text-zinc-500">Zmierzch Astr.</p><p id="astronauticalDusk" class="font-bold text-amber-400 font-mono">--:--</p></div>
+            <div><p class="text-muted text-xs text-zinc-500">Świt Astr.</p><p id="astronauticalDawn" class="font-bold text-amber-400 font-mono">--:--</p></div>
           </div>
         </div>
 
-        <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-          <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-3"><i data-lucide="moon" class="text-blue-300"></i> Księżyc</h2>
+        <div class="bg-card bg-[#111114] border border-zinc-800/90 rounded-xl p-6 shadow-2xl space-y-4">
+          <h2 class="text-sm font-mono uppercase tracking-wider text-zinc-400 flex items-center gap-2 border-b border-zinc-800 pb-3"><i data-lucide="moon" class="text-amber-300 w-4 h-4"></i> Księżyc</h2>
           <div class="grid grid-cols-2 gap-4 text-sm">
-            <div><p class="text-muted text-xs text-slate-400">Wschód Księżyca</p><p id="moonriseTime" class="font-bold text-slate-200">--:--</p></div>
-            <div><p class="text-muted text-xs text-slate-400">Zachód Księżyca</p><p id="moonsetTime" class="font-bold text-slate-200">--:--</p></div>
-            <div><p class="text-muted text-xs text-slate-400">Faza</p><p id="moonPhase" class="font-bold text-slate-200">--</p></div>
-            <div><p class="text-muted text-xs text-slate-400">Oświetlenie</p><p id="moonIllum" class="font-bold text-slate-200">--%</p></div>
+            <div><p class="text-muted text-xs text-zinc-500">Wschód Księżyca</p><p id="moonriseTime" class="font-bold text-zinc-100 font-mono">--:--</p></div>
+            <div><p class="text-muted text-xs text-zinc-500">Zachód Księżyca</p><p id="moonsetTime" class="font-bold text-zinc-100 font-mono">--:--</p></div>
+            <div><p class="text-muted text-xs text-zinc-500">Faza</p><p id="moonPhase" class="font-bold text-zinc-100">--</p></div>
+            <div><p class="text-muted text-xs text-zinc-500">Oświetlenie</p><p id="moonIllum" class="font-bold text-amber-300 font-mono">--%</p></div>
           </div>
         </div>
 
-        <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-          <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-3"><i data-lucide="compass" class="text-emerald-400"></i> Róża Wiatrów (Kierunki)</h2>
+        <div class="bg-card bg-[#111114] border border-zinc-800/90 rounded-xl p-6 shadow-2xl space-y-4">
+          <h2 class="text-sm font-mono uppercase tracking-wider text-zinc-400 flex items-center gap-2 border-b border-zinc-800 pb-3"><i data-lucide="compass" class="text-emerald-400 w-4 h-4"></i> Róża Wiatrów (Kierunki)</h2>
           <div class="flex flex-col items-center justify-center p-2">
             <div class="relative w-64 h-64 flex items-center justify-center">
               <svg viewBox="0 0 220 220" class="w-full h-full overflow-visible">
-                <circle cx="110" cy="110" r="70" fill="none" stroke="#1e293b" stroke-width="2"/>
-                <circle cx="110" cy="110" r="46" fill="none" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="3 3"/>
-                <circle cx="110" cy="110" r="22" fill="#020617" stroke="#10b981" stroke-width="1.5" stroke-opacity="0.3"/>
-                <line x1="110" y1="40" x2="110" y2="180" stroke="#334155" stroke-width="2"/>
-                <line x1="40" y1="110" x2="180" y2="110" stroke="#334155" stroke-width="2"/>
-                <circle cx="110" cy="110" r="3.5" fill="#34d399"/>
-                <g><rect x="74" y="117" width="72" height="13" rx="3" fill="#020617" fill-opacity="0.9" /><text x="110" y="126" text-anchor="middle" font-size="8" font-weight="bold" fill="#34d399">Zenit (&gt;65°)</text></g>
+                <circle cx="110" cy="110" r="70" fill="none" stroke="#27272a" stroke-width="2"/>
+                <circle cx="110" cy="110" r="46" fill="none" stroke="#18181b" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <circle cx="110" cy="110" r="22" fill="#050505" stroke="#eab308" stroke-width="1.5" stroke-opacity="0.4"/>
+                <line x1="110" y1="40" x2="110" y2="180" stroke="#27272a" stroke-width="2"/>
+                <line x1="40" y1="110" x2="180" y2="110" stroke="#27272a" stroke-width="2"/>
+                <circle cx="110" cy="110" r="3.5" fill="#eab308"/>
+                <g><rect x="74" y="117" width="72" height="13" rx="3" fill="#050505" fill-opacity="0.95" /><text x="110" y="126" text-anchor="middle" font-size="8" font-weight="bold" fill="#eab308">Zenit (&gt;65°)</text></g>
                 <polygon points="110,14 103,34 110,28" fill="#ef4444" />
                 <polygon points="110,14 117,34 110,28" fill="#b91c1c" />
                 <text id="compass-E" x="196" y="114" text-anchor="middle" font-size="12" font-weight="900" class="fill-emerald-400">E</text>
                 <text id="compass-S" x="110" y="198" text-anchor="middle" font-size="12" font-weight="900" class="fill-emerald-400">S</text>
-                <text id="compass-W" x="24" y="114" text-anchor="middle" font-size="12" font-weight="900" class="fill-indigo-400">W</text>
+                <text id="compass-W" x="24" y="114" text-anchor="middle" font-size="12" font-weight="900" class="fill-amber-400">W</text>
                 <text id="compass-NE" x="170" y="52" text-anchor="middle" font-size="10" font-weight="bold" class="fill-emerald-400">NE</text>
                 <text id="compass-SE" x="170" y="174" text-anchor="middle" font-size="10" font-weight="bold" class="fill-emerald-400">SE</text>
-                <text id="compass-SW" x="50" y="174" text-anchor="middle" font-size="10" font-weight="bold" class="fill-slate-600">SW</text>
-                <text id="compass-NW" x="50" y="52" text-anchor="middle" font-size="10" font-weight="bold" class="fill-slate-600">NW</text>
+                <text id="compass-SW" x="50" y="174" text-anchor="middle" font-size="10" font-weight="bold" class="fill-zinc-600">SW</text>
+                <text id="compass-NW" x="50" y="52" text-anchor="middle" font-size="10" font-weight="bold" class="fill-zinc-600">NW</text>
               </svg>
             </div>
-            <div id="compassLegend" class="mt-3 grid grid-cols-1 gap-2 text-[11px] w-full pt-2 border-t border-slate-800"></div>
+            <div id="compassLegend" class="mt-3 grid grid-cols-1 gap-2 text-[11px] w-full pt-2 border-t border-zinc-800"></div>
           </div>
         </div>
       </div>
 
       <div class="lg:col-span-2 space-y-6">
-        <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
+        <div class="bg-card bg-[#111114] border border-zinc-800/90 rounded-xl p-6 shadow-2xl">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
             <div>
-              <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2"><i data-lucide="cloud-rain" class="text-cyan-400"></i> Zachmurzenie, Temp. i Punkt Rosy w Noc Astronomiczną</h2>
-              <p id="chartSubtext" class="text-xs text-slate-400 mt-1">Niebieska linia: Zachmurzenie (%) | Fioletowe słupki: Opad (%) | Czerwona/Morska linia: Temp vs Roszenie (°C)</p>
+              <h2 class="text-sm font-mono uppercase tracking-wider text-zinc-300 flex items-center gap-2"><i data-lucide="activity" class="text-amber-400 w-4 h-4"></i> Telemetria Nocy Astronomicznej (Chmury, Temp, Roszenie)</h2>
+              <p id="chartSubtext" class="text-xs text-zinc-500 mt-1">Biała linia: Zachmurzenie (%) | Szare słupki: Opad (%) | Złota/Miedziana linia: Temp vs Roszenie (°C)</p>
             </div>
           </div>
           <div class="chart-container relative h-64 w-full"><canvas id="cloudChart"></canvas></div>
         </div>
 
-        <div class="bg-card bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
-          <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-4">
+        <div class="bg-card bg-[#111114] border border-zinc-800/90 rounded-xl p-6 shadow-2xl">
+          <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b border-zinc-800 pb-4 mb-4">
             <div>
-              <h2 class="text-lg font-semibold text-slate-300 flex items-center gap-2"><i data-lucide="target" class="text-emerald-400"></i> Widoczne Dziś Obiekty (Messier, NGC & Planety)</h2>
-              <p id="horizonSubtext" class="text-xs text-slate-400 mt-0.5">Dopasowane do punktu obserwacji</p>
+              <h2 class="text-sm font-mono uppercase tracking-wider text-zinc-300 flex items-center gap-2"><i data-lucide="target" class="text-amber-400 w-4 h-4"></i> Widoczne Dziś Obiekty (Messier, NGC & Planety)</h2>
+              <p id="horizonSubtext" class="text-xs text-zinc-500 mt-0.5">Dopasowane do punktu obserwacji</p>
             </div>
-            <div class="inline-flex p-1 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold shrink-0">
-              <label class="cursor-pointer"><input type="radio" name="horizonMode" value="my_balcony" class="sr-only peer" checked onchange="updateTargetsFilter()"><span class="px-3 py-1.5 rounded-lg text-slate-400 peer-checked:bg-emerald-600 peer-checked:text-white transition-all flex items-center gap-1"><i data-lucide="home" class="w-3.5 h-3.5"></i> Mój balkon</span></label>
-              <label class="cursor-pointer"><input type="radio" name="horizonMode" value="grzes_garden" class="sr-only peer" onchange="updateTargetsFilter()"><span class="px-3 py-1.5 rounded-lg text-slate-400 peer-checked:bg-emerald-600 peer-checked:text-white transition-all flex items-center gap-1"><i data-lucide="trees" class="w-3.5 h-3.5"></i> Ogródek Grzesia</span></label>
-              <label class="cursor-pointer"><input type="radio" name="horizonMode" value="all_objects" class="sr-only peer" onchange="updateTargetsFilter()"><span class="px-3 py-1.5 rounded-lg text-slate-400 peer-checked:bg-indigo-600 peer-checked:text-white transition-all flex items-center gap-1"><i data-lucide="globe" class="w-3.5 h-3.5"></i> Wszystkie obiekty</span></label>
+            <div class="inline-flex p-1 bg-black border border-zinc-800 rounded-lg text-xs font-semibold shrink-0">
+              <label class="cursor-pointer"><input type="radio" name="horizonMode" value="my_balcony" class="sr-only peer" checked onchange="updateTargetsFilter()"><span class="px-3 py-1.5 rounded-md text-zinc-400 peer-checked:bg-amber-500 peer-checked:text-black peer-checked:font-bold transition-all flex items-center gap-1"><i data-lucide="home" class="w-3.5 h-3.5"></i> Mój balkon</span></label>
+              <label class="cursor-pointer"><input type="radio" name="horizonMode" value="grzes_garden" class="sr-only peer" onchange="updateTargetsFilter()"><span class="px-3 py-1.5 rounded-md text-zinc-400 peer-checked:bg-amber-500 peer-checked:text-black peer-checked:font-bold transition-all flex items-center gap-1"><i data-lucide="trees" class="w-3.5 h-3.5"></i> Ogródek Grzesia</span></label>
+              <label class="cursor-pointer"><input type="radio" name="horizonMode" value="all_objects" class="sr-only peer" onchange="updateTargetsFilter()"><span class="px-3 py-1.5 rounded-md text-zinc-400 peer-checked:bg-zinc-200 peer-checked:text-black peer-checked:font-bold transition-all flex items-center gap-1"><i data-lucide="globe" class="w-3.5 h-3.5"></i> Wszystkie obiekty</span></label>
             </div>
           </div>
 
-          <div class="flex flex-wrap items-center gap-2 mb-3 pb-3 border-b border-slate-800/60">
-            <span class="text-xs font-semibold text-slate-400 mr-1 flex items-center gap-1"><i data-lucide="book-open" class="w-3.5 h-3.5 text-emerald-400"></i> Katalog:</span>
-            <button onclick="setCatalogFilter('all')" id="catSrcBtn-all" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-emerald-600 text-white border-emerald-500 shadow">Wszystkie (Messier + NGC)</button>
-            <button onclick="setCatalogFilter('messier')" id="catSrcBtn-messier" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">Tylko Messier (M1–M110)</button>
-            <button onclick="setCatalogFilter('ngc')" id="catSrcBtn-ngc" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">Tylko NGC (Top Seestar)</button>
+          <div class="flex flex-wrap items-center gap-2 mb-3 pb-3 border-b border-zinc-800/80">
+            <span class="text-xs font-semibold text-zinc-400 mr-1 flex items-center gap-1"><i data-lucide="book-open" class="w-3.5 h-3.5 text-amber-400"></i> Katalog:</span>
+            <button onclick="setCatalogFilter('all')" id="catSrcBtn-all" class="px-3 py-1 rounded-md text-xs font-bold transition-all border bg-amber-500 text-black border-amber-400 shadow">Wszystkie (Messier + NGC)</button>
+            <button onclick="setCatalogFilter('messier')" id="catSrcBtn-messier" class="px-3 py-1 rounded-md text-xs font-semibold transition-all border bg-black text-zinc-300 border-zinc-800 hover:border-zinc-600">Tylko Messier (M1–M110)</button>
+            <button onclick="setCatalogFilter('ngc')" id="catSrcBtn-ngc" class="px-3 py-1 rounded-md text-xs font-semibold transition-all border bg-black text-zinc-300 border-zinc-800 hover:border-zinc-600">Tylko NGC (Top Seestar)</button>
           </div>
 
-          <div class="flex flex-wrap items-center gap-2 mb-5 pb-3 border-b border-slate-800/60">
-            <span class="text-xs font-semibold text-slate-400 mr-1 flex items-center gap-1"><i data-lucide="filter" class="w-3.5 h-3.5 text-indigo-400"></i> Typ:</span>
-            <button onclick="setCategoryFilter('all')" id="catBtn-all" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-indigo-600 text-white border-indigo-500 shadow">Wszystkie (<span id="cnt-all">0</span>)</button>
-            <button onclick="setCategoryFilter('galaxy')" id="catBtn-galaxy" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">Galaktyki (<span id="cnt-galaxy">0</span>)</button>
-            <button onclick="setCategoryFilter('nebula')" id="catBtn-nebula" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">Mgławice (<span id="cnt-nebula">0</span>)</button>
-            <button onclick="setCategoryFilter('cluster')" id="catBtn-cluster" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">Gromady (<span id="cnt-cluster">0</span>)</button>
-            <button onclick="setCategoryFilter('planet')" id="catBtn-planet" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">Planety (<span id="cnt-planet">0</span>)</button>
+          <div class="flex flex-wrap items-center gap-2 mb-5 pb-3 border-b border-zinc-800/80">
+            <span class="text-xs font-semibold text-zinc-400 mr-1 flex items-center gap-1"><i data-lucide="filter" class="w-3.5 h-3.5 text-amber-400"></i> Typ:</span>
+            <button onclick="setCategoryFilter('all')" id="catBtn-all" class="px-3 py-1 rounded-md text-xs font-bold transition-all border bg-zinc-200 text-black border-zinc-100 shadow">Wszystkie (<span id="cnt-all">0</span>)</button>
+            <button onclick="setCategoryFilter('galaxy')" id="catBtn-galaxy" class="px-3 py-1 rounded-md text-xs font-semibold transition-all border bg-black text-zinc-300 border-zinc-800 hover:border-zinc-600">Galaktyki (<span id="cnt-galaxy">0</span>)</button>
+            <button onclick="setCategoryFilter('nebula')" id="catBtn-nebula" class="px-3 py-1 rounded-md text-xs font-semibold transition-all border bg-black text-zinc-300 border-zinc-800 hover:border-zinc-600">Mgławice (<span id="cnt-nebula">0</span>)</button>
+            <button onclick="setCategoryFilter('cluster')" id="catBtn-cluster" class="px-3 py-1 rounded-md text-xs font-semibold transition-all border bg-black text-zinc-300 border-zinc-800 hover:border-zinc-600">Gromady (<span id="cnt-cluster">0</span>)</button>
+            <button onclick="setCategoryFilter('planet')" id="catBtn-planet" class="px-3 py-1 rounded-md text-xs font-semibold transition-all border bg-black text-zinc-300 border-zinc-800 hover:border-zinc-600">Planety (<span id="cnt-planet">0</span>)</button>
           </div>
 
           <div id="targetsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <p class="text-sm text-slate-400 col-span-2">Ładowanie obiektów z baz JSON...</p>
+            <p class="text-sm text-zinc-500 col-span-2">Ładowanie obiektów z baz JSON...</p>
           </div>
         </div>
       </div>
@@ -255,22 +258,22 @@
 
     function getSeestarRecommendation(item) {
       if (item.cat === 'planet') {
-        return { suit: 'Idealny', badgeClass: 'bg-emerald-950 text-emerald-300 border-emerald-800', subExp: '1s–2s / Video', baseTime: '5–10 min', filter: 'UV/IR Cut (Domyślny)', notes: 'Użyj trybu Planetary / krótkich czasów do nagrania tarcz planetarnych.' };
+        return { suit: 'Idealny', badgeClass: 'bg-emerald-950/80 text-emerald-300 border-emerald-700/70', subExp: '1s–2s / Video', baseTime: '5–10 min', filter: 'UV/IR Cut (Domyślny)', notes: 'Użyj trybu Planetary / krótkich czasów do nagrania tarcz planetarnych.' };
       }
       
       const mag = Number(item.mag) || 8.0;
       let suit = 'Dobry';
-      let badgeClass = 'bg-cyan-950 text-cyan-300 border-cyan-800';
+      let badgeClass = 'bg-amber-950/80 text-amber-300 border-amber-700/70';
 
       if (mag <= 7.5) {
         suit = 'Idealny';
-        badgeClass = 'bg-emerald-950 text-emerald-300 border-emerald-800';
+        badgeClass = 'bg-emerald-950/80 text-emerald-300 border-emerald-700/70';
       } else if (mag >= 10.5) {
         suit = 'Trudny';
-        badgeClass = 'bg-rose-950 text-rose-300 border-rose-800';
+        badgeClass = 'bg-rose-950/80 text-rose-300 border-rose-700/70';
       } else if (mag >= 9.2) {
         suit = 'Umiarkowany';
-        badgeClass = 'bg-amber-950 text-amber-300 border-amber-800';
+        badgeClass = 'bg-orange-950/80 text-orange-300 border-orange-700/70';
       }
 
       if (item.cat === 'nebula') {
@@ -286,10 +289,10 @@
     }
 
     function getCategoryIcon(cat) {
-      if (cat === 'galaxy') return `<svg class="w-8 h-8 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="12" rx="9" ry="4" transform="rotate(-30 12 12)" stroke-dasharray="2 2"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>`;
-      if (cat === 'nebula' || cat === 'reflection_nebula') return `<svg class="w-8 h-8 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 15c-2 0-4-1.5-4-3.5S4 8 6 8c.5-2 2.5-4 5-4 3 0 5 2 5.5 4.5 2 .5 3.5 2 3.5 4 0 2.5-2 4.5-4.5 4.5H6z" stroke-dasharray="3 2"/><circle cx="11" cy="11" r="1.5" fill="currentColor"/></svg>`;
+      if (cat === 'galaxy') return `<svg class="w-8 h-8 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="12" rx="9" ry="4" transform="rotate(-30 12 12)" stroke-dasharray="2 2"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>`;
+      if (cat === 'nebula' || cat === 'reflection_nebula') return `<svg class="w-8 h-8 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 15c-2 0-4-1.5-4-3.5S4 8 6 8c.5-2 2.5-4 5-4 3 0 5 2 5.5 4.5 2 .5 3.5 2 3.5 4 0 2.5-2 4.5-4.5 4.5H6z" stroke-dasharray="3 2"/><circle cx="11" cy="11" r="1.5" fill="currentColor"/></svg>`;
       if (cat === 'planet') return `<svg class="w-8 h-8 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="6"/><path d="M3 12c3-3 12-3 18 0M3 12c3 3 12 3 18 0" stroke-linecap="round"/></svg>`;
-      return `<svg class="w-8 h-8 text-amber-300" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="3"/></svg>`;
+      return `<svg class="w-8 h-8 text-amber-200" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="3"/></svg>`;
     }
 
     function toggleNightVision() { document.body.classList.toggle('night-vision'); }
@@ -386,9 +389,9 @@
       if (mode === 'all_objects') {
         legendElem.innerHTML = `<div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span><span class="text-emerald-300 font-semibold">Wszystkie sektory otwarte (>0°)</span></div>`;
       } else if (mode === 'grzes_garden') {
-        legendElem.innerHTML = `<div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span><span class="text-slate-300 font-medium">Ogródek Grzesia</span></div>`;
+        legendElem.innerHTML = `<div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span><span class="text-zinc-300 font-medium">Ogródek Grzesia</span></div>`;
       } else {
-        legendElem.innerHTML = `<div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span><span class="text-slate-300 font-medium">Mój balkon (NE, E >50°, SE, S)</span></div>`;
+        legendElem.innerHTML = `<div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span><span class="text-zinc-300 font-medium">Mój balkon (NE, E >50°, SE, S)</span></div>`;
       }
     }
 
@@ -396,7 +399,7 @@
       activeCatalogFilter = src;
       ['all', 'messier', 'ngc'].forEach(s => {
         const btn = document.getElementById(`catSrcBtn-${s}`);
-        if (btn) btn.className = s === src ? "px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-emerald-600 text-white border-emerald-500 shadow" : "px-3 py-1 rounded-lg text-xs font-semibold transition-all border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700";
+        if (btn) btn.className = s === src ? "px-3 py-1 rounded-md text-xs font-bold transition-all border bg-amber-500 text-black border-amber-400 shadow" : "px-3 py-1 rounded-md text-xs font-semibold transition-all border bg-black text-zinc-300 border-zinc-800 hover:border-zinc-600";
       });
       updateTargetsFilter();
     }
@@ -405,7 +408,7 @@
       activeCategoryFilter = cat;
       ['all', 'galaxy', 'nebula', 'cluster', 'planet'].forEach(c => {
         const btn = document.getElementById(`catBtn-${c}`);
-        if (btn) btn.className = c === cat ? "px-3 py-1 rounded-lg text-xs font-semibold border bg-indigo-600 text-white border-indigo-500 shadow" : "px-3 py-1 rounded-lg text-xs font-semibold border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700";
+        if (btn) btn.className = c === cat ? "px-3 py-1 rounded-md text-xs font-bold border bg-zinc-200 text-black border-zinc-100 shadow" : "px-3 py-1 rounded-md text-xs font-semibold border bg-black text-zinc-300 border-zinc-800 hover:border-zinc-600";
       });
       updateTargetsFilter();
     }
@@ -422,8 +425,6 @@
       let startDay = new Date(now);
       let endDay = new Date(now);
 
-      // Jeśli jest po północy, ale przed 6:00 rano -> pokazujemy bieżącą noc (start wczoraj, koniec dzisiaj)
-      // Od 6:00 rano przez cały dzień -> pokazujemy nadchodzącą noc (start dzisiaj, koniec jutro)
       if (now.getHours() < 6) {
         startDay.setDate(startDay.getDate() - 1);
       } else {
@@ -544,13 +545,22 @@
         data: {
           labels: labels,
           datasets: [
-            { type: 'line', label: 'Zachmurzenie (%)', data: cloudsData, borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.1)', fill: true, tension: 0.3, yAxisID: 'y' },
-            { type: 'line', label: 'Temp (°C)', data: tempsData, borderColor: '#f97316', borderDash: [3, 3], yAxisID: 'yTemp' },
-            { type: 'line', label: 'Roszenie (°C)', data: dewPointsData, borderColor: '#06b6d4', borderDash: [2, 2], yAxisID: 'yTemp' },
-            { type: 'bar', label: 'Opad (%)', data: rainProbsData, backgroundColor: 'rgba(168, 85, 247, 0.4)', yAxisID: 'y' }
+            { type: 'line', label: 'Zachmurzenie (%)', data: cloudsData, borderColor: '#f4f4f5', backgroundColor: 'rgba(244, 244, 245, 0.08)', fill: true, tension: 0.3, borderWidth: 2, yAxisID: 'y' },
+            { type: 'line', label: 'Temp (°C)', data: tempsData, borderColor: '#eab308', borderDash: [3, 3], borderWidth: 2, yAxisID: 'yTemp' },
+            { type: 'line', label: 'Roszenie (°C)', data: dewPointsData, borderColor: '#d97706', borderDash: [2, 2], borderWidth: 2, yAxisID: 'yTemp' },
+            { type: 'bar', label: 'Opad (%)', data: rainProbsData, backgroundColor: 'rgba(234, 179, 8, 0.22)', borderColor: 'rgba(234, 179, 8, 0.5)', borderWidth: 1, yAxisID: 'y' }
           ]
         },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 }, yTemp: { position: 'right' } } }
+        options: { 
+          responsive: true, 
+          maintainAspectRatio: false, 
+          plugins: { legend: { labels: { color: '#a1a1aa' } } },
+          scales: { 
+            x: { ticks: { color: '#71717a' }, grid: { color: '#18181b' } },
+            y: { min: 0, max: 100, ticks: { color: '#71717a' }, grid: { color: '#18181b' } }, 
+            yTemp: { position: 'right', ticks: { color: '#eab308' }, grid: { drawOnChartArea: false } } 
+          } 
+        }
       });
     }
 
@@ -596,33 +606,33 @@
       let top4 = idealTargets.slice(0, 4);
 
       const suggestionBox = document.createElement('div');
-      suggestionBox.className = "col-span-1 md:col-span-2 mb-2 p-4 rounded-xl bg-gradient-to-r from-indigo-950/90 via-slate-900 to-slate-950 border border-indigo-500/40 shadow-xl space-y-3";
+      suggestionBox.className = "col-span-1 md:col-span-2 mb-2 p-4 rounded-xl bg-gradient-to-r from-amber-950/30 via-[#141417] to-black border border-amber-500/40 shadow-2xl space-y-3";
 
       if (currentScore === 0 && cachedHourlyData.length > 0) {
         suggestionBox.innerHTML = `<div class="flex justify-between border-b border-rose-800/50 pb-2"><h3 class="text-sm font-bold text-rose-300">Rekomendowane Obiekty na Dziś</h3><span class="text-[11px] px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800 font-bold">🛑 Wykryto Ryzyko Opadów</span></div><p class="text-xs text-rose-200">Sesja odwołana – opady deszczu w nocy.</p>`;
       } else if (top4.length > 0) {
         let top4Html = top4.map(item => {
           const seestarRec = getSeestarRecommendation(item);
-          const catTag = item.catalogSource === 'ngc' ? '<span class="text-[9px] px-1 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800">NGC</span>' : '';
+          const catTag = item.catalogSource === 'ngc' ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-300 border border-amber-500/40 font-mono">NGC</span>' : '';
           return `
-          <div class="flex justify-between items-center p-2.5 bg-slate-950/80 border border-indigo-900/40 rounded-lg text-xs">
+          <div class="flex justify-between items-center p-2.5 bg-black/80 border border-zinc-800 rounded-lg text-xs">
             <div>
               <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="font-bold text-slate-100">${item.name}</span>
+                <span class="font-bold text-zinc-100">${item.name}</span>
                 ${catTag}
                 <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border ${seestarRec.badgeClass}">${seestarRec.suit}</span>
               </div>
-              <span class="text-slate-400 text-[11px]">${item.type} (Mag: ${item.mag})</span>
+              <span class="text-zinc-500 text-[11px]">${item.type} (Mag: ${item.mag})</span>
             </div>
             <div class="text-right font-mono shrink-0 ml-2">
-              <span class="text-indigo-300 font-bold block">${item.peakInfo ? formatTime(item.peakInfo.time) : '--:--'} (Max: ${item.maxAlt}°)</span>
+              <span class="text-amber-300 font-bold block">${item.peakInfo ? formatTime(item.peakInfo.time) : '--:--'} (Max: ${item.maxAlt}°)</span>
               <span class="text-emerald-400 text-[10px]">Zalecane: ${formatTime(item.clearSkyWindows[0].start)} - ${formatTime(item.clearSkyWindows[0].end)}</span>
             </div>
           </div>`;
         }).join('');
-        suggestionBox.innerHTML = `<div class="flex justify-between border-b border-indigo-800/50 pb-2"><h3 class="text-sm font-bold text-indigo-300">Dedykowany Plan Obserwacyjny (Top 4 - Czyste Niebo &le;15%)</h3></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">${top4Html}</div>`;
+        suggestionBox.innerHTML = `<div class="flex justify-between border-b border-amber-500/20 pb-2"><h3 class="text-xs font-mono uppercase tracking-wider font-bold text-amber-400">Dedykowany Plan Obserwacyjny (Top 4 - Czyste Niebo &le;15%)</h3></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">${top4Html}</div>`;
       } else {
-        suggestionBox.innerHTML = `<div class="flex justify-between border-b border-indigo-800/50 pb-2"><h3 class="text-sm font-bold text-indigo-300">Rekomendowane Obiekty na Dziś</h3><span class="text-[11px] px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800">⚠️ Brak Rekomendacji (Zachmurzenie >15%)</span></div><p class="text-xs text-slate-400">Brak obiektów z oknem czystego nieba (&le;15% chmur) w otwartych sektorach dla wybranego katalogu.</p>`;
+        suggestionBox.innerHTML = `<div class="flex justify-between border-b border-amber-500/20 pb-2"><h3 class="text-xs font-mono uppercase tracking-wider font-bold text-amber-400">Rekomendowane Obiekty na Dziś</h3><span class="text-[11px] px-2 py-0.5 rounded bg-amber-950/70 text-amber-300 border border-amber-700/70">⚠️ Brak Rekomendacji (Zachmurzenie >15%)</span></div><p class="text-xs text-zinc-400">Brak obiektów z oknem czystego nieba (&le;15% chmur) w otwartych sektorach dla wybranego katalogu.</p>`;
       }
 
       container.appendChild(suggestionBox);
@@ -637,41 +647,41 @@
 
       filteredTargets.forEach(item => {
         const seestarRec = getSeestarRecommendation(item);
-        const catBadge = item.catalogSource === 'ngc' ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800">NGC</span>` : '';
-        let clearSkyHtml = (item.clearSkyWindows && item.clearSkyWindows.length > 0) ? item.clearSkyWindows.map(cw => `<div class="flex justify-between text-xs py-0.5 font-bold text-emerald-300"><span>Sektor ${cw.zone} (&le;15% chmur):</span><span class="font-mono">${formatTime(cw.start)} – ${formatTime(cw.end)}</span></div>`).join('') : `<div class="text-[11px] text-amber-400 italic">⚠️ Brak okna &le;15% chmur.</div>`;
+        const catBadge = item.catalogSource === 'ngc' ? `<span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/40">NGC</span>` : '';
+        let clearSkyHtml = (item.clearSkyWindows && item.clearSkyWindows.length > 0) ? item.clearSkyWindows.map(cw => `<div class="flex justify-between text-xs py-0.5 font-bold text-emerald-300"><span>Sektor ${cw.zone} (&le;15% chmur):</span><span class="font-mono">${formatTime(cw.start)} – ${formatTime(cw.end)}</span></div>`).join('') : `<div class="text-[11px] text-amber-400/90 italic">⚠️ Brak okna &le;15% chmur.</div>`;
 
         container.innerHTML += `
-          <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-indigo-500/50 transition-all space-y-3">
+          <div class="p-4 rounded-xl bg-black/70 border border-zinc-800/90 hover:border-amber-500/50 transition-all space-y-3">
             <div class="flex gap-3 items-center">
-              <div class="thumb-box w-12 h-12 rounded-lg border border-slate-700/80 bg-slate-900/90 flex items-center justify-center shrink-0 shadow-inner">${getCategoryIcon(item.cat)}</div>
+              <div class="thumb-box w-12 h-12 rounded-lg border border-zinc-800 bg-[#141417] flex items-center justify-center shrink-0 shadow-inner">${getCategoryIcon(item.cat)}</div>
               <div class="flex-1 min-w-0">
                 <div class="flex justify-between items-start gap-1">
-                  <h3 class="font-bold text-slate-100 text-sm truncate" title="${item.name}">${item.name}</h3>
+                  <h3 class="font-bold text-zinc-100 text-sm truncate" title="${item.name}">${item.name}</h3>
                   <div class="flex items-center gap-1 shrink-0">
                     ${catBadge}
                     <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${seestarRec.badgeClass}">${seestarRec.suit}</span>
-                    <span class="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800">${item.currentAzDir} (${item.currentAlt}°)</span>
+                    <span class="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-zinc-900 text-zinc-200 border border-zinc-700">${item.currentAzDir} (${item.currentAlt}°)</span>
                   </div>
                 </div>
-                <p class="text-xs text-slate-400">${item.type} • Mag: ${item.mag}</p>
+                <p class="text-xs text-zinc-500">${item.type} • Mag: ${item.mag}</p>
               </div>
             </div>
             
-            <div class="best-window-box bg-emerald-950/40 border border-emerald-500/40 p-2.5 rounded-lg text-xs space-y-2">
-              <div><div class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-0.5">Zalecana Obserwacja (&le;15% chmur):</div>${clearSkyHtml}</div>
-              <div class="text-[11px] text-slate-300 flex justify-between pt-1 border-t border-emerald-900/40"><span>Najwyższy punkt:</span><span class="font-mono text-emerald-300 font-bold">${item.peakInfo ? formatTime(item.peakInfo.time) + ' (' + item.peakInfo.alt + '°)' : '--:--'}</span></div>
+            <div class="best-window-box bg-emerald-950/30 border border-emerald-500/30 p-2.5 rounded-lg text-xs space-y-2">
+              <div><div class="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-wider mb-0.5">Zalecana Obserwacja (&le;15% chmur):</div>${clearSkyHtml}</div>
+              <div class="text-[11px] text-zinc-400 flex justify-between pt-1 border-t border-emerald-900/30"><span>Najwyższy punkt:</span><span class="font-mono text-emerald-300 font-bold">${item.peakInfo ? formatTime(item.peakInfo.time) + ' (' + item.peakInfo.alt + '°)' : '--:--'}</span></div>
             </div>
 
-            <div class="pt-2 border-t border-slate-800/80 space-y-1 text-xs">
+            <div class="pt-2 border-t border-zinc-800/80 space-y-1 text-xs">
               <div class="flex justify-between font-mono text-emerald-400 font-semibold">
                 <span>Seestar S30 Pro:</span>
-                <span class="text-indigo-300">Ekspozycja: ${seestarRec.subExp} | Czas: ${seestarRec.baseTime}</span>
+                <span class="text-amber-300">Ekspozycja: ${seestarRec.subExp} | Czas: ${seestarRec.baseTime}</span>
               </div>
-              <div class="flex justify-between text-[11px] text-slate-300 font-mono">
+              <div class="flex justify-between text-[11px] text-zinc-400 font-mono">
                 <span>Zalecany filtr:</span>
-                <span class="text-cyan-300 font-bold">${seestarRec.filter}</span>
+                <span class="text-zinc-200 font-bold">${seestarRec.filter}</span>
               </div>
-              <p class="text-[11px] text-slate-400 italic bg-slate-900/50 p-2 rounded border border-slate-800">${seestarRec.notes}</p>
+              <p class="text-[11px] text-zinc-400 italic bg-[#141417] p-2 rounded border border-zinc-800/80">${seestarRec.notes}</p>
             </div>
           </div>`;
       });
