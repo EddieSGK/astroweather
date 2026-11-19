@@ -209,10 +209,11 @@
     };
 
     async function loadCatalogs() {
+      const cacheBuster = `?v=${Date.now()}`;
       try {
         const [resMessier, resNgc] = await Promise.all([
-          fetch('messier.json').catch(() => null),
-          fetch('ngc.json').catch(() => null)
+          fetch('messier.json' + cacheBuster).catch(() => null),
+          fetch('ngc.json' + cacheBuster).catch(() => null)
         ]);
         if (resMessier && resMessier.ok) {
           const mData = await resMessier.json();
@@ -418,11 +419,12 @@
 
       await loadCatalogs();
 
-      const noon = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
       let startDay = new Date(now);
       let endDay = new Date(now);
 
-      if (now < noon) {
+      // Jeśli jest po północy, ale przed 6:00 rano -> pokazujemy bieżącą noc (start wczoraj, koniec dzisiaj)
+      // Od 6:00 rano przez cały dzień -> pokazujemy nadchodzącą noc (start dzisiaj, koniec jutro)
+      if (now.getHours() < 6) {
         startDay.setDate(startDay.getDate() - 1);
       } else {
         endDay.setDate(endDay.getDate() + 1);
@@ -677,25 +679,6 @@
     }
 
     window.addEventListener('DOMContentLoaded', initDashboard);
-
-async function loadCatalogs() {
-      try {
-        const [resMessier, resNgc] = await Promise.all([
-          fetch('messier.json').catch(() => null),
-          fetch('ngc.json').catch(() => null)
-        ]);
-        if (resMessier && resMessier.ok) {
-          const mData = await resMessier.json();
-          MESSIER_CATALOG = mData.map(item => ({ ...item, catalogSource: 'messier' }));
-        }
-        if (resNgc && resNgc.ok) {
-          const nData = await resNgc.json();
-          NGC_CATALOG = nData.map(item => ({ ...item, catalogSource: 'ngc' }));
-        }
-      } catch (err) {
-        console.error("Błąd ładowania plików katalogów JSON:", err);
-      }
-    }
   </script>
 </body>
 </html>
